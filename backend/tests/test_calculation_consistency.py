@@ -204,9 +204,11 @@ def test_carbon_paths_and_distinct_tails(smiles,length,tails):
     assert (p.tail_c,p.tail_count)==(length,tails)
 
 @pytest.mark.parametrize('ph',range(15))
-@pytest.mark.parametrize('smiles,neutral,pka,kind',[('CC(=O)O','CC(=O)O',4.8,'acid'),
- ('CC(=O)[O-].[Na+]','CC(=O)O',4.8,'acid'),('CN','CN',10.6,'base'),
- ('C[NH3+].[Cl-]','CN',10.6,'base'),('Nc1ccccc1','Nc1ccccc1',4.6,'base'),('Oc1ccccc1','Oc1ccccc1',10,'acid')])
+# Web Lite v1 (tarefa 5): pKa referenciados do composto-modelo (CRC) em vez dos valores arredondados
+# 4,8 / 10,6 / 10; a verificação de Henderson–Hasselbalch com logP da forma neutra é a mesma.
+@pytest.mark.parametrize('smiles,neutral,pka,kind',[('CC(=O)O','CC(=O)O',4.76,'acid'),
+ ('CC(=O)[O-].[Na+]','CC(=O)O',4.76,'acid'),('CN','CN',10.66,'base'),
+ ('C[NH3+].[Cl-]','CN',10.66,'base'),('Nc1ccccc1','Nc1ccccc1',4.6,'base'),('Oc1ccccc1','Oc1ccccc1',9.99,'acid')])
 def test_henderson_hasselbalch_neutral_and_charged_forms(ph,smiles,neutral,pka,kind):
     m=make_response(ChemistryParametersRequest(smiles=smiles,environment={'ph':ph}))['molecule']
     exponent=ph-pka if kind=='acid' else pka-ph
@@ -216,7 +218,13 @@ def test_henderson_hasselbalch_neutral_and_charged_forms(ph,smiles,neutral,pka,k
 
 @pytest.mark.parametrize('smiles',['CC(=O)N',CTAB,'O=C(O)CCC(=O)O','NCCN',SDS,'CCCCCCCCCCCC[N+](C)(C)CC(=O)[O-]'])
 def test_no_generic_amine_pka_for_amides_permanent_ions_or_polyprotic(smiles):
-    assert response(smiles)['molecule']['pka']['available'] is False
+    pka = response(smiles)['molecule']['pka']
+    if smiles == 'CCCCCCCCCCCC[N+](C)(C)CC(=O)[O-]':
+        # Web Lite v1 (tarefa 5): betaína recebe o pKa específico e referenciado da carboxila (1,83),
+        # não um pKa genérico de amina/carboxila.
+        assert pka['available'] is False or (pka['value'] == 1.83 and 'betaína' in pka['note'].lower())
+        return
+    assert pka['available'] is False
 
 @pytest.mark.parametrize('smiles,ap,mw,rb',[('c1ccccc1',1,78.114,0),('c1ccc2ccccc2c1',1,128.174,0),('CCO',0,46.069,0),('Oc1ccccc1',6/7,94.113,0)])
 def test_esol_uses_aromatic_atom_fraction_not_ring_count(smiles,ap,mw,rb):

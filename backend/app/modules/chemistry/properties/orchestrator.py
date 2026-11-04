@@ -7,7 +7,7 @@ from typing import Any
 
 from rdkit import Chem
 
-from app.modules.chemistry.properties import conformer3d, electronic_basic, resonance
+from app.modules.chemistry.properties import conformer3d, electronic_basic, ionization, resonance
 from app.modules.chemistry.properties.base import PropertyBundle, PropertyContext
 
 
@@ -44,6 +44,7 @@ def compute_all(ctx: PropertyContext, *, generate_3d: bool = True) -> PropertyBu
     bundle = PropertyBundle()
     bundle.update(electronic_basic.compute(ctx))
     bundle.update(resonance.compute(ctx))
+    bundle.update(ionization.compute(ctx))
     bundle.update(_conformer_bundle(ctx) if generate_3d else conformer3d.not_requested(ctx))
     return bundle
 
@@ -58,6 +59,9 @@ def _fill(target: dict[str, Any], fields: dict[str, Any]) -> None:
 
 def merge_into(molecule: dict, atoms: list[dict], bonds: list[dict], bundle: PropertyBundle) -> None:
     _fill(molecule, bundle.molecule)
+    for key in ionization.AUTHORITATIVE_FIELDS:   # ionização é a fonte de pKa/LogD quando há sítios
+        if key in bundle.molecule:
+            molecule[key] = bundle.molecule[key]
     atoms_by_index = {atom.get("rdkit_idx"): atom for atom in atoms}
     for index, fields in bundle.atoms.items():
         if index in atoms_by_index:
