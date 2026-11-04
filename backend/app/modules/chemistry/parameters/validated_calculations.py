@@ -14,7 +14,7 @@ from rdkit.Chem import Crippen, Descriptors, rdMolDescriptors
 
 VERSION = "validated-calculations-1.0"
 CLASS_PT = {"anionic": "aniônico", "cationic": "catiônico", "nonionic": "não iônico",
-            "zwitterionic": "anfotérico/zwitteriônico", "unknown": "não surfactante identificado"}
+            "zwitterionic": "zwitteriônico", "amphoteric": "anfotérico", "unknown": "não surfactante identificado"}
 HEAD_PT = {"sulfate": "sulfato", "sulfonate": "sulfonato", "carboxylate": "carboxilato",
            "carboxylic_acid": "ácido carboxílico", "quaternary_ammonium": "amônio quaternário",
            "protonated_amine": "amina protonada", "amine": "amina", "amide": "amida",
@@ -84,6 +84,10 @@ class StructuralProfile:
     tail_count: int
     linear_hydrocarbon: bool
     ambiguous_mixture: bool
+    # Web Lite v1: classe estrutural por regras + papel anfifílico (ver properties/surfactant_class.py).
+    amphiphile_role: str = "none"
+    rules_fired: tuple[str, ...] = ()
+    classification: Any = None
 
 
 def profile(mol) -> StructuralProfile:
@@ -145,9 +149,12 @@ def profile(mol) -> StructuralProfile:
                           and b.GetEndAtom().GetAtomicNum() == 6 for b in active.GetBonds()))
     # Two hydrophobic organic components describe a mixture, not a single salt.
     ambiguous = any(max((t[0] for t in carbon_tails(f)), default=0) >= 6 for f in others)
+    from app.modules.chemistry.properties.surfactant_class import classify  # import local: evita ciclo
+    classification = classify(active, is_surfactant, head, tail_c)
     return StructuralProfile(active, others, head, charge, chemical_class,
-                             chemical_class if is_surfactant else "unknown", is_surfactant,
-                             tail_c, tail_count, linear, ambiguous)
+                             classification.structural_class if is_surfactant else "unknown", is_surfactant,
+                             tail_c, tail_count, linear, ambiguous,
+                             classification.amphiphile_role, classification.rules_fired, classification)
 
 
 def packing_estimate(p: StructuralProfile) -> dict:
@@ -218,6 +225,10 @@ def cmc_estimate(p: StructuralProfile, env: dict) -> dict:
     """
     result = {"reference_mmol_l": None, "value": None, "method": "not_available", "note": "Fora do domínio: requer CMC experimental ou modelo treinado validado."}
     if not p.is_surfactant or not p.linear_hydrocarbon or p.ambiguous_mixture:
+        return result
+    if p.amphiphile_role == "surfactant_or_cosurfactant":
+        result["note"] = ("Cabeça polar fraca (surfactante ou cossurfactante, conforme o sistema): "
+                          "sem correlação de CMC fundamentada na v1.")
         return result
     others = {Chem.MolToSmiles(f) for f in p.others}
     anchor = None

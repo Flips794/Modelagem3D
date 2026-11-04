@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 
 from app.modules.chemistry.parameters import validated_calculations as validated
+from app.modules.chemistry.properties.surfactant_class import species_at_ph
 
 from app.modules.micelium.mapping import max_consecutive_carbon_run
 
@@ -102,6 +103,9 @@ class MolecularIdentityAI:
         descriptors.head_area_a2 = packing["head_area_a2"]
         descriptors.raw_descriptors["packing_estimate"] = packing
         descriptors.raw_descriptors["shared_calculations"] = validated.VERSION
+        classification = structure.classification
+        descriptors.raw_descriptors["amphiphile_role"] = structure.amphiphile_role
+        species = species_at_ph(structure.active, float(request.environment.ph))
 
         class_confidence = self._estimate_class_confidence(
             is_surfactant=is_surfactant,
@@ -130,6 +134,13 @@ class MolecularIdentityAI:
                 "engine_version": self.engine_version,
                 "classification_scope": "input formal charge; no full pH speciation",
                 "class_confidence_calibrated": False,
+                "classification_scope_v1": "classe estrutural por regras; espécie no pH calculada à parte",
+                "classification_confidence": classification.confidence if classification else None,
+                "justification": classification.justification if classification else None,
+                "compatible_classes": list(classification.compatible_classes) if classification else [],
+                "rules_fired": list(structure.rules_fired),
+                "amphiphile_role": structure.amphiphile_role,
+                "species_at_ph": species,
                 "rdkit_available": Chem is not None,
                 "input_unit": request.unit,
                 "input_concentration": request.concentration,

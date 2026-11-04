@@ -154,6 +154,9 @@ class SpecializedSurfactantAI(ABC):
             warnings=warnings,
             prediction_json={
                 "heuristic": not all(value == "trained_model" for value in methods.values()),
+                "model_status": ("trained" if all(value == "trained_model" for value in methods.values())
+                                 else "partially_trained" if any(value == "trained_model" for value in methods.values())
+                                 else "not_trained"),
                 "methods": methods,
                 "probability_calibrated": False,
                 "experimental_validation": False,

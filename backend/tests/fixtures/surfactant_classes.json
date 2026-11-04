@@ -1,0 +1,61 @@
+{
+  "reference_note": "Classes conforme a taxonomia usual de surfactantes (Rosen & Kunjappu, Surfactants and Interfacial Phenomena, cap. 1; Holmberg et al., Surfactants and Polymers in Aqueous Solution, cap. 1). O rótulo vem da literatura, não da saída do código.",
+  "items": [
+    {"name": "Dodecil sulfato de sódio (SDS)", "smiles": "CCCCCCCCCCCCOS(=O)(=O)[O-].[Na+]", "expected_class": "anionic", "expected_role": "surfactant"},
+    {"name": "Dodecanossulfonato de sódio", "smiles": "CCCCCCCCCCCCS(=O)(=O)[O-].[Na+]", "expected_class": "anionic", "expected_role": "surfactant"},
+    {"name": "Laurato de sódio", "smiles": "CCCCCCCCCCCC(=O)[O-].[Na+]", "expected_class": "anionic", "expected_role": "surfactant"},
+    {"name": "Dodecilbenzenossulfonato de sódio (LAS)", "smiles": "CCCCCCCCCCCCc1ccc(cc1)S(=O)(=O)[O-].[Na+]", "expected_class": "anionic", "expected_role": "surfactant"},
+    {"name": "Lauril éter sulfato de sódio (1 EO)", "smiles": "CCCCCCCCCCCCOCCOS(=O)(=O)[O-].[Na+]", "expected_class": "anionic", "expected_role": "surfactant"},
+    {"name": "Lauroil sarcosinato de sódio", "smiles": "CCCCCCCCCCCC(=O)N(C)CC(=O)[O-].[Na+]", "expected_class": "anionic", "expected_role": "surfactant"},
+    {"name": "Oleato de potássio", "smiles": "CCCCCCCCC=CCCCCCCCC(=O)[O-].[K+]", "expected_class": "anionic", "expected_role": "surfactant"},
+    {"name": "Dodecil fosfato dissódico", "smiles": "CCCCCCCCCCCCOP(=O)([O-])[O-].[Na+].[Na+]", "expected_class": "anionic", "expected_role": "surfactant"},
+
+    {"name": "CTAB", "smiles": "CCCCCCCCCCCCCCCC[N+](C)(C)C.[Br-]", "expected_class": "cationic", "expected_role": "surfactant"},
+    {"name": "DTAB", "smiles": "CCCCCCCCCCCC[N+](C)(C)C.[Br-]", "expected_class": "cationic", "expected_role": "surfactant"},
+    {"name": "CTAC", "smiles": "CCCCCCCCCCCCCCCC[N+](C)(C)C.[Cl-]", "expected_class": "cationic", "expected_role": "surfactant"},
+    {"name": "Cloreto de cetilpiridínio", "smiles": "CCCCCCCCCCCCCCCC[n+]1ccccc1.[Cl-]", "expected_class": "cationic", "expected_role": "surfactant"},
+    {"name": "Cloreto de benzalcônio (C12)", "smiles": "CCCCCCCCCCCC[N+](C)(C)Cc1ccccc1.[Cl-]", "expected_class": "cationic", "expected_role": "surfactant"},
+    {"name": "DDAB", "smiles": "CCCCCCCCCCCC[N+](C)(C)CCCCCCCCCCCC.[Br-]", "expected_class": "cationic", "expected_role": "surfactant"},
+    {"name": "Cloridrato de dodecilamina", "smiles": "CCCCCCCCCCCC[NH3+].[Cl-]", "expected_class": "cationic", "expected_role": "surfactant"},
+    {"name": "Cloreto de 1-dodecil-3-metilimidazólio", "smiles": "CCCCCCCCCCCCn1cc[n+](C)c1.[Cl-]", "expected_class": "cationic", "expected_role": "surfactant"},
+
+    {"name": "C12E5", "smiles": "CCCCCCCCCCCCOCCOCCOCCOCCOCCO", "expected_class": "nonionic", "expected_role": "surfactant"},
+    {"name": "C12E8", "smiles": "CCCCCCCCCCCCOCCOCCOCCOCCOCCOCCOCCOCCO", "expected_class": "nonionic", "expected_role": "surfactant"},
+    {"name": "Octil glicosídeo", "smiles": "CCCCCCCCO[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O", "expected_class": "nonionic", "expected_role": "surfactant"},
+    {"name": "Monolaurato de sorbitano (simplificado)", "smiles": "CCCCCCCCCCCC(=O)OCC(O)C1OCC(O)C1O", "expected_class": "nonionic", "expected_role": "surfactant"},
+    {"name": "Monolaurato de glicerila", "smiles": "CCCCCCCCCCCC(=O)OCC(O)CO", "expected_class": "nonionic", "expected_role": "surfactant"},
+    {"name": "Lauramida DEA", "smiles": "CCCCCCCCCCCC(=O)N(CCO)CCO", "expected_class": "nonionic", "expected_role": "surfactant"},
+    {"name": "Nonilfenol etoxilado (4 EO)", "smiles": "CCCCCCCCCc1ccc(OCCOCCOCCOCCO)cc1", "expected_class": "nonionic", "expected_role": "surfactant"},
+    {"name": "Monooleato de glicerila", "smiles": "CCCCCCCCC=CCCCCCCCC(=O)OCC(O)CO", "expected_class": "nonionic", "expected_role": "surfactant"},
+
+    {"name": "Dodecil betaína", "smiles": "CCCCCCCCCCCC[N+](C)(C)CC(=O)[O-]", "expected_class": "zwitterionic", "expected_role": "surfactant"},
+    {"name": "Lauramidopropil betaína", "smiles": "CCCCCCCCCCCC(=O)NCCC[N+](C)(C)CC(=O)[O-]", "expected_class": "zwitterionic", "expected_role": "surfactant"},
+    {"name": "Sulfobetaína SB3-12", "smiles": "CCCCCCCCCCCC[N+](C)(C)CCCS(=O)(=O)[O-]", "expected_class": "zwitterionic", "expected_role": "surfactant"},
+    {"name": "Dodecilfosfocolina (DPC)", "smiles": "CCCCCCCCCCCCOP(=O)([O-])OCC[N+](C)(C)C", "expected_class": "zwitterionic", "expected_role": "surfactant"},
+    {"name": "Lauril hidroxissultaína", "smiles": "CCCCCCCCCCCC[N+](C)(C)CC(O)CS(=O)(=O)[O-]", "expected_class": "zwitterionic", "expected_role": "surfactant"},
+    {"name": "Dilauroilfosfatidilcolina (DLPC)", "smiles": "CCCCCCCCCCCC(=O)OCC(COP(=O)([O-])OCC[N+](C)(C)C)OC(=O)CCCCCCCCCCC", "expected_class": "zwitterionic", "expected_role": "surfactant"},
+
+    {"name": "N-dodecilglicina", "smiles": "CCCCCCCCCCCCNCC(=O)O", "expected_class": "amphoteric", "expected_role": "surfactant"},
+    {"name": "N-dodecil-β-alanina", "smiles": "CCCCCCCCCCCCNCCC(=O)O", "expected_class": "amphoteric", "expected_role": "surfactant"},
+    {"name": "Óxido de dodecildimetilamina", "smiles": "CCCCCCCCCCCC[N+](C)(C)[O-]", "expected_class": "amphoteric", "expected_role": "surfactant"},
+    {"name": "Óxido de lauramidopropilamina", "smiles": "CCCCCCCCCCCC(=O)NCCC[N+](C)([O-])C", "expected_class": "amphoteric", "expected_role": "surfactant"},
+    {"name": "N-dodecil iminodipropionato", "smiles": "CCCCCCCCCCCCN(CCC(=O)O)CCC(=O)O", "expected_class": "amphoteric", "expected_role": "surfactant"},
+    {"name": "Lauroanfoacetato de sódio (simplificado)", "smiles": "CCCCCCCCCCCC(=O)NCCN(CCO)CC(=O)[O-].[Na+]", "expected_class": "amphoteric", "expected_role": "surfactant"},
+
+    {"name": "Hexano", "smiles": "CCCCCC", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Etanol", "smiles": "CCO", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Glicose", "smiles": "OCC1OC(O)C(O)C(O)C1O", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Ácido benzoico", "smiles": "OC(=O)c1ccccc1", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Nitrobenzeno", "smiles": "[O-][N+](=O)c1ccccc1", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Ureia", "smiles": "NC(N)=O", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Glicina", "smiles": "NCC(=O)O", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Acetato de sódio", "smiles": "CC(=O)[O-].[Na+]", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Cloreto de tetrametilamônio", "smiles": "C[N+](C)(C)C.[Cl-]", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Benzeno", "smiles": "c1ccccc1", "expected_class": "unknown", "expected_role": "none"},
+    {"name": "Octano", "smiles": "CCCCCCCC", "expected_class": "unknown", "expected_role": "none"},
+
+    {"name": "Dodecanol", "smiles": "CCCCCCCCCCCCO", "expected_class": "nonionic", "expected_role": "surfactant_or_cosurfactant"},
+    {"name": "Ácido dodecanoico", "smiles": "CCCCCCCCCCCC(=O)O", "expected_class": "anionic", "expected_role": "surfactant_or_cosurfactant"},
+    {"name": "Dodecilamina", "smiles": "CCCCCCCCCCCCN", "expected_class": "cationic", "expected_role": "surfactant_or_cosurfactant"}
+  ]
+}

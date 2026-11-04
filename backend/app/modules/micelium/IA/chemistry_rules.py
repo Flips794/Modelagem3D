@@ -161,8 +161,10 @@ def route_for_class(surfactant_class: SurfactantClass) -> AIRoute:
         return "cationic_ai"
     if surfactant_class == "nonionic":
         return "nonionic_ai"
-    if surfactant_class in {"zwitterionic", "amphoteric"}:
+    if surfactant_class == "zwitterionic":
         return "zwitterionic_ai"
+    if surfactant_class == "amphoteric":
+        return "amphoteric_ai"
     return "unknown_ai"
 
 

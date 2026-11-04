@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from app.modules.chemistry.parameters.validated_calculations import concentration_mmol_l
 
+from app.modules.micelium.IA.amphoteric_ai import AmphotericSurfactantAI
 from app.modules.micelium.IA.anionic_ai import AnionicSurfactantAI
 from app.modules.micelium.IA.cationic_ai import CationicSurfactantAI
 from app.modules.micelium.IA.chemistry_rules import clamp
@@ -29,6 +30,7 @@ class MiceliumAIService:
             "cationic_ai": CationicSurfactantAI(self.registry),
             "nonionic_ai": NonionicSurfactantAI(self.registry),
             "zwitterionic_ai": ZwitterionicSurfactantAI(self.registry),
+            "amphoteric_ai": AmphotericSurfactantAI(self.registry),
         }
 
     def analyze_identity(self, request: MiceliumAIPredictionRequest):

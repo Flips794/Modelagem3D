@@ -17,8 +17,11 @@ class SurfactantAIRouter:
         if identity.surfactant_class == "nonionic":
             return "nonionic_ai"
 
-        if identity.surfactant_class in {"zwitterionic", "amphoteric"}:
+        if identity.surfactant_class == "zwitterionic":
             return "zwitterionic_ai"
+
+        if identity.surfactant_class == "amphoteric":
+            return "amphoteric_ai"
 
         return "unknown_ai"
 

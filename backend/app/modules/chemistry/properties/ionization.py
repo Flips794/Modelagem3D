@@ -58,49 +58,51 @@ class IonizableSite:
     pka_upper_bound: float | None = None   # só para ácido forte sem pKa numérico
     pair_id: int | None = None             # par acoplado validado (mesmo composto-modelo)
     coupled: bool = False                  # acoplado a outro sítio sem padrão validado
+    reference_status: str = "consolidada"  # consolidada | a revisar | sem valor numérico | não se aplica
 
     @property
     def titratable(self) -> bool:
         return self.kind in ("acid", "base")
 
 
-# Pares validados: (grupo, SMARTS, [(posição do átomo-sítio, tipo, pKa, limite)], referência)
+# Pares validados: (grupo, SMARTS, [(posição do átomo-sítio, tipo, pKa, limite)], referência, qualidade)
 _ACID_O = "[OX2H1,OX1-]"
 VALIDATED_PAIRS = [
     ("betaína", f"[NX4+;H0;!$(N-[O-]);!$(N-[OH])]-[CX4]-C(=O){_ACID_O}",
-     [(0, "permanent_cation", None, None), (4, "acid", 1.83, None)], REF_BETAINE),
+     [(0, "permanent_cation", None, None), (4, "acid", 1.83, None)], REF_BETAINE, "a revisar"),
     ("α-aminoácido (glicina)", f"[NX3H2,NX4H3+;!$(N-C=O)]-[CX4]-C(=O){_ACID_O}",
-     [(0, "base", 9.60, None), (4, "acid", 2.34, None)], REF_GLYCINE),
+     [(0, "base", 9.60, None), (4, "acid", 2.34, None)], REF_GLYCINE, "consolidada"),
     ("N-alquil α-aminoácido (sarcosina)", f"[NX3H1,NX4H2+;!$(N-C=O)](-[#6])-[CX4]-C(=O){_ACID_O}",
-     [(0, "base", 10.1, None), (5, "acid", 2.21, None)], REF_SARCOSINE),
+     [(0, "base", 10.1, None), (5, "acid", 2.21, None)], REF_SARCOSINE, "a revisar"),
     ("fosfato monoéster", f"[#6]-O-P(=O)({_ACID_O}){_ACID_O}",
-     [(4, "acid", None, 2.0), (5, "acid", 6.3, None)], REF_METHYL_PHOSPHATE),
+     [(4, "acid", None, 2.0), (5, "acid", 6.3, None)], REF_METHYL_PHOSPHATE, "a revisar"),
 ]
 
-# Sítios isolados: (grupo, SMARTS cujo 1º átomo é o sítio, tipo, pKa, limite, referência). Ordem importa.
+# Sítios isolados: (grupo, SMARTS cujo 1º átomo é o sítio, tipo, pKa, limite, referência, qualidade). Ordem importa.
 _NOT_AMIDE = "!$(N-C=[O,S,N]);!$(N-S(=O));!$(N-[!#6;!#1])"
 SINGLE_SITES = [
-    ("N-óxido de amina", "[OX1-,OX2H1;$(O-[NX4+;H0])]", "base", 4.65, None, REF_TMAO),
-    ("ácido sulfônico/sulfato", "[OX2H1,OX1-;$(O-[SX4](=O)=O)]", "acid", None, 0.0, REF_STRONG_SULFUR),
-    ("fosfato diéster", "[OX2H1,OX1-;$(O-P(=O)(O[#6])O[#6])]", "acid", 1.29, None, REF_DIMETHYL_PHOSPHATE),
-    ("ácido carboxílico", "[OX2H1,OX1-;$(O-[CX3]=O);!$(O-C(=O)-[O,N])]", "acid", 4.76, None, f"Ácido acético 4,76 ({CRC})"),
-    ("fenol", "[OX2H1,OX1-;$(O-c)]", "acid", 9.99, None, f"Fenol 9,99 ({CRC})"),
-    ("imidazol", "[$([nX2;r5]:c:[nH1;r5]),$([nH1+;r5]:c:[nH1;r5])]", "base", 6.95, None, f"Imidazol 6,95 ({CRC})"),
-    ("piridina", "[$([nX2;r6;!$(n:n)]),$([nH1+;r6])]", "base", 5.23, None, f"Piridina 5,23 ({CRC})"),
+    ("N-óxido de amina", "[OX1-,OX2H1;$(O-[NX4+;H0])]", "base", 4.65, None, REF_TMAO, "a revisar"),
+    ("ácido sulfônico/sulfato", "[OX2H1,OX1-;$(O-[SX4](=O)=O)]", "acid", None, 0.0, REF_STRONG_SULFUR, "sem valor numérico"),
+    ("fosfato diéster", "[OX2H1,OX1-;$(O-P(=O)(O[#6])O[#6])]", "acid", 1.29, None, REF_DIMETHYL_PHOSPHATE, "a revisar"),
+    ("ácido carboxílico", "[OX2H1,OX1-;$(O-[CX3]=O);!$(O-C(=O)-[O,N])]", "acid", 4.76, None, f"Ácido acético 4,76 ({CRC})", "consolidada"),
+    ("fenol", "[OX2H1,OX1-;$(O-c)]", "acid", 9.99, None, f"Fenol 9,99 ({CRC})", "consolidada"),
+    ("imidazol", "[$([nX2;r5]:c:[nH1;r5]),$([nH1+;r5]:c:[nH1;r5])]", "base", 6.95, None, f"Imidazol 6,95 ({CRC})", "consolidada"),
+    ("piridina", "[$([nX2;r6;!$(n:n)]),$([nH1+;r6])]", "base", 5.23, None, f"Piridina 5,23 ({CRC})", "consolidada"),
     ("anilina", f"[$([NX3;H2,H1,H0;{_NOT_AMIDE};$(N-c)]),$([NX4+;H3,H2,H1;$(N-c)])]", "base", 4.60, None,
-     f"Anilina 4,60 ({CRC})"),
+     f"Anilina 4,60 ({CRC})", "consolidada"),
     ("amina primária", f"[$([NX3H2;{_NOT_AMIDE};!$(N-a)]),$([NX4H3+;!$(N-a)])]", "base", 10.66, None,
-     f"Metilamina 10,66 ({CRC})"),
+     f"Metilamina 10,66 ({CRC})", "consolidada"),
     ("amina secundária", f"[$([NX3H1;{_NOT_AMIDE};!$(N-a)]),$([NX4H2+;!$(N-a)])]", "base", 10.73, None,
-     f"Dimetilamina 10,73 ({CRC})"),
+     f"Dimetilamina 10,73 ({CRC})", "consolidada"),
     ("amina terciária", f"[$([NX3H0;{_NOT_AMIDE};!$(N-a);!$(N=*)]),$([NX4H1+;!$(N-a)])]", "base", 9.80, None,
-     f"Trimetilamina 9,80 ({CRC})"),
-    ("amônio quaternário", "[NX4+;H0;!$(N-[O-]);!$(N-[OH])]", "permanent_cation", None, None, REF_PERMANENT),
-    ("piridínio N-substituído", "[n+;H0;!$(n-[O-])]", "permanent_cation", None, None, REF_PERMANENT),
-    ("fosfônio", "[PX4+;H0]", "permanent_cation", None, None, REF_PERMANENT),
+     f"Trimetilamina 9,80 ({CRC})", "consolidada"),
+    ("amônio quaternário", "[NX4+;H0;!$(N-[O-]);!$(N-[OH])]", "permanent_cation", None, None, REF_PERMANENT, "não se aplica"),
+    ("piridínio N-substituído", "[n+;H0;!$(n-[O-])]", "permanent_cation", None, None, REF_PERMANENT, "não se aplica"),
+    # P⁺–O⁻ (óxido de fosfina) é par de ressonância de P=O, não carga permanente.
+    ("fosfônio", "[PX4+;H0;!$(P-[O-])]", "permanent_cation", None, None, REF_PERMANENT, "não se aplica"),
 ]
-_COMPILED_PAIRS = [(g, Chem.MolFromSmarts(s), roles, r) for g, s, roles, r in VALIDATED_PAIRS]
-_COMPILED_SINGLE = [(g, Chem.MolFromSmarts(s), k, p, b, r) for g, s, k, p, b, r in SINGLE_SITES]
+_COMPILED_PAIRS = [(g, Chem.MolFromSmarts(s), roles, r, q) for g, s, roles, r, q in VALIDATED_PAIRS]
+_COMPILED_SINGLE = [(g, Chem.MolFromSmarts(s), k, p, b, r, q) for g, s, k, p, b, r, q in SINGLE_SITES]
 
 
 def ionizable_sites(mol: Chem.Mol, atoms: set[int] | None = None) -> list[IonizableSite]:
@@ -109,21 +111,22 @@ def ionizable_sites(mol: Chem.Mol, atoms: set[int] | None = None) -> list[Ioniza
     taken: set[int] = set()
     found: list[IonizableSite] = []
     pair_counter = 0
-    for group, pattern, roles, reference in _COMPILED_PAIRS:
+    for group, pattern, roles, reference, quality in _COMPILED_PAIRS:
         for match in mol.GetSubstructMatches(pattern):
             site_atoms = [match[pos] for pos, *_ in roles]
             if any(a in taken or a not in allowed for a in site_atoms):
                 continue
             pair_counter += 1
             for (pos, kind, pka, bound), atom in zip(roles, site_atoms):
-                found.append(IonizableSite(atom, group, pka, kind, reference, bound, pair_counter))
+                found.append(IonizableSite(atom, group, pka, kind, reference, bound, pair_counter,
+                                           reference_status=quality))
                 taken.add(atom)
-    for group, pattern, kind, pka, bound, reference in _COMPILED_SINGLE:
+    for group, pattern, kind, pka, bound, reference, quality in _COMPILED_SINGLE:
         for match in mol.GetSubstructMatches(pattern):
             atom = match[0]
             if atom in taken or atom not in allowed:
                 continue
-            found.append(IonizableSite(atom, group, pka, kind, reference, bound))
+            found.append(IonizableSite(atom, group, pka, kind, reference, bound, reference_status=quality))
             taken.add(atom)
     found.sort(key=lambda s: s.atom_idx)
     return _mark_couplings(mol, found)
@@ -242,7 +245,8 @@ def compute(ctx: PropertyContext) -> PropertyBundle:
 
     bundle.molecule["sitios_ionizaveis"] = value(
         [{"atom_idx": s.atom_idx, "grupo": s.group, "tipo": s.kind, "pka": s.pka,
-          "pka_limite_superior": s.pka_upper_bound, "acoplado": s.coupled, "referencia": s.reference} for s in sites],
+          "pka_limite_superior": s.pka_upper_bound, "acoplado": s.coupled, "referencia": s.reference,
+          "qualidade_referencia": s.reference_status} for s in sites],
         SOURCE, confidence="estimated", note=note)
 
     if not sites:
