@@ -1,0 +1,23 @@
+[project]
+name = "modelagem3d-backend"
+version = "0.1.0"
+description = "Backend do Molecular Micelle Reality Engine"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "psycopg[binary]",
+    "alembic",
+    "pydantic-settings",
+    "python-dotenv",
+    "rdkit",
+    "numpy",
+    "openmm",
+    "joblib",
+    "scikit-learn"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+

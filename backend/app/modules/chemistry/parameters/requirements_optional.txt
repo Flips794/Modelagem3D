@@ -1,0 +1,12 @@
+# opcionais futuros
+# xtb-python
+# freesasa
+# openmm
+# pubchempy
+#
+# Já cobertos por RDKit/estimadores:
+# - LogP, TPSA, QED, MolMR, Bertz, Wiener e Randic
+# - LogD, pKa, LogS, densidade, fusão, ebulição, vapor, tensão superficial,
+#   viscosidade e ΔG solvatação entram como estimativas determinísticas iniciais.
+
+

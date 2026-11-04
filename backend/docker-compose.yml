@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: modelagem3d_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: modelagem3d_db
+      POSTGRES_USER: modelagem3d
+      POSTGRES_PASSWORD: REMOVIDO
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - modelagem3d_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U modelagem3d -d modelagem3d_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: .
+    restart: unless-stopped
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+psycopg://modelagem3d:REMOVIDO@postgres:5432/modelagem3d_db
+      BACKEND_CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
+      OPENMM_CPU_THREADS: "2"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./app/modules/micelium/IA/trained_models:/app/app/modules/micelium/IA/trained_models:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - python -m alembic upgrade head && exec python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/database', timeout=4)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ../frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  modelagem3d_pgdata:
+

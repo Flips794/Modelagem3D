@@ -1,0 +1,305 @@
+.page-3d-container {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+
+  display: grid;
+  grid-template-rows: auto minmax(0, auto);
+  gap: 12px;
+
+  padding: 10px;
+
+  overflow: visible;
+
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.16), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.12), transparent 32%),
+    #020617;
+
+  color: #e5e7eb;
+}
+
+.page-3d-header {
+  min-width: 0;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 20px;
+
+  padding: 12px 14px;
+
+  background: rgba(15, 23, 42, 0.86);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+
+  overflow: hidden;
+}
+
+.page-3d-header div:first-child {
+  min-width: 0;
+
+  display: grid;
+  gap: 4px;
+}
+
+.page-3d-header strong {
+  font-size: 1.02rem;
+}
+
+.page-3d-header span {
+  color: #94a3b8;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.page-3d-main-field {
+  min-width: 0;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  gap: 10px;
+
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+
+  padding: 10px;
+
+  background: rgba(15, 23, 42, 0.54);
+  box-shadow:
+    inset 0 0 0 1px rgba(2, 6, 23, 0.4),
+    0 18px 54px rgba(0, 0, 0, 0.24);
+
+  overflow: visible;
+}
+
+.page-3d-message-bar {
+  min-width: 0;
+
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 14px;
+
+  padding: 8px 10px;
+
+  background: rgba(245, 158, 11, 0.08);
+  color: #fde68a;
+
+  font-size: 0.72rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.page-3d-render-field {
+  min-width: 0;
+  width: 100%;
+
+  height: clamp(440px, 58vh, 720px);
+  min-height: 440px;
+  max-height: 720px;
+
+  display: grid;
+
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: 24px;
+
+  overflow: hidden;
+
+  background: #020617;
+}
+
+.page-3d-bottom-inspector {
+  min-width: 0;
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 10px;
+
+  overflow: visible;
+}
+
+.bottom-inspector-card {
+  min-width: 0;
+
+  display: grid;
+  gap: 8px;
+
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+
+  padding: 10px;
+
+  background: rgba(15, 23, 42, 0.86);
+
+  overflow: hidden;
+}
+
+.bottom-inspector-card > strong {
+  color: #f8fafc;
+  font-size: 0.78rem;
+}
+
+.empty-inspector,
+.scope-card span {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.selected-molecule-inline {
+  min-width: 0;
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr) auto;
+  gap: 10px;
+  align-items: center;
+
+  overflow: hidden;
+}
+
+.selected-molecule-inline h3 {
+  margin: 0 0 5px;
+  font-size: 0.82rem;
+}
+
+.selected-molecule-inline code {
+  display: block;
+  min-width: 0;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 11px;
+
+  padding: 7px;
+
+  background: rgba(2, 6, 23, 0.62);
+  color: #a7f3d0;
+
+  font-size: 0.68rem;
+}
+
+.inline-inspector-grid {
+  min-width: 0;
+  max-width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(72px, 0.85fr) minmax(72px, 1fr));
+  gap: 5px 8px;
+
+  overflow: hidden;
+}
+
+.inline-inspector-grid span {
+  color: #94a3b8;
+  font-size: 0.64rem;
+}
+
+.inline-inspector-grid strong {
+  min-width: 0;
+
+  color: #e5e7eb;
+  font-size: 0.66rem;
+  overflow-wrap: anywhere;
+}
+
+.bottom-inspector-card button {
+  min-height: 32px;
+
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: 12px;
+
+  padding: 0 10px;
+
+  background: rgba(30, 41, 59, 0.72);
+  color: #fecaca;
+
+  font-size: 0.68rem;
+  font-weight: 850;
+
+  cursor: pointer;
+}
+
+.scope-card {
+  border-color: rgba(245, 158, 11, 0.22);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+@media (max-width: 1280px) {
+  .page-3d-bottom-inspector,
+  .selected-molecule-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .inline-inspector-grid {
+    grid-template-columns: minmax(96px, 0.85fr) minmax(0, 1.15fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .page-3d-container {
+    padding: 8px;
+  }
+
+  .page-3d-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .page-3d-render-field {
+    height: 460px;
+    min-height: 460px;
+  }
+}
+
+.page-3d-solvent-toggle {
+  min-height: 34px;
+
+  border: 1px solid rgba(34, 211, 238, 0.26);
+  border-radius: 12px;
+
+  padding: 0 12px;
+
+  background: rgba(14, 165, 233, 0.1);
+  color: #bae6fd;
+
+  font-size: 0.72rem;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.page-3d-solvent-toggle:hover {
+  border-color: rgba(34, 211, 238, 0.56);
+  background: rgba(14, 165, 233, 0.16);
+}
+
+.page-3d-render-field {
+  position: relative;
+}
+
+.page-3d-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+
+  display: grid;
+  place-content: center;
+
+  background: rgba(2, 6, 23, 0.72);
+  color: #bae6fd;
+
+  font-size: 0.9rem;
+  font-weight: 950;
+  backdrop-filter: blur(4px);
+}
+
+

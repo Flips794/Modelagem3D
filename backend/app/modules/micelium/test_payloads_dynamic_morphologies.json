@@ -1,0 +1,318 @@
+{
+  "sds_baixo_cmc": {
+    "molecules": [
+      {
+        "id": "sds-low",
+        "name": "SDS",
+        "smiles": "CCCCCCCCCCCCOS(=O)(=O)[O-].[Na+]",
+        "role": "reagent",
+        "count": 70,
+        "visual_count": 70,
+        "real_concentration_mmol_l": 4.0,
+        "cmc_mmol_l": 8.2,
+        "is_surfactant": true,
+        "surfactant_class": "anionic",
+        "tail_carbon_count": 12,
+        "cpp": 0.24,
+        "hlb": 40.0,
+        "effective_hlb": 40.0
+      },
+      {
+        "id": "water",
+        "name": "Água em excesso",
+        "smiles": "O",
+        "role": "solvent",
+        "count": 140,
+        "visual_count": 140,
+        "solvent_excess": true
+      }
+    ],
+    "environment": {
+      "temperature_k": 298.15,
+      "pressure_atm": 1.0,
+      "ph": 7.0,
+      "ionic_strength_mol_l": 0.01,
+      "solvent_polarity_index": 1.0,
+      "dielectric_constant": 78.5,
+      "agitation_rpm": 250.0,
+      "volume_ml": 100.0,
+      "visual_speed_multiplier": 1.0,
+      "simulation_speed": 1.0,
+      "solvent_name": "água",
+      "solvent_mode": "excess"
+    },
+    "steps": 180,
+    "seed": 111
+  },
+  "sds_esferica": {
+    "molecules": [
+      {
+        "id": "sds-sphere",
+        "name": "SDS",
+        "smiles": "CCCCCCCCCCCCOS(=O)(=O)[O-].[Na+]",
+        "role": "reagent",
+        "count": 90,
+        "visual_count": 90,
+        "real_concentration_mmol_l": 30.0,
+        "cmc_mmol_l": 8.2,
+        "is_surfactant": true,
+        "surfactant_class": "anionic",
+        "tail_carbon_count": 12,
+        "cpp": 0.24,
+        "hlb": 40.0,
+        "effective_hlb": 40.0
+      },
+      {
+        "id": "water",
+        "name": "Água em excesso",
+        "smiles": "O",
+        "role": "solvent",
+        "count": 140,
+        "visual_count": 140,
+        "solvent_excess": true
+      }
+    ],
+    "environment": {
+      "temperature_k": 298.15,
+      "pressure_atm": 1.0,
+      "ph": 7.0,
+      "ionic_strength_mol_l": 0.01,
+      "solvent_polarity_index": 1.0,
+      "dielectric_constant": 78.5,
+      "agitation_rpm": 250.0,
+      "volume_ml": 100.0,
+      "visual_speed_multiplier": 1.0,
+      "simulation_speed": 1.0,
+      "solvent_name": "água",
+      "solvent_mode": "excess"
+    },
+    "steps": 180,
+    "seed": 222
+  },
+  "ctab_cilindrica": {
+    "molecules": [
+      {
+        "id": "ctab-cylinder",
+        "name": "CTAB",
+        "smiles": "CCCCCCCCCCCCCCCC[N+](C)(C)C.[Br-]",
+        "role": "reagent",
+        "count": 110,
+        "visual_count": 110,
+        "real_concentration_mmol_l": 5.0,
+        "cmc_mmol_l": 0.92,
+        "is_surfactant": true,
+        "surfactant_class": "cationic",
+        "tail_carbon_count": 16,
+        "cpp": 0.42,
+        "hlb": 22.0,
+        "effective_hlb": 26.0
+      },
+      {
+        "id": "water",
+        "name": "Água em excesso",
+        "smiles": "O",
+        "role": "solvent",
+        "count": 140,
+        "visual_count": 140,
+        "solvent_excess": true
+      }
+    ],
+    "environment": {
+      "temperature_k": 298.15,
+      "pressure_atm": 1.0,
+      "ph": 7.0,
+      "ionic_strength_mol_l": 0.08,
+      "solvent_polarity_index": 1.0,
+      "dielectric_constant": 78.5,
+      "agitation_rpm": 250.0,
+      "volume_ml": 100.0,
+      "visual_speed_multiplier": 1.0,
+      "simulation_speed": 1.0,
+      "solvent_name": "água",
+      "solvent_mode": "excess"
+    },
+    "steps": 200,
+    "seed": 333
+  },
+  "ddab_bicamada_plana": {
+    "molecules": [
+      {
+        "id": "ddab-lamellar",
+        "name": "DDAB",
+        "smiles": "CCCCCCCCCCCC[N+](C)(CCCCCCCCCCCC)C.[Br-]",
+        "role": "reagent",
+        "count": 130,
+        "visual_count": 130,
+        "real_concentration_mmol_l": 8.0,
+        "cmc_mmol_l": 1.5,
+        "is_surfactant": true,
+        "surfactant_class": "cationic",
+        "tail_carbon_count": 12,
+        "cpp": 0.88,
+        "hlb": 16.0,
+        "effective_hlb": 18.0
+      },
+      {
+        "id": "water",
+        "name": "Água em excesso",
+        "smiles": "O",
+        "role": "solvent",
+        "count": 140,
+        "visual_count": 140,
+        "solvent_excess": true
+      }
+    ],
+    "environment": {
+      "temperature_k": 298.15,
+      "pressure_atm": 1.0,
+      "ph": 7.0,
+      "ionic_strength_mol_l": 0.12,
+      "solvent_polarity_index": 1.0,
+      "dielectric_constant": 78.5,
+      "agitation_rpm": 250.0,
+      "volume_ml": 100.0,
+      "visual_speed_multiplier": 1.0,
+      "simulation_speed": 1.0,
+      "solvent_name": "água",
+      "solvent_mode": "excess"
+    },
+    "steps": 220,
+    "seed": 444
+  },
+  "ddab_vesicula": {
+    "molecules": [
+      {
+        "id": "ddab-vesicle",
+        "name": "DDAB",
+        "smiles": "CCCCCCCCCCCC[N+](C)(CCCCCCCCCCCC)C.[Br-]",
+        "role": "reagent",
+        "count": 150,
+        "visual_count": 150,
+        "real_concentration_mmol_l": 12.0,
+        "cmc_mmol_l": 1.5,
+        "is_surfactant": true,
+        "surfactant_class": "cationic",
+        "tail_carbon_count": 12,
+        "cpp": 0.92,
+        "hlb": 16.0,
+        "effective_hlb": 18.0
+      },
+      {
+        "id": "water",
+        "name": "Água em excesso",
+        "smiles": "O",
+        "role": "solvent",
+        "count": 150,
+        "visual_count": 150,
+        "solvent_excess": true
+      }
+    ],
+    "environment": {
+      "temperature_k": 298.15,
+      "pressure_atm": 1.0,
+      "ph": 7.0,
+      "ionic_strength_mol_l": 0.16,
+      "solvent_polarity_index": 1.0,
+      "dielectric_constant": 78.5,
+      "agitation_rpm": 250.0,
+      "volume_ml": 100.0,
+      "visual_speed_multiplier": 1.0,
+      "simulation_speed": 1.0,
+      "solvent_name": "água",
+      "solvent_mode": "excess"
+    },
+    "steps": 240,
+    "seed": 555
+  },
+  "aot_inversa": {
+    "molecules": [
+      {
+        "id": "aot-inverse",
+        "name": "AOT",
+        "smiles": "CCCCC(C)CCCOC(=O)C(CS(=O)(=O)[O-])OC(=O)CC(C)CCCC.[Na+]",
+        "role": "reagent",
+        "count": 120,
+        "visual_count": 120,
+        "real_concentration_mmol_l": 10.0,
+        "cmc_mmol_l": 2.5,
+        "is_surfactant": true,
+        "surfactant_class": "anionic",
+        "tail_carbon_count": 8,
+        "cpp": 1.1,
+        "hlb": 10.0,
+        "effective_hlb": 12.0
+      },
+      {
+        "id": "oil",
+        "name": "Meio apolar",
+        "smiles": "CCCCCC",
+        "role": "solvent",
+        "count": 120,
+        "visual_count": 120,
+        "solvent_excess": true
+      }
+    ],
+    "environment": {
+      "temperature_k": 298.15,
+      "pressure_atm": 1.0,
+      "ph": 7.0,
+      "ionic_strength_mol_l": 0.0,
+      "solvent_polarity_index": 0.15,
+      "dielectric_constant": 7.0,
+      "agitation_rpm": 200.0,
+      "volume_ml": 100.0,
+      "visual_speed_multiplier": 1.0,
+      "simulation_speed": 1.0,
+      "solvent_name": "óleo/apolar",
+      "solvent_mode": "excess"
+    },
+    "steps": 220,
+    "seed": 666
+  },
+  "sds_etanol_agregacao_fraca": {
+    "molecules": [
+      {
+        "id": "sds-ethanol",
+        "name": "SDS",
+        "smiles": "CCCCCCCCCCCCOS(=O)(=O)[O-].[Na+]",
+        "role": "reagent",
+        "count": 85,
+        "visual_count": 85,
+        "real_concentration_mmol_l": 30.0,
+        "cmc_mmol_l": 8.2,
+        "is_surfactant": true,
+        "surfactant_class": "anionic",
+        "tail_carbon_count": 12,
+        "cpp": 0.24,
+        "hlb": 40.0,
+        "effective_hlb": 40.0
+      },
+      {
+        "id": "ethanol",
+        "name": "Etanol em excesso",
+        "smiles": "CCO",
+        "role": "solvent",
+        "count": 140,
+        "visual_count": 140,
+        "solvent_excess": true
+      }
+    ],
+    "environment": {
+      "temperature_k": 298.15,
+      "pressure_atm": 1.0,
+      "ph": 7.0,
+      "ionic_strength_mol_l": 0.01,
+      "solvent_polarity_index": 0.62,
+      "dielectric_constant": 24.3,
+      "agitation_rpm": 250.0,
+      "volume_ml": 100.0,
+      "visual_speed_multiplier": 1.0,
+      "simulation_speed": 1.0,
+      "solvent_name": "etanol",
+      "solvent_mode": "excess"
+    },
+    "steps": 180,
+    "seed": 777
+  }
+}
+

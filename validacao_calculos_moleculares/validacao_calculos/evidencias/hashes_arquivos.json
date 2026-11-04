@@ -1,0 +1,164 @@
+[
+  {
+    "path": "backend/app/modules/chemistry/parameters/calculation_page.py",
+    "old_sha256": "0bce5fdf534b471c7cce8a2e37d0186d633504eaded7b6870644e51c9d897223",
+    "old_normalized_sha256": "0bce5fdf534b471c7cce8a2e37d0186d633504eaded7b6870644e51c9d897223",
+    "new_sha256": "569640ed3d65a1b27850fced89de6ee996ee99152391b5239c8b21b5eac314fc"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py",
+    "old_sha256": "c939e7b606961c91658131a0cb6e8a67f7767ee8551e617904c41b7518312fcf",
+    "old_normalized_sha256": "c939e7b606961c91658131a0cb6e8a67f7767ee8551e617904c41b7518312fcf",
+    "new_sha256": "8b50d048ff5d3fcc4ee66dba05ca8686d9ff3c06945e6d0fe542ff072e29d649"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/schemas.py",
+    "old_sha256": "8b0eaa28aa4bf28bc150e94e18de082ba34338ebb437eab6542c25dabcfcdec1",
+    "old_normalized_sha256": "8b0eaa28aa4bf28bc150e94e18de082ba34338ebb437eab6542c25dabcfcdec1",
+    "new_sha256": "5450d393e03d7c70b2f9ee83ef0360e2507ce2113e1038cdbff6229d1c1b7db2"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/service.py",
+    "old_sha256": "bc9d6591bdfec74ed7cec0a0cb2a61e9cb3d32f608a46cf53064a6f4705f85f7",
+    "old_normalized_sha256": "bc9d6591bdfec74ed7cec0a0cb2a61e9cb3d32f608a46cf53064a6f4705f85f7",
+    "new_sha256": "a1345cbcb3eff732044a6139893c5a0906c71f93799f9dc0e1bc1fec5b60db48"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/validated_calculations.py",
+    "old_sha256": null,
+    "old_normalized_sha256": null,
+    "new_sha256": "7813816df1820644855f15ffaea3778d45d43eacdf0da65d88d1633504eb46ea"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_service.py",
+    "old_sha256": "c67df337bbc4195c7f60a66862cd3f2a33b24867fc46f509045c735d6635f65e",
+    "old_normalized_sha256": "c67df337bbc4195c7f60a66862cd3f2a33b24867fc46f509045c735d6635f65e",
+    "new_sha256": "478f78064c69eefc07d393bab10d4f8f6c799673c7c2cf1c2c6009953dc7b38e"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/constants.py",
+    "old_sha256": "def70ee26cc4a94e0dbd686638f16a826a0f531176925b835dfdeee0127d43c4",
+    "old_normalized_sha256": "def70ee26cc4a94e0dbd686638f16a826a0f531176925b835dfdeee0127d43c4",
+    "new_sha256": "f6e3580920fe5ad001403fb32f0ce59c60eacdd00b8450ba0cc06fb5332a35c7"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/feature_builder.py",
+    "old_sha256": "027cef735a88018c5318ebd751863a3d633c1da6498d719653638dfdf0e072b9",
+    "old_normalized_sha256": "027cef735a88018c5318ebd751863a3d633c1da6498d719653638dfdf0e072b9",
+    "new_sha256": "b1fdd951002cdfed7ff4290831f666c9182699b37352c239c6fe7a30cfbf709a"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/model_registry.py",
+    "old_sha256": "6ed6cca9535a38a065369224f29f4d2d649cf80f72fc7687adbffef0ec0b1133",
+    "old_normalized_sha256": "6ed6cca9535a38a065369224f29f4d2d649cf80f72fc7687adbffef0ec0b1133",
+    "new_sha256": "a33834c738b448762e1ab27347d347c26cf0be012507391c807af016642c7dec"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/molecular_identity_ai.py",
+    "old_sha256": "3a565e1261726ca332cd2f9fee3cc8c88b3f9f712665b3170a17f1519b346d10",
+    "old_normalized_sha256": "3a565e1261726ca332cd2f9fee3cc8c88b3f9f712665b3170a17f1519b346d10",
+    "new_sha256": "aaa302be2917570507f8b7f2865c57f048fb537609c7f2449c9f55d101e012d6"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/prediction_service.py",
+    "old_sha256": "11ba70e1203d4ca72efe30924113e11a6d04d14b25fd9bfbf81bc7805ec1d462",
+    "old_normalized_sha256": "11ba70e1203d4ca72efe30924113e11a6d04d14b25fd9bfbf81bc7805ec1d462",
+    "new_sha256": "2a9572567126314eae899d38456fee632be8597f5c9097cdc2c18c2aa0bd0ae9"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/routes.py",
+    "old_sha256": "f4cef936eca03a258addbdc7a9a694376ecb86de3cfe7bb3640ca0184f29a423",
+    "old_normalized_sha256": "f4cef936eca03a258addbdc7a9a694376ecb86de3cfe7bb3640ca0184f29a423",
+    "new_sha256": "654d48d4686b11a60aba680aaba3ad1f84911bd05323d62baad7742c9210295f"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/schemas.py",
+    "old_sha256": "cdd97a50de3df2c7b244b05d353c721839b5b507173c2668598388a2128a7dda",
+    "old_normalized_sha256": "cdd97a50de3df2c7b244b05d353c721839b5b507173c2668598388a2128a7dda",
+    "new_sha256": "b355545cb9644157195fbd9f516d3bc2cbefd1e08d4df5ce487f122bc1d28bb7"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/specialized_base.py",
+    "old_sha256": "46a084cf049aec36cb55a9fed6cbedbd101545bb3d007b91fd70ce8ed87bdfa3",
+    "old_normalized_sha256": "46a084cf049aec36cb55a9fed6cbedbd101545bb3d007b91fd70ce8ed87bdfa3",
+    "new_sha256": "3e0084507c20ac8df0f41cae0f526bf19a328919f4ccee9bdd75410103cbc4f4"
+  },
+  {
+    "path": "backend/app/modules/micelium/ai_bridge.py",
+    "old_sha256": "f429638a92be436f3f1abe3fefe78cef9cfcfd2d489a8503ed82231d4916f75c",
+    "old_normalized_sha256": "f429638a92be436f3f1abe3fefe78cef9cfcfd2d489a8503ed82231d4916f75c",
+    "new_sha256": "98642b9a40318ba30e29d0e72e86294fb47aa60b1e55dcdf8878f86f9ae872ad"
+  },
+  {
+    "path": "backend/app/modules/micelium/engine.py",
+    "old_sha256": "384e8f1e367cb895bc2e19c8c6e4d57eb5f8201fc365380b7d729582eaa7578a",
+    "old_normalized_sha256": "384e8f1e367cb895bc2e19c8c6e4d57eb5f8201fc365380b7d729582eaa7578a",
+    "new_sha256": "c68e3361401b7f4456325528d2cd1aa49dca1f405a009b7722ea0a82c6cdf524"
+  },
+  {
+    "path": "backend/app/modules/micelium/schemas.py",
+    "old_sha256": "06f2d2bd2ae041b1dfba70fe249cace775bfc034b6c4fb7edf681c348f5fe0ca",
+    "old_normalized_sha256": "06f2d2bd2ae041b1dfba70fe249cace775bfc034b6c4fb7edf681c348f5fe0ca",
+    "new_sha256": "dee01daf05dcd47dff1d3ab8b0671be068736a2b37e64a94101060ca09a085a4"
+  },
+  {
+    "path": "backend/tests/fixtures/molecular_catalog.json",
+    "old_sha256": null,
+    "old_normalized_sha256": null,
+    "new_sha256": "be4a5ecbff2404244de264eaf577bf763be0d87c108212540c0eb65bdfa688aa"
+  },
+  {
+    "path": "backend/tests/test_calculation_consistency.py",
+    "old_sha256": null,
+    "old_normalized_sha256": null,
+    "new_sha256": "c305e62c045a2b7a4637b72f15a36ffddb8169b2f5a8cfd8bcb8ead80f450a73"
+  },
+  {
+    "path": "backend/tests/test_calculation_http.py",
+    "old_sha256": null,
+    "old_normalized_sha256": null,
+    "new_sha256": "f5920801e5a90658c65b553626ba366ad3953e399059c2f8e18a8a37c288520f"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/MoleculePropertiesPanel.tsx",
+    "old_sha256": "431883ebd6a550ca7989d114ec5fa7bc6ab83c7a2bdb5f4c88c55f7dce991cbd",
+    "old_normalized_sha256": "431883ebd6a550ca7989d114ec5fa7bc6ab83c7a2bdb5f4c88c55f7dce991cbd",
+    "new_sha256": "6f113675cb10c92661f10e41481ad29ddd356b7c218a33eb4eb5ec88778ea97b"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/3dpage.micelium.test.ts",
+    "old_sha256": "9d9122ec2d52fcb65bd5a1bfe0f4596645544577af937ea83069a001486559b2",
+    "old_normalized_sha256": "9d9122ec2d52fcb65bd5a1bfe0f4596645544577af937ea83069a001486559b2",
+    "new_sha256": "dea26fe10f79e4534cf83e79e0e575594c8872d5176b4331aafecb3205100eea"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/3dpage.tsx",
+    "old_sha256": "39f37d9c25a4218ac4d48cbf9854e7f628c1b29ecf529756a1b9558d0f46729a",
+    "old_normalized_sha256": "39f37d9c25a4218ac4d48cbf9854e7f628c1b29ecf529756a1b9558d0f46729a",
+    "new_sha256": "74d3da95037d268765538adbcfa1ed441c465c9386c4c1d4bc63d17a62fc86b5"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/realQuantities.test.ts",
+    "old_sha256": null,
+    "old_normalized_sha256": null,
+    "new_sha256": "289e0eeaa265ffd79d4afbd06c35f114a1c90f03ebebf7270650a6fdb6b1c553"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/realQuantities.ts",
+    "old_sha256": null,
+    "old_normalized_sha256": null,
+    "new_sha256": "3efa047b2cba121c44b07483b4f7090752cdf35a8b6caf40186043c56ebc55c3"
+  },
+  {
+    "path": "frontend/src/pages/3leftpage/3Leftpage.calculations.test.ts",
+    "old_sha256": null,
+    "old_normalized_sha256": null,
+    "new_sha256": "6e6ba828b1e7708dd0868b917bd3b7d3e617321f0ce37a0cd44d65c7610cb72a"
+  },
+  {
+    "path": "frontend/src/pages/3leftpage/3Leftpage.tsx",
+    "old_sha256": "e34be30a44eb174f140010c402ecc086f9a53b8d0e1292e57248421366ddfe4f",
+    "old_normalized_sha256": "e34be30a44eb174f140010c402ecc086f9a53b8d0e1292e57248421366ddfe4f",
+    "new_sha256": "08b00be7d8768ea4b5f136aa1be146b29f266853d82dcbc202ef7e1ba1090e00"
+  }
+]

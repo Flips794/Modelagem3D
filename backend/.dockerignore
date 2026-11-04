@@ -1,0 +1,9 @@
+.venv
+.env
+__pycache__
+**/__pycache__
+*.pyc
+*.backup*
+**/*.backup*
+**/trained_models
+codigo_backend.txt

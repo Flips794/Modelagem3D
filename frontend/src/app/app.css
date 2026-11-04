@@ -1,0 +1,391 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  height: auto !important;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-y: auto !important;
+  background: var(--bg-deep, #020617);
+}
+
+#root {
+  overflow: visible !important;
+}
+
+/*
+  REGRA DO ALINHAMENTO DA BARRA ESQUERDA
+
+  A barra esquerda inteira acompanha a altura combinada do ambiente 2D + 3D.
+
+  Bloco 1:
+  - começa no topo do ambiente 2D;
+  - termina no início visual do ambiente de transferência.
+
+  Bloco 2:
+  - começa no início visual do ambiente de transferência;
+  - vai até o final do ambiente 3D;
+  - possui rolagem interna.
+
+  Ajuste fino:
+  Se o bloco 2 começar ACIMA do ambiente de transferência, AUMENTE --transfer-start-offset.
+  Se o bloco 2 começar ABAIXO do ambiente de transferência, DIMINUA --transfer-start-offset.
+*/
+:root {
+  --layout-gap: 12px;
+  --layout-padding: 12px;
+  --left-width: 280px;
+
+  /*
+    Mantém o primeiro bloco do início do 2D até o início da transferência.
+  */
+  --transfer-start-offset: clamp(640px, 72vh, 860px);
+
+  /*
+    Tamanho do segundo bloco da esquerda.
+    Antes ele ocupava todo o restante até o final do 3D.
+    Agora fica aproximadamente 1/3 do tamanho visual anterior.
+  */
+  --left-secondary-height: clamp(800px, 22vh, 260px);
+}
+
+.workbench-layout {
+  position: relative !important;
+  inset: auto !important;
+
+  width: 100%;
+  min-height: 100vh;
+  height: auto !important;
+  max-height: none !important;
+
+  display: grid;
+  grid-template-columns: var(--left-width) minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "header header"
+    "left main2d"
+    "left main3d";
+
+  gap: var(--layout-gap);
+  padding: var(--layout-padding);
+
+  overflow: visible !important;
+  align-items: start;
+
+  background: var(--bg-deep, #020617);
+}
+
+.layout-header {
+  grid-area: header;
+  min-width: 0;
+  height: auto;
+  overflow: visible;
+}
+
+/* ==========================================================================
+   BARRA ESQUERDA
+   ========================================================================== */
+
+.layout-left {
+  grid-area: left;
+  align-self: start;
+
+  min-width: 0;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+
+  display: grid;
+  grid-template-rows: minmax(0, var(--transfer-start-offset)) var(--left-secondary-height);
+  gap: var(--layout-gap);
+
+  overflow: visible;
+  border-radius: 16px;
+}
+
+/*
+  Primeiro bloco:
+  começa no topo do ambiente 2D e termina no começo do ambiente de transferência.
+*/
+.layout-left-primary {
+  min-width: 0;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  border-radius: 16px;
+}
+
+/*
+  Segundo bloco:
+  começa no ambiente de transferência e vai até o final do ambiente 3D.
+*/
+.layout-left-secondary {
+  min-width: 0;
+  width: 100%;
+  min-height: 0;
+  height: var(--left-secondary-height);
+  max-height: var(--left-secondary-height);
+
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.layout-left-secondary > .three-left-page {
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  overscroll-behavior: contain;
+}
+
+.layout-main2d {
+  grid-area: main2d;
+  min-width: 0;
+  height: auto !important;
+  min-height: 0;
+  max-height: none !important;
+  overflow: visible !important;
+
+  border: 1px solid var(--border-color, #1f2937);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.92);
+}
+
+.layout-main3d {
+  grid-area: main3d;
+  display: block;
+
+  min-width: 0;
+  width: 100%;
+
+  height: auto !important;
+  min-height: 640px;
+  max-height: none !important;
+
+  overflow: visible !important;
+
+  border: 1px solid var(--border-color, #1f2937);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.92);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Correção local: mantém a rolagem que funciona e impede overflow no 3D        */
+/* -------------------------------------------------------------------------- */
+
+.layout-main3d,
+.layout-main3d * {
+  max-width: 100%;
+}
+
+.layout-main3d .page-3d-container {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+
+  overflow: visible !important;
+}
+
+.layout-main3d .page-3d-main-field {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+
+  overflow: visible !important;
+}
+
+.layout-main3d .page-3d-render-field {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  height: clamp(460px, 58vh, 720px) !important;
+  min-height: 460px !important;
+  max-height: 720px !important;
+
+  overflow: hidden !important;
+}
+
+.layout-main3d .rendering-shell,
+.layout-main3d .rendering-canvas,
+.layout-main3d .simulation-viewer-shell,
+.layout-main3d .simulation-viewer-canvas {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+
+  overflow: hidden !important;
+}
+
+.layout-main3d .toolsbar-3d {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)) !important;
+  gap: 10px !important;
+
+  overflow: hidden !important;
+}
+
+.layout-main3d .toolsbar-3d-title {
+  min-width: 0 !important;
+  grid-column: span 2;
+}
+
+.layout-main3d .toolsbar-3d-status,
+.layout-main3d .toolsbar-3d label,
+.layout-main3d .toolsbar-3d-buttons {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.layout-main3d .toolsbar-3d input[type="range"],
+.layout-main3d .toolsbar-3d input[type="number"],
+.layout-main3d .toolsbar-3d select {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.layout-main3d .toolsbar-3d-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+
+  grid-column: span 2;
+}
+
+.layout-main3d .toolsbar-3d button {
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+.layout-main3d .page-3d-bottom-inspector {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.layout-main3d .selected-molecule-inline,
+.layout-main3d .inline-inspector-grid {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.layout-main3d code,
+.layout-main3d strong,
+.layout-main3d span {
+  overflow-wrap: anywhere;
+}
+
+/* Scrollbars discretas */
+.layout-left-primary,
+.layout-left-secondary,
+.layout-main2d,
+.layout-main3d {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.42) rgba(15, 23, 42, 0.7);
+}
+
+.layout-left-primary::-webkit-scrollbar,
+.layout-left-secondary::-webkit-scrollbar,
+.layout-main2d::-webkit-scrollbar,
+.layout-main3d::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.layout-left-primary::-webkit-scrollbar-track,
+.layout-left-secondary::-webkit-scrollbar-track,
+.layout-main2d::-webkit-scrollbar-track,
+.layout-main3d::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 999px;
+}
+
+.layout-left-primary::-webkit-scrollbar-thumb,
+.layout-left-secondary::-webkit-scrollbar-thumb,
+.layout-main2d::-webkit-scrollbar-thumb,
+.layout-main3d::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.42);
+  border-radius: 999px;
+}
+
+@media (max-width: 980px) {
+  .workbench-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "left"
+      "main2d"
+      "main3d";
+  }
+
+  .layout-left {
+    height: auto;
+    max-height: none;
+
+    grid-template-rows: auto minmax(420px, 560px);
+    overflow: visible;
+  }
+
+  .layout-left-primary {
+    height: auto;
+    max-height: none;
+  }
+
+  .layout-left-secondary {
+    min-height: 420px;
+    height: min(560px, 72vh);
+    max-height: min(560px, 72vh);
+  }
+
+  .layout-main3d {
+    height: auto !important;
+    min-height: 540px;
+  }
+
+  .layout-main3d .page-3d-render-field {
+    height: clamp(440px, 62vh, 660px) !important;
+    min-height: 440px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .layout-main3d .toolsbar-3d {
+    grid-template-columns: 1fr !important;
+  }
+
+  .layout-main3d .toolsbar-3d-title,
+  .layout-main3d .toolsbar-3d-buttons {
+    grid-column: 1 !important;
+  }
+}
+
+

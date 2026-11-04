@@ -1,0 +1,457 @@
+{
+  "versao": 1,
+  "id": "20261104_021800_44d4cd8f",
+  "projeto": "/home/felipe-m/SSD_1TB/Arquivos/Projetos/Modelagem 3D/Modelagem3D new",
+  "origem": "/home/felipe-m/SSD_1TB/Arquivos/Projetos/Modelagem 3D/Modelagem3D",
+  "arquivo": "arquivo/versao_anterior",
+  "status": "concluido",
+  "operacoes": [
+    {
+      "acao": "transferido",
+      "origem": "CORRECOES_EXISTENTES.patch",
+      "destino": "documentacao/recuperacao/CORRECOES_EXISTENTES.patch",
+      "sha256": "dce8e94703d5e5a970592d2b4bee1b729fc27e456e786b998bca98cf343c856f",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793765742000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "RELATORIO_RECUPERACAO.md",
+      "destino": "documentacao/recuperacao/RELATORIO_RECUPERACAO.md",
+      "sha256": "ffaa4aaae5a33cf8370fce3e44e68eb0bce5933c16668f1362b1f6b1b8b321bc",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793765740000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "manifesto_recuperacao.json",
+      "destino": "documentacao/recuperacao/manifesto_recuperacao.json",
+      "sha256": "32badcfeb14bc744fd93d3d04b32a8544d14ddd1a8a5e6fa2cf676a2d0f4e4e4",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/fix_bond_inventory_scope.py",
+      "destino": "arquivo/codigo_historico/backend/fix_bond_inventory_scope.py",
+      "sha256": "5433cdd13af5fd18d3dfc7e1bd97aca1f9951f2392ea5779ec910f5640a2b4ac",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/fix_v48_scope_recursion.py",
+      "destino": "arquivo/codigo_historico/backend/fix_v48_scope_recursion.py",
+      "sha256": "b27baa2af89e621a8821a8e149e227525971c338946f73dbf62016f439e28659",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/calculation_page.py.backup_v33_fast_backend_20260827_135401",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/calculation_page.py.backup_v33_fast_backend_20260827_135401",
+      "sha256": "a742850e3d21b687fe655e3395ce3f087ac0abf75841775b80d47e883a0df2db",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/calculation_page.py.backup_v34_compute3d_return_20260827_140348",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/calculation_page.py.backup_v34_compute3d_return_20260827_140348",
+      "sha256": "f454ab862c77d563459e38bb92d79a589f412e3d2e53a78343a5759e704899cd",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/calculation_page.py.backup_v35_fast_override_20260827_141843",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/calculation_page.py.backup_v35_fast_override_20260827_141843",
+      "sha256": "8c966c1c0c5b37228975aa566dd063cdc25b0488e1667ea065e2b8bdf37911d3",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_fix_bond_inventory_scope_20260828_142827",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_fix_bond_inventory_scope_20260828_142827",
+      "sha256": "ca5ff24605cbf1ee6ab81bf4fb16796bd38063645448ddd1e9b03fba0ddea70d",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_fix_v48_scope_recursion_20260828_143310",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_fix_v48_scope_recursion_20260828_143310",
+      "sha256": "78695727fb010b62c7e7747daceeb0c89c9d4a3b62e88a4713b80b6393414d29",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_222858",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_222858",
+      "sha256": "1a15d0910d3becb51856b000a2ff77dce0130a6928fb545a64b96e3b0e8db04c",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_223140",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_223140",
+      "sha256": "e4e3e836b316dbb5ef04fd66d5c2cfa9b9c30658461fcb93d5aa02e7cf4c5108",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_223201",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_223201",
+      "sha256": "e4e3e836b316dbb5ef04fd66d5c2cfa9b9c30658461fcb93d5aa02e7cf4c5108",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_v43_fast_api_cache_20260827_222535",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_v43_fast_api_cache_20260827_222535",
+      "sha256": "1a15d0910d3becb51856b000a2ff77dce0130a6928fb545a64b96e3b0e8db04c",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_v47_biblioteca_status_20260827_233828",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_v47_biblioteca_status_20260827_233828",
+      "sha256": "e4e3e836b316dbb5ef04fd66d5c2cfa9b9c30658461fcb93d5aa02e7cf4c5108",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "backend/app/modules/chemistry/parameters/router.py.backup_v48_hydrogen_sigma_pi_20260828_141026",
+      "destino": "arquivo/codigo_historico/backend/app/modules/chemistry/parameters/router.py.backup_v48_hydrogen_sigma_pi_20260828_141026",
+      "sha256": "584fed8ad0b4dfe4f6fecab4432dc03fed1d84e2107e57898f623d4ca7d2322f",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/app/App.tsx.backup_v46_safe_app_20260827_233401",
+      "destino": "arquivo/codigo_historico/frontend/src/app/App.tsx.backup_v46_safe_app_20260827_233401",
+      "sha256": "cbd1f415c310595eee0f819ca3c18ccf228496979b12818da23d70d1f7912da8",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/3dpage/3dpage.tsx.backup_v46_safe_3dpage_20260827_233401",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/3dpage/3dpage.tsx.backup_v46_safe_3dpage_20260827_233401",
+      "sha256": "1e738d33bd501a513bbad541f092ddc7366b44f9cee80bd4b213785652a50a7d",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/3dpage/patch_v32_parameters_fast_mode.py.misplaced_backup_20260827_135401",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/3dpage/patch_v32_parameters_fast_mode.py.misplaced_backup_20260827_135401",
+      "sha256": "02c51db7e69bae6d2a5d4d3acb9fd50c3d2d74e7b5ce942561e4b7587e299e55",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/3dpage/components/render/SimulationViewer3D.tsx.backup_v46_safe_viewer_20260827_233401",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/3dpage/components/render/SimulationViewer3D.tsx.backup_v46_safe_viewer_20260827_233401",
+      "sha256": "ec2371c813b44c645d5e5fe85d039583fbed85dee80526b6f98eb0612c396244",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_before_v45_restore",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_before_v45_restore",
+      "sha256": "3c8c9b5be2fc1755a65a9889c32c9cf29954244a4ae39b5c391a44f005c5f7ac",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v35_panel_timeout_20260827_141843",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v35_panel_timeout_20260827_141843",
+      "sha256": "aa67527edfd02c6004c1155b029ac7eaf2d3b147f24959060ef20d4e1dcda111",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v36_before_restore_20260827_142508",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v36_before_restore_20260827_142508",
+      "sha256": "7382420bbd385f8fe4872fa9f367a7a3038a86695799eaac9926de08337b3476",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v44_panel_20260827_224029",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v44_panel_20260827_224029",
+      "sha256": "aa67527edfd02c6004c1155b029ac7eaf2d3b147f24959060ef20d4e1dcda111",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v48_hydrogen_sigma_pi_20260828_141026",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v48_hydrogen_sigma_pi_20260828_141026",
+      "sha256": "aa67527edfd02c6004c1155b029ac7eaf2d3b147f24959060ef20d4e1dcda111",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/chemistryParameters.types.ts.backup_v47_biblioteca_status_20260827_233828",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/chemistryParameters.types.ts.backup_v47_biblioteca_status_20260827_233828",
+      "sha256": "e566ad67f63e3febf29ad2fa39d94c0190c0c7c8020056858495a18ece8f0cf2",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/chemistryParameters.types.ts.backup_v48_hydrogen_sigma_pi_20260828_141026",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/chemistryParameters.types.ts.backup_v48_hydrogen_sigma_pi_20260828_141026",
+      "sha256": "f8f0d4e6a3508494a63c1085e12ee570399eb038a5e5218bb95f22a6eea62895",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_before_v45_restore",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_before_v45_restore",
+      "sha256": "c1b0cedfefa040676b65d853cb40a364186cc2f58af12325dddb87a98df46816",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v33_fast_front_20260827_135401",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v33_fast_front_20260827_135401",
+      "sha256": "2c0af2a5a66bc6e3a6e6f1e797f8e10ede5316bdac10854875857e1cf8a114cf",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v36_api_fast_20260827_142508",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v36_api_fast_20260827_142508",
+      "sha256": "38d3af69691368444f29ca4537e5253b34c15181e90b077823b1d928b35b78ee",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v44_api_20260827_224029",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v44_api_20260827_224029",
+      "sha256": "1aadd9df5d3e03015ab227062629ff233437c84bf75f4effe04b3c9e4c7e55b1",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v47_biblioteca_status_20260827_233828",
+      "destino": "arquivo/codigo_historico/frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v47_biblioteca_status_20260827_233828",
+      "sha256": "1aadd9df5d3e03015ab227062629ff233437c84bf75f4effe04b3c9e4c7e55b1",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793764524000000000
+      }
+    },
+    {
+      "acao": "transferido",
+      "origem": "arquivo/versao_anterior/codigo_modelagem3d_completo.txt",
+      "destino": "documentacao/exportacoes/codigo_modelagem3d_completo.txt",
+      "sha256": "898a7f8a1a71c54688f8f23abb173361f6c4524f7740f5aee88373e23f426bce",
+      "metadados_originais": {
+        "modo": "0o664",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793598475000000000
+      }
+    },
+    {
+      "acao": "duplicata_identica",
+      "origem": "arquivo/versao_anterior/frontend/package.json",
+      "destino": "frontend/package.json",
+      "sha256": "8aadfc4884a74625b837f8a99221f7d6483a8a0a7a86f1865ccd37e78338376b",
+      "metadados_originais": {
+        "modo": "0o664",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793598475000000000
+      }
+    },
+    {
+      "acao": "duplicata_identica",
+      "origem": "arquivo/versao_anterior/frontend/src/assets/hero.png",
+      "destino": "frontend/src/assets/hero.png",
+      "sha256": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c",
+      "metadados_originais": {
+        "modo": "0o664",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793598475000000000
+      }
+    },
+    {
+      "acao": "copia_preservada",
+      "origem": "LEIA-ME.md",
+      "destino": "arquivo/documentos_antes_unificacao/LEIA-ME.md",
+      "sha256": "b802faff76cd3446b8a69a61b7e868184cce76c26467db225e48a836251491dd",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793765740000000000
+      }
+    },
+    {
+      "acao": "copia_preservada",
+      "origem": ".gitignore",
+      "destino": "arquivo/documentos_antes_unificacao/.gitignore",
+      "sha256": "c2b1987b7efe48ca6d6928cf395e04c1e5c44feceec63db6c061b83a08c26317",
+      "metadados_originais": {
+        "modo": "0o644",
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1793765738000000000
+      }
+    }
+  ],
+  "links": [],
+  "backup_banco": "backups/antes_unificacao_20261104_021800_44d4cd8f.dump",
+  "backup_sha256": "843af64063322e7a3befb98db8a6d04d50c3cbb676199d0fcb0abe7f675430af"
+}

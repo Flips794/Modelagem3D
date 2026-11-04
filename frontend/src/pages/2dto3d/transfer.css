@@ -1,0 +1,768 @@
+.solution-transfer-shell {
+  --solution-gap: 10px;
+  --solution-card-radius: 16px;
+  --solution-border: rgba(148, 163, 184, 0.14);
+  --solution-panel-bg: rgba(2, 6, 23, 0.54);
+  --solution-panel-bg-strong: rgba(15, 23, 42, 0.82);
+
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--solution-gap);
+
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  margin-top: 12px;
+  padding: 10px;
+
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 20px;
+
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.08), transparent 34%),
+    rgba(15, 23, 42, 0.94);
+
+  color: #e5e7eb;
+  overflow: hidden;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Cabeçalho compacto                                                          */
+/* -------------------------------------------------------------------------- */
+
+.solution-transfer-header,
+.solution-environment-panel,
+.saved-library-panel,
+.solution-lab-panel,
+.current-molecule-panel,
+.solution-selected-panel {
+  min-width: 0;
+  border: 1px solid var(--solution-border);
+  border-radius: var(--solution-card-radius);
+  background: var(--solution-panel-bg);
+}
+
+.solution-transfer-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.solution-transfer-header > div:first-child,
+.solution-panel-title {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.solution-transfer-header strong,
+.solution-panel-title strong {
+  color: #f8fafc;
+  font-size: 0.86rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.solution-transfer-header span,
+.solution-panel-title span,
+.solution-panel-title small {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
+}
+
+.solution-header-actions,
+.solution-footer-actions,
+.environment-footer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.solution-header-actions button,
+.solution-footer-actions button,
+.saved-library-actions button,
+.current-molecule-panel button,
+.solution-remove-button,
+.solution-item-count button,
+.environment-footer button {
+  min-height: 30px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 11px;
+  padding: 6px 9px;
+  background: rgba(15, 23, 42, 0.86);
+  color: #e5e7eb;
+  font-size: 0.68rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.solution-header-actions button:disabled,
+.solution-footer-actions button:disabled,
+.current-molecule-panel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.solution-save-current {
+  border-color: rgba(59, 130, 246, 0.38) !important;
+  background: rgba(59, 130, 246, 0.16) !important;
+}
+
+.solution-mix-button {
+  border-color: rgba(34, 197, 94, 0.42) !important;
+  background: rgba(34, 197, 94, 0.18) !important;
+  color: #bbf7d0 !important;
+}
+
+.solution-mix-button.pending {
+  border-color: rgba(245, 158, 11, 0.42) !important;
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fde68a !important;
+}
+
+.solution-clear-3d-button {
+  border-color: rgba(239, 68, 68, 0.36) !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #fecaca !important;
+}
+
+.solution-clear-3d-button:hover {
+  border-color: rgba(248, 113, 113, 0.5) !important;
+  background: rgba(239, 68, 68, 0.18) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Ambiente físico-químico compacto                                            */
+/* -------------------------------------------------------------------------- */
+
+.solution-environment-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.solution-environment-panel-near-3d {
+  border-color: rgba(34, 211, 238, 0.24);
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(34, 197, 94, 0.08)),
+    rgba(2, 6, 23, 0.62);
+  box-shadow: 0 -10px 32px rgba(2, 6, 23, 0.18);
+}
+
+.environment-grid {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(74px, 1fr));
+  gap: 7px;
+}
+
+.environment-grid label,
+.solution-item-count,
+.current-molecule-quantity {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.environment-grid label span,
+.solution-item-count span,
+.current-molecule-quantity span {
+  color: #cbd5e1;
+  font-size: 0.64rem;
+  font-weight: 850;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.environment-grid input,
+.solution-item-count input,
+.current-molecule-quantity input {
+  width: 100%;
+  min-width: 0;
+
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 9px;
+
+  padding: 6px 7px;
+
+  background: rgba(2, 6, 23, 0.78);
+  color: #f8fafc;
+
+  font-size: 0.72rem;
+  outline: none;
+}
+
+.environment-grid input:focus,
+.solution-item-count input:focus,
+.current-molecule-quantity input:focus {
+  border-color: rgba(34, 197, 94, 0.46);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.08);
+}
+
+.environment-grid small {
+  color: #64748b;
+  font-size: 0.58rem;
+  line-height: 1.15;
+}
+
+.environment-footer {
+  justify-content: space-between;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  padding-top: 8px;
+}
+
+.environment-footer span {
+  color: #bbf7d0;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.environment-footer button {
+  color: #bfdbfe;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Layout principal da mistura com rolagem por coluna                          */
+/* -------------------------------------------------------------------------- */
+
+.solution-transfer-layout {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  /*
+    Layout padrão com 2 colunas.
+    Como o painel "Molécula atual" foi removido, a área central passa a ocupar
+    o espaço livre, sem deixar uma coluna vazia no lado direito.
+  */
+  grid-template-columns:
+    minmax(210px, 0.72fr)
+    minmax(0, 2.28fr);
+  gap: 10px;
+  align-items: stretch;
+
+  overflow: hidden;
+}
+
+.solution-transfer-layout:has(.current-molecule-panel) {
+  grid-template-columns:
+    minmax(176px, 0.62fr)
+    minmax(360px, 1.58fr)
+    minmax(176px, 0.62fr);
+}
+
+
+.saved-library-panel,
+.solution-lab-panel,
+.current-molecule-panel,
+.solution-selected-panel {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  min-height: 0;
+  padding: 10px;
+}
+
+.saved-library-panel,
+.solution-lab-panel,
+.current-molecule-panel {
+  max-height: clamp(360px, 62vh, 640px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.solution-lab-panel {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.solution-selected-panel {
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.solution-selected-panel {
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.saved-library-list,
+.solution-selected-list {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.saved-library-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 14px;
+  padding: 8px;
+  background: rgba(15, 23, 42, 0.74);
+}
+
+.saved-library-main {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.saved-library-formula,
+.solution-item-formula span {
+  display: grid;
+  place-items: center;
+
+  min-width: 42px;
+  min-height: 34px;
+
+  border-radius: 12px;
+  padding: 6px;
+
+  background: rgba(34, 197, 94, 0.13);
+  color: #bbf7d0;
+
+  font-size: 0.68rem;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.saved-library-info,
+.solution-item-info {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.saved-library-info strong,
+.solution-item-info strong {
+  overflow: hidden;
+  color: #e5e7eb;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-library-info small,
+.current-molecule-summary span,
+.current-molecule-summary small,
+.solution-item-info small,
+.solution-item-count small,
+.solution-item-fraction small {
+  color: #94a3b8;
+  font-size: 0.62rem;
+}
+
+.saved-library-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.saved-library-actions.three-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.saved-library-actions.three-actions button:first-child {
+  grid-column: auto;
+}
+
+.saved-library-actions button {
+  min-width: 0;
+  min-height: 28px;
+  padding: 5px 7px;
+  font-size: 0.62rem;
+}
+
+.saved-library-actions button.selected {
+  border-color: rgba(34, 197, 94, 0.42);
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+
+.saved-library-actions .solvent-action {
+  border-color: rgba(14, 165, 233, 0.38);
+  background: rgba(14, 165, 233, 0.12);
+  color: #bae6fd;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Painel central mais limpo                                                   */
+/* -------------------------------------------------------------------------- */
+
+.solution-count-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 14px;
+
+  padding: 10px;
+
+  background: var(--solution-panel-bg-strong);
+}
+
+.solution-count-summary > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.solution-count-summary strong {
+  color: #f8fafc;
+  font-size: 0.82rem;
+}
+
+.solution-count-summary span {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  line-height: 1.28;
+}
+
+.solution-count-summary aside {
+  display: grid;
+  gap: 1px;
+  min-width: 112px;
+  max-width: 180px;
+  text-align: right;
+}
+
+.solution-count-summary aside strong {
+  color: #bbf7d0;
+  font-size: 0.9rem;
+}
+
+.solution-count-summary aside em {
+  color: #fde68a;
+  font-size: 0.62rem;
+}
+
+.solution-message {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.solution-message-info {
+  background: rgba(59, 130, 246, 0.12);
+  color: #bfdbfe;
+}
+
+.solution-message-success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+
+.solution-message-warning {
+  background: rgba(245, 158, 11, 0.13);
+  color: #fde68a;
+}
+
+.solution-message-error {
+  background: rgba(239, 68, 68, 0.13);
+  color: #fecaca;
+}
+
+.solution-empty-state {
+  display: grid;
+  gap: 3px;
+  place-items: center;
+
+  min-height: 84px;
+
+  border: 1px dashed rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+
+  padding: 12px;
+
+  color: #94a3b8;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.solution-empty-state.compact {
+  min-height: auto;
+  min-width: 0;
+  padding: 10px;
+}
+
+.mixture-role-section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 14px;
+
+  padding: 9px;
+
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.mixture-role-section > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mixture-role-section > header strong {
+  color: #f8fafc;
+  font-size: 0.76rem;
+}
+
+.mixture-role-section > header span {
+  color: #94a3b8;
+  font-size: 0.64rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.solution-item-card {
+  display: grid;
+  grid-template-columns: 44px minmax(120px, 1fr) minmax(118px, 0.52fr) minmax(68px, 0.28fr) auto;
+  gap: 8px;
+  align-items: center;
+
+  min-width: 0;
+
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+
+  padding: 8px;
+
+  background: rgba(15, 23, 42, 0.84);
+}
+
+.solution-item-card.role-solvent {
+  border-color: rgba(14, 165, 233, 0.28);
+  background: rgba(14, 165, 233, 0.08);
+}
+
+.solution-item-card.role-reagent {
+  border-color: rgba(34, 197, 94, 0.18);
+}
+
+.solution-item-info code,
+.current-molecule-summary code {
+  min-width: 0;
+  overflow: hidden;
+
+  color: #c4b5fd;
+  font-size: 0.64rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.solution-item-count > div {
+  display: grid;
+  grid-template-columns: 28px minmax(46px, 1fr) 28px;
+  gap: 4px;
+}
+
+.solution-item-count button {
+  min-height: 28px;
+  padding: 4px;
+}
+
+.solution-item-fraction {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.solution-item-fraction span {
+  color: #94a3b8;
+  font-size: 0.62rem;
+}
+
+.solution-item-fraction strong {
+  color: #bae6fd;
+  font-size: 0.72rem;
+}
+
+.solution-remove-button {
+  min-height: 28px !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #fecaca !important;
+  font-size: 0.62rem !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Molécula atual compacta                                                     */
+/* -------------------------------------------------------------------------- */
+
+.current-molecule-summary {
+  display: grid;
+  gap: 4px;
+
+  min-width: 0;
+
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 13px;
+
+  padding: 9px;
+
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.current-molecule-summary strong {
+  color: #f8fafc;
+  overflow-wrap: anywhere;
+}
+
+.current-molecule-panel > button {
+  width: 100%;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Scrollbars internas                                                         */
+/* -------------------------------------------------------------------------- */
+
+.saved-library-panel,
+.solution-lab-panel,
+.current-molecule-panel,
+.solution-selected-panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.42) rgba(15, 23, 42, 0.7);
+}
+
+.saved-library-panel::-webkit-scrollbar,
+.solution-lab-panel::-webkit-scrollbar,
+.current-molecule-panel::-webkit-scrollbar,
+.solution-selected-panel::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.saved-library-panel::-webkit-scrollbar-track,
+.solution-lab-panel::-webkit-scrollbar-track,
+.current-molecule-panel::-webkit-scrollbar-track,
+.solution-selected-panel::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 999px;
+}
+
+.saved-library-panel::-webkit-scrollbar-thumb,
+.solution-lab-panel::-webkit-scrollbar-thumb,
+.current-molecule-panel::-webkit-scrollbar-thumb,
+.solution-selected-panel::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.42);
+  border-radius: 999px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsivo                                                                  */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 1320px) {
+  .solution-transfer-layout {
+    grid-template-columns:
+      minmax(190px, 0.78fr)
+      minmax(0, 2.22fr);
+    overflow: hidden;
+  }
+
+  .solution-transfer-layout:has(.current-molecule-panel) {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .saved-library-panel,
+  .solution-lab-panel,
+  .current-molecule-panel {
+    max-height: 460px;
+  }
+
+  .environment-grid {
+    grid-template-columns: repeat(3, minmax(110px, 1fr));
+  }
+
+  .solution-item-card {
+    grid-template-columns: 1fr;
+  }
+
+  .solution-count-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .solution-count-summary aside {
+    text-align: left;
+  }
+}
+
+@media (max-width: 980px) {
+  .solution-transfer-layout {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .solution-selected-panel {
+    max-height: 460px;
+  }
+}
+
+@media (max-width: 880px) {
+  .solution-transfer-header {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .solution-header-actions {
+    justify-content: flex-start;
+  }
+
+  .environment-grid {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .solution-transfer-shell {
+    padding: 8px;
+  }
+
+  .environment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-library-actions,
+  .saved-library-actions.three-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-library-actions.three-actions button:first-child {
+    grid-column: auto;
+  }
+}
+
+

@@ -1,0 +1,229 @@
+.toolsbar-shell {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  background: rgba(30, 41, 59, 0.82);
+  border-bottom: 1px solid var(--border-color, #1f2937);
+}
+
+.toolsbar-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.42rem 3.25rem 0.52rem 0.6rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(6, 182, 212, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+.toolsbar-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.toolsbar-scroll::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 999px;
+}
+
+.toolsbar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.45);
+  border-radius: 999px;
+}
+
+.toolsbar-section {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  flex: 0 0 auto;
+}
+
+.tool-separator {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 24px;
+  background: var(--border-color, #1f2937);
+}
+
+.periodic-open {
+  min-height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  background: rgba(6, 182, 212, 0.08);
+  color: #67e8f9;
+  padding: 0 0.68rem;
+  font-size: 0.68rem;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.periodic-open.active {
+  background: var(--accent-cyan, #06b6d4);
+  color: #020617;
+}
+
+.selected-atoms-strip {
+  flex: 0 0 276px;
+  width: 276px;
+  max-width: 276px;
+  min-width: 276px;
+
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding: 0.08rem 0.15rem 0.16rem;
+
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+
+  background: rgba(2, 6, 23, 0.28);
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(6, 182, 212, 0.45) transparent;
+}
+
+.selected-atoms-strip::-webkit-scrollbar {
+  height: 6px;
+}
+
+.selected-atoms-strip::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.selected-atoms-strip::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.45);
+  border-radius: 999px;
+}
+
+.selected-atoms-empty {
+  min-width: 100%;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tool-btn,
+.element-chip {
+  min-height: 30px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-main, #e5e7eb);
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.tool-btn {
+  padding: 0.28rem 0.55rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.tool-btn.compact-text {
+  min-width: 86px;
+}
+
+.element-chip {
+  flex: 0 0 40px;
+  min-width: 40px;
+  width: 40px;
+  padding: 0;
+  font-size: 0.78rem;
+  font-weight: 900;
+  background: rgba(2, 6, 23, 0.52);
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+.tool-btn:hover,
+.element-chip:hover,
+.periodic-open:hover {
+  background: rgba(148, 163, 184, 0.13);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.tool-btn.active,
+.element-chip.active {
+  background: var(--accent-cyan, #06b6d4);
+  color: #020617;
+}
+
+.tool-btn.highlight {
+  border-color: rgba(6, 182, 212, 0.4);
+  color: var(--accent-cyan, #06b6d4);
+}
+
+.toolsbar-fixed-eraser {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  z-index: 8;
+  width: 36px;
+  height: 32px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(127, 29, 29, 0.72);
+  color: #fff7ed;
+  font-size: 0.92rem;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+.toolsbar-fixed-eraser.active {
+  background: #ef4444;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.18);
+}
+
+@media (max-width: 900px) {
+  .toolsbar-scroll {
+    align-items: center;
+    padding: 0.42rem 3.25rem 0.62rem 0.55rem;
+  }
+
+  .selected-atoms-strip {
+    flex-basis: 276px;
+    width: 276px;
+    min-width: 276px;
+    max-width: 276px;
+  }
+}
+
+@media (max-width: 520px) {
+  .selected-atoms-strip {
+    flex-basis: 224px;
+    width: 224px;
+    min-width: 224px;
+    max-width: 224px;
+  }
+}
+.hydrogen-toggle {
+  white-space: nowrap;
+}
+
+.hydrogen-toggle.active {
+  border-color: rgba(59, 130, 246, 0.75);
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.14);
+}
+
+.hydrogen-toggle {
+  white-space: nowrap;
+}
+
+.hydrogen-toggle.active {
+  border-color: rgba(59, 130, 246, 0.75);
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.14);
+}
+

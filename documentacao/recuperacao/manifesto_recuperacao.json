@@ -1,0 +1,1102 @@
+[
+  {
+    "path": "backend/fix_bond_inventory_scope.py",
+    "size": 2295,
+    "sha256": "5433cdd13af5fd18d3dfc7e1bd97aca1f9951f2392ea5779ec910f5640a2b4ac"
+  },
+  {
+    "path": "backend/fix_v48_scope_recursion.py",
+    "size": 2445,
+    "sha256": "b27baa2af89e621a8821a8e149e227525971c338946f73dbf62016f439e28659"
+  },
+  {
+    "path": "backend/alembic.ini",
+    "size": 633,
+    "sha256": "6a19dd7981338ee12b3ca7ccae6e49586b1b53e3fcffff454e412f319f58c597"
+  },
+  {
+    "path": "backend/docker-compose.yml",
+    "size": 362,
+    "sha256": "b149bf87d89fef175399a8ffae71abb016cc58423fda2e026aa184c5584d02d8"
+  },
+  {
+    "path": "backend/scripts/create_micelium_ai_training_table_standalone.py",
+    "size": 283,
+    "sha256": "672c62c6b1a4a161e8fae05931ab6d6acf4feb70a9c7e61a75c993adbf7f7a09"
+  },
+  {
+    "path": "backend/scripts/reference_data_seed.sql",
+    "size": 1764,
+    "sha256": "2fb89ca8c010d08d665a22a5526174ecb79f6b6e8827870c638bb9eee18c6540"
+  },
+  {
+    "path": "backend/scripts/check_micelium_ai_training_table_standalone.py",
+    "size": 282,
+    "sha256": "12798d712570fcc8baf14104c2fbab1b717e18fadbf6a6d17b42b3e73f5c7dfa"
+  },
+  {
+    "path": "backend/pyproject.toml",
+    "size": 357,
+    "sha256": "a0da58cad525204a54cf9a5b1ec6ca15ec998869b4990d567e1a48e91fdc6f16"
+  },
+  {
+    "path": "backend/app/utils/time_utils.py",
+    "size": 94,
+    "sha256": "f03fc490dbab2fa03ab9fb6d48b89cf18a7868ccfe74ed890cb77f1cae781299"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_223201",
+    "size": 53221,
+    "sha256": "e4e3e836b316dbb5ef04fd66d5c2cfa9b9c30658461fcb93d5aa02e7cf4c5108"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_222858",
+    "size": 39047,
+    "sha256": "1a15d0910d3becb51856b000a2ff77dce0130a6928fb545a64b96e3b0e8db04c"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/routes.py",
+    "size": 251,
+    "sha256": "a964de1d9488c8ddb0098f94b322a068b9a0b5a7cd3b722141b0016ce5bfeadb"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py",
+    "size": 62169,
+    "sha256": "b5898a5c48eb8a724f175cc7188406ee7520ef609f154b04d9e12cfc51b50982"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/calculation_page.py",
+    "size": 71247,
+    "sha256": "7cf79b986b3b955deead0902a63a948e0a3f533ef6adbabdb75e32f02452eb2f"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_v48_hydrogen_sigma_pi_20260828_141026",
+    "size": 55174,
+    "sha256": "584fed8ad0b4dfe4f6fecab4432dc03fed1d84e2107e57898f623d4ca7d2322f"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/calculation_page.py.backup_v35_fast_override_20260827_141843",
+    "size": 49780,
+    "sha256": "8c966c1c0c5b37228975aa566dd063cdc25b0488e1667ea065e2b8bdf37911d3"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_fix_v48_scope_recursion_20260828_143310",
+    "size": 62222,
+    "sha256": "78695727fb010b62c7e7747daceeb0c89c9d4a3b62e88a4713b80b6393414d29"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/electronic_descriptor_sanitizer.py",
+    "size": 2274,
+    "sha256": "095aa2db2a7efc001d4bc3a401b857d56b83507f05c4e4f9f2cbddef954df934"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/surfactant_head_classifier.py",
+    "size": 5943,
+    "sha256": "04db2d90bda46d6214611689e9ef9617df96237b0676a2a253201d4127f208e4"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/libraries.py",
+    "size": 1457,
+    "sha256": "007265df3690472ac5b35692cccd27ff9fa355eeccb36c1b7e730efbbdddb594"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_v43_fast_api_cache_20260827_222535",
+    "size": 39047,
+    "sha256": "1a15d0910d3becb51856b000a2ff77dce0130a6928fb545a64b96e3b0e8db04c"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/miriam21_engine.py",
+    "size": 73442,
+    "sha256": "f054b3229e3cbfa830dbf1a11a0b135364ed71a88787e7a8b3ecf3bd773abd28"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/calculation_page.py.backup_v33_fast_backend_20260827_135401",
+    "size": 48672,
+    "sha256": "a742850e3d21b687fe655e3395ce3f087ac0abf75841775b80d47e883a0df2db"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/service.py",
+    "size": 672,
+    "sha256": "b68a0a10708b7f7447f6b1f192d97a002bdc8a6a08e0e24d2569eee2c2831ca7"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/requirements_optional.txt",
+    "size": 324,
+    "sha256": "e819526982b39640ba69d5ec0279bb8c3bef6ffd1484d45cc85450c5d182f1bd"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/PATCH_USAGE_EXAMPLE.py",
+    "size": 1083,
+    "sha256": "aa2e7490ce0bba094708266e88c57210289dce24ec105a8ad2f39cb141f648fe"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_fix_bond_inventory_scope_20260828_142827",
+    "size": 62167,
+    "sha256": "ca5ff24605cbf1ee6ab81bf4fb16796bd38063645448ddd1e9b03fba0ddea70d"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/calculation_page.py.backup_v34_compute3d_return_20260827_140348",
+    "size": 49756,
+    "sha256": "f454ab862c77d563459e38bb92d79a589f412e3d2e53a78343a5759e704899cd"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/surfactant_empirical_parameters.py",
+    "size": 1734,
+    "sha256": "c7d26efe66600f448d6b7da2d5fe0afd7fba1fa84b24c119a997160a9031277d"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/schemas.py",
+    "size": 1291,
+    "sha256": "9694c3babaaa200e68640ce5850e5001682eba2c02ea5f01bcb008b9de18673c"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/miriam21_acceptance_check.py",
+    "size": 4401,
+    "sha256": "94450cc1ef9a740647c6a3ef4fcd802d0f0f4fa504016e920c83b8180188995a"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_v47_biblioteca_status_20260827_233828",
+    "size": 53221,
+    "sha256": "e4e3e836b316dbb5ef04fd66d5c2cfa9b9c30658461fcb93d5aa02e7cf4c5108"
+  },
+  {
+    "path": "backend/app/modules/chemistry/parameters/router.py.backup_v43_1_fast_api_cache_20260827_223140",
+    "size": 53221,
+    "sha256": "e4e3e836b316dbb5ef04fd66d5c2cfa9b9c30658461fcb93d5aa02e7cf4c5108"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_service.py",
+    "size": 14013,
+    "sha256": "cbb5882aa236cd52cb0383f27b794538ce808fe9e8df543033d38572225f67c6"
+  },
+  {
+    "path": "backend/app/modules/chemistry/routes.py",
+    "size": 421,
+    "sha256": "b128830d37f6bbe083c7bf448452082045fd337eb047df4dff760f3d34fb61f9"
+  },
+  {
+    "path": "backend/app/modules/chemistry/structural_hash_service.py",
+    "size": 351,
+    "sha256": "90b486bf49220c0dc6af0fbafaae7f55da636e884aba8e7c5f2dc3cd38043824"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/parse_2d/routes.py",
+    "size": 94,
+    "sha256": "ab7365221b01c8590a628c6d85b59255eef180f50d7a49b09bfbbc738f3683d5"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/parse_2d/router.py",
+    "size": 1011,
+    "sha256": "9910aa20e0038b319a58d88b360fa31cefaa2dbb858bc1eec768ed61fdba9735"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/parse_2d/service.py",
+    "size": 10936,
+    "sha256": "9e3c0e9c548de0bff56d9d3fececbc142f699a316a3419aa0fddd0a5cd96b90e"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/parse_2d/schemas.py",
+    "size": 1473,
+    "sha256": "90eec96197e49703e3cfb6a916a94d677501c16ddbde493fcdd3dfdc410b1b29"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/hydrogens_2d/router.py",
+    "size": 661,
+    "sha256": "57756bdcf11be506e5e73f7680193735c89491b340708e29895c8489257493fe"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/hydrogens_2d/service.py",
+    "size": 2296,
+    "sha256": "896c0b5a24186fb489506f48c2f15115e6934e0b2de6046e784621d881cc2c1b"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/hydrogens_2d/schemas.py",
+    "size": 716,
+    "sha256": "0e9c9aab9de9f8e14a28c1accc16dec6ee23bb9e86bf155530da72f9c7ca0819"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/router.py",
+    "size": 1622,
+    "sha256": "7ec4c7fd524a25d60742911ce4b2176316b20c28e80b328ba2ff1b37d1033922"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/graph_to_smiles/routes.py",
+    "size": 576,
+    "sha256": "2267ab403b175deb931ff91aa05f0c542b5e7199c87762429992b7d537526bfa"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/graph_to_smiles/router.py",
+    "size": 576,
+    "sha256": "2267ab403b175deb931ff91aa05f0c542b5e7199c87762429992b7d537526bfa"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/graph_to_smiles/service.py",
+    "size": 10470,
+    "sha256": "7d8e9740891f79c2b67cfa1d1213898122f76726fb38f891a834447518e28baa"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/graph_to_smiles/schemas.py",
+    "size": 924,
+    "sha256": "e13de0bc306231ff56ab2161bcb424234782c726f6b5822ca32ccc9df6da148e"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/__init__.py",
+    "size": 2,
+    "sha256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/optimize_2d/router.py",
+    "size": 530,
+    "sha256": "0b8d72d27bc8ba30063856f81727451d14c521a91223c12a8a3f8781aee6867c"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/optimize_2d/service.py",
+    "size": 17217,
+    "sha256": "36aa582c597265e97bf99378fd319eed784e0a73db40f346a26685ca3ee9e991"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/optimize_2d/schemas.py",
+    "size": 692,
+    "sha256": "eace4f037b41789fd3103ed43412eadb783369e6a899c0d580c6e1c97609eff1"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/shared/rdkit_provider.py",
+    "size": 894,
+    "sha256": "4c0ed912a661fc98aee5a1e4485a96c8bab3758bb4e379169e2a96f18609b1d8"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/shared/svg_drawer.py",
+    "size": 650,
+    "sha256": "8404c939b7b0bbdd95f7a08c35f464c91c362101532f93be42696f8045b3f741"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/shared/allowed_elements.py",
+    "size": 433,
+    "sha256": "e9c3eced1938612cae18db262e2e2125251adfacda564390bf3be8987b12f840"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/internal_model/schemas.py",
+    "size": 1553,
+    "sha256": "ebeb6b1c5071a521a6952033d3b47bb0ac7e58df14a72e114a7acfefb068d104"
+  },
+  {
+    "path": "backend/app/modules/chemistry/rdkit_engine/internal_model/mapper.py",
+    "size": 4012,
+    "sha256": "111c0894c8ba4a4575a62e47d92b27056b271983a393a325f9e40eda10e39ab0"
+  },
+  {
+    "path": "backend/app/modules/chemistry/schemas.py",
+    "size": 699,
+    "sha256": "4cdd4fb4508cb7821d65857bedafa9de096352be72d80cf87e1dcd9dc37c3629"
+  },
+  {
+    "path": "backend/app/modules/analysis_packages/routes.py",
+    "size": 1034,
+    "sha256": "b64212c69ccb440b57202da3353374834f575f253b98daef2339823861b0ec8e"
+  },
+  {
+    "path": "backend/app/modules/analysis_packages/models.py",
+    "size": 1466,
+    "sha256": "88c3ded3f46e137bc0b868307772db930aa8c76d419ad8aba03f7e0fd872c0be"
+  },
+  {
+    "path": "backend/app/modules/analysis_packages/repository.py",
+    "size": 811,
+    "sha256": "3d51b433ead1a69fc1f3b0baa7e082e3e1edef1ebae535d6b70f2bb3e1fcbf9b"
+  },
+  {
+    "path": "backend/app/modules/analysis_packages/service.py",
+    "size": 1415,
+    "sha256": "480e664025c5f048936a707793b99b5898b6eab57f605e883e71a43f095f984e"
+  },
+  {
+    "path": "backend/app/modules/analysis_packages/schemas.py",
+    "size": 761,
+    "sha256": "cd533c641a14f9c2f0187cdb6a3c244de017421c1f2ec3707b9e0878684348de"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/constants.py",
+    "size": 2255,
+    "sha256": "9368a213f02d9523d0f7f6f990fe664feb5b26e8b5a4fd158eca921cd340480f"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/routes.py",
+    "size": 1449,
+    "sha256": "45d306237f5771191b464b3785e6277fba6ff66b139042d7d48dab27a3e631d1"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/cationic_ai.py",
+    "size": 3140,
+    "sha256": "aec0da2d782cfc607fce724884518442e490bb6d40f766e0a60de42c860710eb"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/routes_no_db_example.py",
+    "size": 874,
+    "sha256": "f39780aa621b66ecd84eb5a10062bbf4aa647547c5fb0315aee29c470ebc0554"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/storage_service.py",
+    "size": 6676,
+    "sha256": "09e9fd432b89fe58bbd0e3375117e7a2fe7d6bbfbaada3a967570f1665584dbc"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/anionic_ai.py",
+    "size": 1647,
+    "sha256": "8284f2c61c11c61f225a6169210d64620cc471ef2877fc8df656e653064f15f1"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/feature_builder.py",
+    "size": 3346,
+    "sha256": "5df7a713a4960836be670cbf5ba6012ecb97bbd982fb6f749af0bbed58875703"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/training_repository.py",
+    "size": 2137,
+    "sha256": "9a4eb79883403e027f57c329a03bbffa78a70e0488bc419c0ab19b208b44840f"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/create_ai_training_table.py",
+    "size": 1625,
+    "sha256": "a9a54d5c82511188fa01ad248d607b9272bdf02ae2d06b86aca8ffbf7779cf08"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/001_create_micelium_ai_training_samples.sql",
+    "size": 3421,
+    "sha256": "c788f5d27ff16744bc7037ae7393aa3fa00db47286b6ed0f6120ec9f6a8a6664"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/002_seed_reference_cmc_training_data.sql",
+    "size": 9727,
+    "sha256": "b945e4d048f7236600003e9c75b2e3db081898121fbb468c6b935e7cb6e3083a"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/__init__.py",
+    "size": 143,
+    "sha256": "54cdb0c098d4424d73660a8281eaa36a3603dd73ce1d1d475fb2cf737125ca5a"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/check_ai_training_table.py",
+    "size": 1075,
+    "sha256": "44472a79cf8694634ad698679a71005fdf97d830fa4c24f161317e936c2613c4"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/training_models.py",
+    "size": 4600,
+    "sha256": "2320db1b19033fc7513d166bc4162f38c811e27e3b2f6f18901461822dfab555"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/sql/001_create_micelium_ai_training_samples.sql",
+    "size": 3165,
+    "sha256": "983178711381030fd62b3db8de775ecfb6f4a89b8ad7f2c493084ec592da1694"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/sql/002_seed_reference_cmc_training_data.sql",
+    "size": 9026,
+    "sha256": "51e3ead5da52b99b00e7834fd82e91a56ae63a2ede86e6156082ba5e5ef6f549"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/training/README_TABELA_TREINO_IA.md",
+    "size": 1146,
+    "sha256": "ea68902e676ed798f41c76577cd48fadd138535b3951a80acb28a5683bce2162"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/storage_models.py",
+    "size": 8363,
+    "sha256": "9f1f36dbc61a9faf66555e252372033b940faeaf2f69a2c7b13222bf38dcf40c"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/headgroup_classifier.py",
+    "size": 5943,
+    "sha256": "04db2d90bda46d6214611689e9ef9617df96237b0676a2a253201d4127f208e4"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/smoke_test.py",
+    "size": 859,
+    "sha256": "576a198bc455bb00630bdc59e2a59d227053eed6db709aec8ce0688c28b5ed0c"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/ammonium_classifier_smoke_test.py",
+    "size": 1575,
+    "sha256": "973ad87d2923e433c4b03792f7aa30720ab95e943a0d46187e9ca283e2de2028"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/tests_payloads.py",
+    "size": 1573,
+    "sha256": "e57fa73e8536d7b4ff7d19b6f6bfe0bb5ef03263bb4434a823546b0f17a3f5b6"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/surfactant_router.py",
+    "size": 676,
+    "sha256": "703160875eb5ddad6260c0e720848ce650c9105b5db186b56e20fd001c72ade7"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/__init__.py",
+    "size": 29,
+    "sha256": "a842e35d4d4ccfa5cf3bef63f361ca490a7829530e29b60f316f57fe481eda15"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/model_registry.py",
+    "size": 1772,
+    "sha256": "04967d8c43e16a328b943b576c4305389eabd14fb7a68477c632af98a80c1d59"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/chemistry_rules.py",
+    "size": 6034,
+    "sha256": "edcd51edf234be54a07c494f8479ba287e06c6277d3f33f818c38188e189f5f9"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/specialized_base.py",
+    "size": 7542,
+    "sha256": "540a469b3f1dec34745f9309b8846b03a219805969903dfad37f9195b0356de0"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/zwitterionic_ai.py",
+    "size": 1443,
+    "sha256": "e187c9fb2d2bb6d96833873daf9b0aebf84ba3618872517d1e9f3e1bd0350bf3"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/schemas.py",
+    "size": 5114,
+    "sha256": "72af8bb392c9aa2d4fcd6f37257b0f84f038f9c75b88b5aabe4681909df776d8"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/prediction_service.py",
+    "size": 3797,
+    "sha256": "5007dfecc03b60a8dd89ce972628f4acdea6ac6856aec6243a88b44e269e80ce"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/nonionic_ai.py",
+    "size": 1810,
+    "sha256": "ec90a96d08b442eafdfcbfceb5bc6c4ed5f0e45e85017263250a9739d986df05"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/api_router_patch_example.py",
+    "size": 121,
+    "sha256": "5b8a1e7eda20412f6608722b8832594a4a49f6a5aecb949b18a8ca89b2e17874"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/molecular_identity_ai.py",
+    "size": 12449,
+    "sha256": "d405743a6a9a7f1c4ced8d4efba1f0dd6b14aeb2deb67471740e75c36ab7bf6a"
+  },
+  {
+    "path": "backend/app/modules/micelium/IA/routes_with_db_example.py",
+    "size": 1209,
+    "sha256": "e6d69840a0ae477ded64d490183f0283f509ab2e78a777245b47493ef1dd4219"
+  },
+  {
+    "path": "backend/app/modules/micelium/engine.py",
+    "size": 93609,
+    "sha256": "a131088e0e2291b51bc79624acd95982d329208e566452f311049c9e6c960619"
+  },
+  {
+    "path": "backend/app/modules/micelium/routes.py",
+    "size": 3238,
+    "sha256": "9c539880f2275b829bd12c4c821559f68e1b30a071f4767ea4215e1d4fee9032"
+  },
+  {
+    "path": "backend/app/modules/micelium/routes_no_db_example.py",
+    "size": 1260,
+    "sha256": "396e5bcd2f18bab27923581fa18f5786d1e800c8e0f47e8a2832212613b97a23"
+  },
+  {
+    "path": "backend/app/modules/micelium/dynamic_morphology_smoke_test.py",
+    "size": 10809,
+    "sha256": "769f9734a8dc5e7c154bec302fa552bce15dec8d3541ea917e9a4a8b526dd17c"
+  },
+  {
+    "path": "backend/app/modules/micelium/GUIA_MOLECULAS_TESTE_MORFOLOGIAS.md",
+    "size": 1394,
+    "sha256": "0575208f34810e046c7e5df5a72308373c82a59623d33c7cb41de8c826b5a72b"
+  },
+  {
+    "path": "backend/app/modules/micelium/vector_utils.py",
+    "size": 2336,
+    "sha256": "610e0106a6e208107272e445948e5c6094647c5ba548b4d79c95d5c705d12c61"
+  },
+  {
+    "path": "backend/app/modules/micelium/integrator.py",
+    "size": 11936,
+    "sha256": "6a4968b549427e9185d5dfcbf9f2a4d1477bd9b38d83947254eecaa9aa7b8d5b"
+  },
+  {
+    "path": "backend/app/modules/micelium/TESTE_AMBIENTE_REATIVO.md",
+    "size": 723,
+    "sha256": "7daa0498c5641510cb6998a4268631e4137701e74cedeae8928cfd7b998dccc3"
+  },
+  {
+    "path": "backend/app/modules/micelium/analyze.py",
+    "size": 427,
+    "sha256": "bf99c09284cdbbd0c61743475830e35d52d335a557f400b5b1598e579cedd38f"
+  },
+  {
+    "path": "backend/app/modules/micelium/service.py",
+    "size": 2008,
+    "sha256": "48648ac8f44066724b6eecd7f91df6a7e9c475cf8aba79a65824ccdfe0fc2267"
+  },
+  {
+    "path": "backend/app/modules/micelium/analyzer.py",
+    "size": 16130,
+    "sha256": "4456aa92091c696667079380b3a772d3223c54e48a1a51e10045f54d97033b97"
+  },
+  {
+    "path": "backend/app/modules/micelium/README_MICELIUM_ENGINE.md",
+    "size": 840,
+    "sha256": "7c127bd410d0e18656c4e414c79993203a7513315e8aae802c1d22fec3652cb0"
+  },
+  {
+    "path": "backend/app/modules/micelium/forcefield.py",
+    "size": 10195,
+    "sha256": "4f9ec1378c3dd3691aafc849d8ce8252af8d49652ef84303433843a286ddfcff"
+  },
+  {
+    "path": "backend/app/modules/micelium/schemas.py",
+    "size": 5639,
+    "sha256": "c8a43d31cedbde27c1b1308761fc9fbd8203171bedb48044693722c3c41f4c68"
+  },
+  {
+    "path": "backend/app/modules/micelium/api_router_patch_example.py",
+    "size": 376,
+    "sha256": "2ea0572eaec7182009a825f5316231e2ee766ba96605e459b2d1324da2a4f06f"
+  },
+  {
+    "path": "backend/app/modules/micelium/ai_bridge.py",
+    "size": 7691,
+    "sha256": "fe656e19c7620226a365de3ca6c8e5dee288906d64e778a5accd0c8ac2f6b080"
+  },
+  {
+    "path": "backend/app/modules/micelium/engine_smoke.py",
+    "size": 1364,
+    "sha256": "32ccb863a648bacdec39fdf51569e55c2963c992d51280e08d026b2c6ce8dc37"
+  },
+  {
+    "path": "backend/app/modules/micelium/mapping.py",
+    "size": 10038,
+    "sha256": "5e65c79129b08ea2b2df69f5cf600272d582738ed8b795a50440080d3195bc66"
+  },
+  {
+    "path": "backend/app/modules/micelium/database_session.py",
+    "size": 1815,
+    "sha256": "f126ecb80be89d8e3d9fb3afd27ce1104fe709e50ca45644dc94fb7c97bd243a"
+  },
+  {
+    "path": "backend/app/modules/micelium/README_APLICADO.md",
+    "size": 410,
+    "sha256": "c0acc48cbe75407d62f4585ef2536dadf5b0b14268d3b4e49616209b7f442e4b"
+  },
+  {
+    "path": "backend/app/modules/micelium/test_payloads_dynamic_morphologies.json",
+    "size": 8028,
+    "sha256": "1bbf9f3eb7f47d2ae1600ebd93f8b6a86f1a9de8264972b5704a19bfeb964d49"
+  },
+  {
+    "path": "backend/app/modules/molecules/routes.py",
+    "size": 1113,
+    "sha256": "be184585545e3b0aec552bcd050be4304ab76e677d1ddbb2dddd1c9d52acd3ee"
+  },
+  {
+    "path": "backend/app/modules/molecules/chemistry/schemas.py",
+    "size": 1861,
+    "sha256": "89a58ab21b003d333b1415ecb02434ded5db10ea61e7ca9628b78f51582d155a"
+  },
+  {
+    "path": "backend/app/modules/molecules/models.py",
+    "size": 1454,
+    "sha256": "6f064b3d2155e14458c4be717560659576788dc48e6ad46e54b92fcf9867a0dc"
+  },
+  {
+    "path": "backend/app/modules/molecules/repository.py",
+    "size": 839,
+    "sha256": "8ea70d9aee3106aa03f929c4925124a1faa155fccd33111d07afc3cde0dd379e"
+  },
+  {
+    "path": "backend/app/modules/molecules/service.py",
+    "size": 738,
+    "sha256": "e3700e2a1d6c2993bfe096e253434e6b13ed5f84e9f0902eb251a906ac2dcd87"
+  },
+  {
+    "path": "backend/app/modules/molecules/schemas.py",
+    "size": 789,
+    "sha256": "4ad4c260f28bcf37abcb285b35f17d5d15451b4fdd8c5ae007c87144ea51ed77"
+  },
+  {
+    "path": "backend/app/modules/reference_data/routes.py",
+    "size": 1341,
+    "sha256": "13d164d87c56e3987855d07a2d74e50d1e7dd5689eca130ed734299abc0e0294"
+  },
+  {
+    "path": "backend/app/modules/reference_data/models.py",
+    "size": 3311,
+    "sha256": "870b27200aa3a4a25de81cf723a1d0a9e8846c726c3a995a1eafd2dd2ca3c61c"
+  },
+  {
+    "path": "backend/app/modules/reference_data/repository.py",
+    "size": 4366,
+    "sha256": "e081535cfbaf2fcb9aecaf4b4cc4401384b367acb36c0019b3f1e4c2fa0140aa"
+  },
+  {
+    "path": "backend/app/modules/reference_data/service.py",
+    "size": 701,
+    "sha256": "f161751b7ce1d7c5954b293b501a61e0ebd44530b1e1f6fce1314f6b88103a03"
+  },
+  {
+    "path": "backend/app/modules/reference_data/schemas.py",
+    "size": 2381,
+    "sha256": "e15b120876dda9324e48e969c1ffb200f36f8761b2df7ef6f748a38a87344ac9"
+  },
+  {
+    "path": "backend/app/modules/reference_data/periodic_elements.py",
+    "size": 42824,
+    "sha256": "2db9c4e1b763ad2ef3954f6014bb6e6a834e912ed5afd70fa0ffe850c7db002b"
+  },
+  {
+    "path": "backend/app/modules/reference_data/electronic_properties.py",
+    "size": 9912,
+    "sha256": "ef2c2f7be6a645d8e66bcba5a2dfe6000e0741e078cbb7aa3c6c4eaa32c63a3c"
+  },
+  {
+    "path": "backend/app/modules/simulation/router.py",
+    "size": 3860,
+    "sha256": "3e34a42c942fae7da7e86040ee7da45b5c948bd4b5affe0b2d9cdfedac21321f"
+  },
+  {
+    "path": "backend/app/modules/simulation/geodesic_pack.py",
+    "size": 11170,
+    "sha256": "29e51734c434d6b86b8c3a31adb35da5af135a6f20cf31000e68bc381e703deb"
+  },
+  {
+    "path": "backend/app/modules/simulation/openmm_runner.py",
+    "size": 7188,
+    "sha256": "6db9058ffa85b3ba14495ec7341ce3f60091cd391fa452c204ebfad2df45bab1"
+  },
+  {
+    "path": "backend/app/modules/simulation/openmm_stream.py",
+    "size": 4909,
+    "sha256": "930a596ad34f7a8fa98fbad98ad2e7e60bab6f44a5cb32134f8237844f996401"
+  },
+  {
+    "path": "backend/app/modules/simulation/schemas.py",
+    "size": 1879,
+    "sha256": "1ccfdec85274f83ffc177859c4e5c9b66505fa4f8c34ed2dda356964bece32c7"
+  },
+  {
+    "path": "backend/app/api/v1/router.py",
+    "size": 1596,
+    "sha256": "f63c9d72b8660ce164cb6c23d957529738497a187f0009f7077c4fb51e4cdabc"
+  },
+  {
+    "path": "backend/app/main.py",
+    "size": 649,
+    "sha256": "5b06b8d8f42e13e1eba70ef7c95f9b5fcedb83a047d92075848ff854597c9f0f"
+  },
+  {
+    "path": "backend/app/core/config.py",
+    "size": 495,
+    "sha256": "eb2156d77dfe43594d5a8a353c7346806648e569ceb5a28bde23c438e77d4170"
+  },
+  {
+    "path": "backend/app/core/exceptions.py",
+    "size": 536,
+    "sha256": "21e0d83073723d0077ac6c0f4f1330f8c6661af717eb8f2cf275073a5973973c"
+  },
+  {
+    "path": "backend/app/core/database.py",
+    "size": 506,
+    "sha256": "144937e0ddd1a5afb6bc0ca9e0221aa9b3889bd5e71512f769850b8d7d415121"
+  },
+  {
+    "path": "backend/app/db/base.py",
+    "size": 84,
+    "sha256": "aabc54eaacf780c265ec100eb22c1e3e7d32cf18467253feb4e6797d762d4bde"
+  },
+  {
+    "path": "backend/alembic/versions/20260606_0001_create_micelium_ai_tables.py",
+    "size": 7942,
+    "sha256": "e6a21dc4919d642004222016060b727a9d61e4e8c3095efa83d6fe2cc3c87514"
+  },
+  {
+    "path": "backend/alembic/versions/0001_initial_schema.py",
+    "size": 5725,
+    "sha256": "8064889c9025ba0733840dfbc7a0f8f8ce0c7d36f290f72000e11eafd51991a3"
+  },
+  {
+    "path": "backend/alembic/env.py",
+    "size": 1459,
+    "sha256": "e056945fb4689d2d023dc7da8f5efabb01449fbb7bfdc38d54163765b64f600e"
+  },
+  {
+    "path": "frontend/vite.config.ts",
+    "size": 163,
+    "sha256": "a7d9626c5fd914b1fbabe494dafe4150f7504ec9161b4a97150840d497021527"
+  },
+  {
+    "path": "frontend/index.html",
+    "size": 362,
+    "sha256": "5cad1d313b1d927d63ad528d08704f93ff4c21e8626baf0d24ea52a18274d634"
+  },
+  {
+    "path": "frontend/tsconfig.node.json",
+    "size": 593,
+    "sha256": "85ed9bd1a2c6e6c968b7810e7a023a8fdb0ee0b8488bcb672ede4098c23a8019"
+  },
+  {
+    "path": "frontend/README.md",
+    "size": 2427,
+    "sha256": "46c138c231477d2ef6cd247a068dca20cbbfc91452bc1e5c1b25cacfed65a8cf"
+  },
+  {
+    "path": "frontend/public/favicon.svg",
+    "size": 9524,
+    "sha256": "6e3a66fb0b0b359da244f1cca0e47c11b723317a1e5a73e1f0d89a86f9583192"
+  },
+  {
+    "path": "frontend/public/icons.svg",
+    "size": 5033,
+    "sha256": "1d8907a531bd19742b773ede9614182fb069f1ee0e06167d3a962acf933ec926"
+  },
+  {
+    "path": "frontend/tsconfig.app.json",
+    "size": 619,
+    "sha256": "083b5414d477d7b97a8fceb99c56621379b14f2f8adb70fa5156b8f578e5da41"
+  },
+  {
+    "path": "frontend/tsconfig.json",
+    "size": 121,
+    "sha256": "9447eba29e72ff60b7edd916674f1312b704f8820de1214ffaac92cee4d916f6"
+  },
+  {
+    "path": "frontend/eslint.config.js",
+    "size": 593,
+    "sha256": "99464608b9dbd49e73903c9e3ea035f1e65a03beedf2ca3118c349337c76afa5"
+  },
+  {
+    "path": "frontend/src/assets/hero.png",
+    "size": 13057,
+    "sha256": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c"
+  },
+  {
+    "path": "frontend/src/assets/vite.svg",
+    "size": 8711,
+    "sha256": "798cf6b70521c92e715a70af2dcafc1d7744c8b0f2037b52a1c9c154963f1737"
+  },
+  {
+    "path": "frontend/src/assets/react.svg",
+    "size": 4128,
+    "sha256": "9337b5f16d80d691d3d2cd879837199bbe85fb84802f6cf256442b87d5553a49"
+  },
+  {
+    "path": "frontend/src/App.css",
+    "size": 2893,
+    "sha256": "89f214b222749f49279a72b89a3b00fa2aa1a1620163972c5c436b27d52565ad"
+  },
+  {
+    "path": "frontend/src/App.tsx",
+    "size": 789,
+    "sha256": "302d1a28c341dc37573092955feec19e09db8c13deb16d9a081dd9775d0b54f9"
+  },
+  {
+    "path": "frontend/src/main.tsx",
+    "size": 263,
+    "sha256": "0905fd93c942017e058161cb6f809ff539a3d9bd92808c0efa182f248f92aeb1"
+  },
+  {
+    "path": "frontend/src/index.css",
+    "size": 965,
+    "sha256": "0fef7b9b4043800876b3cd3e142c6e00dff5168cccfe166718d63a15e27742db"
+  },
+  {
+    "path": "frontend/src/pages/3leftpage/components/ParameterMetric.tsx",
+    "size": 423,
+    "sha256": "2ec6785131b8a223d19e6e5a025c41d0d01291733829d2609da735980b06fb50"
+  },
+  {
+    "path": "frontend/src/pages/3leftpage/3Leftpage.tsx",
+    "size": 24229,
+    "sha256": "f91c4f39c14ef3550c386e36573f84bf148d5edc3781b6ee84b48294472b0b62"
+  },
+  {
+    "path": "frontend/src/pages/3leftpage/3Leftpage.css",
+    "size": 4566,
+    "sha256": "c7f9a342b939616c0b7c167b219316b26d2561a0c6eba91c65f7b960cb162523"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/periodictable/periodictable.tsx",
+    "size": 43793,
+    "sha256": "5e67b5d709848bef4155ad282027fb1202195e0ca74add6ae9315fbd0d818246"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/periodictable/periodictable.css",
+    "size": 11560,
+    "sha256": "1818894297706a58c2acefa90934162eef3a433f545bfa026f10c020eef3e6ca"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/Molecule2DViewer.tsx",
+    "size": 32570,
+    "sha256": "1b01df3dd408e310392a7861a818e9fd4a98c64685a1c10df97c8146674e7119"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/MoleculePropertiesPanel.tsx",
+    "size": 12835,
+    "sha256": "9dab74624e27e68ec3b1d8a45ee2e08898d7d1c31ad1faf5a5a5dc40ebe27b69"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/rdkit/RDKit2DPanel.tsx",
+    "size": 1914,
+    "sha256": "aed9e428ec953ce1ddea961e18b927afdec0eacd1e4fc61fb8eeae4d8cf0a358"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/rdkit/rdkitApi.ts",
+    "size": 5112,
+    "sha256": "846ce509181ba45c52d88d0613c54ffdf5ffb19e042d1a57e9164df81374b074"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/toolsbar/toolsbar.tsx",
+    "size": 7197,
+    "sha256": "26225e9eb9f76c022ee719db475250108eef0335d19cae0303e284a7599f5db7"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/toolsbar/fastmol/fastmol.tsx",
+    "size": 60587,
+    "sha256": "70cd8b78f2c4a65063e52ffab3d19227fa863f79923ab26b1009d00b7f536dbe"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/toolsbar/fastmol/fastmol.css",
+    "size": 4580,
+    "sha256": "1a19c40884c81302ce60efb7cd6b5d4198c667e1bd0caacdebd7c185d17931ab"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/toolsbar/toolsbar.css",
+    "size": 4302,
+    "sha256": "529508f18811a8be35fbaf021767866273de86871ce44c79386a0b0362cb8fd0"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/minimap/minimap.css",
+    "size": 1433,
+    "sha256": "fd9b4e100d593d75af18bcf68cf938f0abc252f1b303684a0e92b5a86103346a"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/minimap/minimap.tsx",
+    "size": 9863,
+    "sha256": "739142c28894d265610bd4680607093760212382075f801662ade71f0104d045"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/addatom/addatom.tsx",
+    "size": 3654,
+    "sha256": "033c73c9bcc3e9f1b0562cf0158c2371c27f73e222858bcb0c72466c6c73f663"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/addatom/addatom.css",
+    "size": 1244,
+    "sha256": "64bb9d4cb6846de48cb82680386caf25acfe5f2f1209b697f1dc9e777e04e94b"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/link/link.css",
+    "size": 1533,
+    "sha256": "005e8fe6eceffc725bcf23b6aa4ce335ea991be678c395a59d1ed241b4aeab26"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/components/interaction/link/link.tsx",
+    "size": 3441,
+    "sha256": "2094393cb597690138cb469af0253f827665c48390d82bbcc88ff1415761aeb8"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/type/rdkit2d.types.ts",
+    "size": 5110,
+    "sha256": "fdb042919ac1c975d2ee9e1f652d000269f321defea7c36ed59bf68df571609e"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/2dpage.tsx",
+    "size": 64561,
+    "sha256": "5b280f8e2e72507a5c03c1e8e7a04185b25e6df6f922fe5012ab21a0b441b1e2"
+  },
+  {
+    "path": "frontend/src/pages/2dpage/2dpage.css",
+    "size": 21593,
+    "sha256": "c8567382ee3d73dada95b272cbd1070389d4d594e1b0520860f5cb51d87448ec"
+  },
+  {
+    "path": "frontend/src/pages/2dto3d/transfer.tsx",
+    "size": 37660,
+    "sha256": "af2195e7bc5e06922b97cc1b0a388b7e39682688ddb68f9e1ec35c57042d5a71"
+  },
+  {
+    "path": "frontend/src/pages/2dto3d/transfer.css",
+    "size": 16074,
+    "sha256": "ba2566ebce98f4a302f997df6f4df25b7e1f4cf20017af3c3d6d0d02635eaa54"
+  },
+  {
+    "path": "frontend/src/pages/headerpage/HeaderPage.tsx",
+    "size": 1209,
+    "sha256": "be531e5b684acfa1854b4567409e57349798623415cc44c2fe32915fd52703e5"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/components/toolsbar/toolsbar.tsx",
+    "size": 1239,
+    "sha256": "f0d5e5f0e8dee860fe216ee791b05c8252b452ddef735dda5297c647b57424c2"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/components/toolsbar/toolsbar.css",
+    "size": 47,
+    "sha256": "07aa9488d5ea760d53af350f8f8dcaabf2aa208c3c28acb57a2fc19660ca9cf4"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/components/render/SimulationViewer3D.css",
+    "size": 2473,
+    "sha256": "8c7fe9b790184f1794fe6f7e4598e2eaebc27dafc41cf6c5d5715335dbed17ab"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/components/render/rendering.css",
+    "size": 2518,
+    "sha256": "353ace36c46107c2cc7aec66d5a165e5762fe2eb5fdac2bc2c051631511538ba"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/components/render/SimulationViewer3D.tsx.backup_v46_safe_viewer_20260827_233401",
+    "size": 38094,
+    "sha256": "ec2371c813b44c645d5e5fe85d039583fbed85dee80526b6f98eb0612c396244"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/components/render/SimulationViewer3D.tsx",
+    "size": 39180,
+    "sha256": "2497cf4869ecd738c541e8d67ca197c11b77f11e096b4cd7236f43dd3fc27e77"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/components/render/rendering.tsx",
+    "size": 25321,
+    "sha256": "c290915a008a254cecfef27d6491ae91544b8faac3b3f1051bc0592b4aa85ab4"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/type/3dpage.types.ts",
+    "size": 16531,
+    "sha256": "a5a640e1abe2417dca8aeca45e8ff9256370f66e7c22f00d2c79a75d2eec09d9"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/3dpage.css",
+    "size": 4933,
+    "sha256": "bb7ec5c4f7858870daaddd92c72bdda480bb5ce2d7cfe3c2c306d512eafcd304"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/patch_v32_parameters_fast_mode.py.misplaced_backup_20260827_135401",
+    "size": 6704,
+    "sha256": "02c51db7e69bae6d2a5d4d3acb9fd50c3d2d74e7b5ce942561e4b7587e299e55"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/3dpage.tsx.backup_v46_safe_3dpage_20260827_233401",
+    "size": 54481,
+    "sha256": "1e738d33bd501a513bbad541f092ddc7366b44f9cee80bd4b213785652a50a7d"
+  },
+  {
+    "path": "frontend/src/pages/3dpage/3dpage.tsx",
+    "size": 55908,
+    "sha256": "27de3052142c30e920e4fb0826f8eba16890603519bc8060d84e3081d7d883f9"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v44_api_20260827_224029",
+    "size": 2521,
+    "sha256": "1aadd9df5d3e03015ab227062629ff233437c84bf75f4effe04b3c9e4c7e55b1"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_before_v45_restore",
+    "size": 27470,
+    "sha256": "3c8c9b5be2fc1755a65a9889c32c9cf29954244a4ae39b5c391a44f005c5f7ac"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParameters.types.ts.backup_v48_hydrogen_sigma_pi_20260828_141026",
+    "size": 8407,
+    "sha256": "f8f0d4e6a3508494a63c1085e12ee570399eb038a5e5218bb95f22a6eea62895"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParameters.types.ts",
+    "size": 9185,
+    "sha256": "d74d85caff2e446ab2f01cbf8f55196cb9fdb9bdba950c21cfe04b62390dbb6e"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v35_panel_timeout_20260827_141843",
+    "size": 25925,
+    "sha256": "aa67527edfd02c6004c1155b029ac7eaf2d3b147f24959060ef20d4e1dcda111"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v33_fast_front_20260827_135401",
+    "size": 2479,
+    "sha256": "2c0af2a5a66bc6e3a6e6f1e797f8e10ede5316bdac10854875857e1cf8a114cf"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx",
+    "size": 26758,
+    "sha256": "f414fc401861e227b9c2ca07f47e2b9cd2f6d881084c64eeb00de1c0f2d5660c"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v36_api_fast_20260827_142508",
+    "size": 2606,
+    "sha256": "38d3af69691368444f29ca4537e5253b34c15181e90b077823b1d928b35b78ee"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts",
+    "size": 4723,
+    "sha256": "61599a24ec53ac97f99b6d7739ff4eb85b676bf6ed35a554ee1738d56fa720e7"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParameters.types.ts.backup_v47_biblioteca_status_20260827_233828",
+    "size": 8397,
+    "sha256": "e566ad67f63e3febf29ad2fa39d94c0190c0c7c8020056858495a18ece8f0cf2"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v44_panel_20260827_224029",
+    "size": 25925,
+    "sha256": "aa67527edfd02c6004c1155b029ac7eaf2d3b147f24959060ef20d4e1dcda111"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_before_v45_restore",
+    "size": 3246,
+    "sha256": "c1b0cedfefa040676b65d853cb40a364186cc2f58af12325dddb87a98df46816"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v36_before_restore_20260827_142508",
+    "size": 26505,
+    "sha256": "7382420bbd385f8fe4872fa9f367a7a3038a86695799eaac9926de08337b3476"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/ChemistryParametersPanel.tsx.backup_v48_hydrogen_sigma_pi_20260828_141026",
+    "size": 25925,
+    "sha256": "aa67527edfd02c6004c1155b029ac7eaf2d3b147f24959060ef20d4e1dcda111"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/components/chemistryParametersApi.ts.backup_v47_biblioteca_status_20260827_233828",
+    "size": 2521,
+    "sha256": "1aadd9df5d3e03015ab227062629ff233437c84bf75f4effe04b3c9e4c7e55b1"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/Leftpage.css",
+    "size": 9687,
+    "sha256": "ea6d666cfc41e7f195dfa6170f0fb4825760d56a1e447a6af6aedc3f867103ee"
+  },
+  {
+    "path": "frontend/src/pages/leftpage/LeftPage.tsx",
+    "size": 16213,
+    "sha256": "8ff0a02db8f9bb5e327abdc76b5a80c1ed5cac4b5dab876bf4bc1ecf81b8c8eb"
+  },
+  {
+    "path": "frontend/src/app/AppRouter.tsx",
+    "size": 261,
+    "sha256": "79ed56612fc5e65be2c903b8f7dbec8c1a6c0dfb57f94e5d5954dd1d337ae33e"
+  },
+  {
+    "path": "frontend/src/app/App.tsx.backup_v46_safe_app_20260827_233401",
+    "size": 993,
+    "sha256": "cbd1f415c310595eee0f819ca3c18ccf228496979b12818da23d70d1f7912da8"
+  },
+  {
+    "path": "frontend/src/app/App.tsx",
+    "size": 4153,
+    "sha256": "38be56c2c68315a764a71ce8672b8b7f3cc64128ca2c3b3bf41806838ba1292f"
+  },
+  {
+    "path": "frontend/src/app/app.css",
+    "size": 8310,
+    "sha256": "dc343444a624f2668061e4249a0fb47ec71274ba03fbb4c4a9e836b97a99007a"
+  },
+  {
+    "path": "frontend/package.json",
+    "size": 1130,
+    "sha256": "8aadfc4884a74625b837f8a99221f7d6483a8a0a7a86f1865ccd37e78338376b"
+  }
+]

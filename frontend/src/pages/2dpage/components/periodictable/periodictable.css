@@ -1,0 +1,696 @@
+.periodic-table-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: grid;
+  place-items: center;
+
+  padding: 14px;
+
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.periodic-table-window {
+  width: min(1180px, calc(100vw - 22px));
+  max-height: min(790px, calc(100vh - 22px));
+
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  gap: 9px;
+
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 18px;
+
+  padding: 12px;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 34%),
+    rgba(15, 23, 42, 0.98);
+
+  color: #e5e7eb;
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.45);
+}
+
+.periodic-table-header {
+  min-width: 0;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+}
+
+.periodic-table-header > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.periodic-table-header strong {
+  color: #f8fafc;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.periodic-table-header span {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.periodic-table-close {
+  width: 34px;
+  height: 34px;
+
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 11px;
+
+  background: rgba(30, 41, 59, 0.84);
+  color: #f8fafc;
+
+  font-size: 1.18rem;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.periodic-table-close:hover {
+  border-color: rgba(34, 211, 238, 0.6);
+  background: rgba(14, 165, 233, 0.16);
+}
+
+.periodic-table-state,
+.periodic-table-error,
+.periodic-table-warning {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+
+  padding: 8px 10px;
+
+  background: rgba(2, 6, 23, 0.44);
+  color: #cbd5e1;
+
+  font-size: 0.7rem;
+}
+
+.periodic-table-error {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.periodic-table-warning {
+  border-color: rgba(245, 158, 11, 0.32);
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.periodic-table-warning strong,
+.periodic-table-error strong {
+  display: block;
+  margin-bottom: 4px;
+  color: inherit;
+}
+
+.periodic-table-warning span,
+.periodic-table-error span {
+  overflow-wrap: anywhere;
+}
+
+.periodic-classification-legend {
+  min-width: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 13px;
+
+  padding: 7px;
+
+  overflow: auto;
+
+  background: rgba(2, 6, 23, 0.22);
+}
+
+.periodic-classification-item {
+  --periodic-class-accent: rgba(148, 163, 184, 0.8);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  min-height: 24px;
+
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-left: 3px solid var(--periodic-class-accent);
+  border-radius: 999px;
+
+  padding: 3px 7px;
+
+  background: rgba(15, 23, 42, 0.58);
+  color: #cbd5e1;
+
+  font-size: 0.58rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.periodic-classification-dot {
+  width: 7px;
+  height: 7px;
+
+  flex: 0 0 auto;
+
+  border-radius: 999px;
+  background: var(--periodic-class-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--periodic-class-accent) 58%, transparent);
+}
+
+.periodic-class-alkali-metals {
+  --periodic-class-accent: #f97316;
+}
+
+.periodic-class-alkaline-earth-metals {
+  --periodic-class-accent: #84cc16;
+}
+
+.periodic-class-transition-metals {
+  --periodic-class-accent: #38bdf8;
+}
+
+.periodic-class-post-transition-metals {
+  --periodic-class-accent: #a78bfa;
+}
+
+.periodic-class-metalloids {
+  --periodic-class-accent: #f59e0b;
+}
+
+.periodic-class-polyatomic-nonmetals {
+  --periodic-class-accent: #22c55e;
+}
+
+.periodic-class-diatomic-nonmetals {
+  --periodic-class-accent: #14b8a6;
+}
+
+.periodic-class-noble-gases {
+  --periodic-class-accent: #60a5fa;
+}
+
+.periodic-class-unknown-chemical-properties {
+  --periodic-class-accent: #94a3b8;
+}
+
+.periodic-class-lanthanides {
+  --periodic-class-accent: #ec4899;
+}
+
+.periodic-class-actinides {
+  --periodic-class-accent: #ef4444;
+}
+
+.periodic-table-body {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 10px;
+
+  overflow: hidden;
+}
+
+.periodic-selected-panel {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows: auto minmax(98px, 0.55fr) minmax(185px, 1fr);
+  gap: 8px;
+
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 15px;
+
+  padding: 9px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.42)),
+    rgba(2, 6, 23, 0.34);
+}
+
+.periodic-panel-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.periodic-panel-title strong {
+  color: #f8fafc;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.periodic-panel-title span {
+  color: #94a3b8;
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+
+.periodic-selected-list {
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  overflow: auto;
+
+  border: 1px solid rgba(148, 163, 184, 0.11);
+  border-radius: 12px;
+
+  padding: 7px;
+
+  background: rgba(2, 6, 23, 0.28);
+}
+
+.periodic-empty-selection {
+  width: 100%;
+  display: grid;
+  place-items: center;
+
+  min-height: 72px;
+
+  color: #94a3b8;
+  font-size: 0.66rem;
+  text-align: center;
+}
+
+.periodic-selected-chip {
+  min-width: 52px;
+  max-width: 88px;
+
+  display: grid;
+  gap: 1px;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 11px;
+
+  padding: 5px 6px;
+
+  background: rgba(30, 41, 59, 0.88);
+  color: #f8fafc;
+
+  text-align: center;
+
+  cursor: pointer;
+}
+
+.periodic-selected-chip span {
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.periodic-selected-chip small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 0.5rem;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+.periodic-selected-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+
+.periodic-info-card {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  border-radius: 12px;
+
+  padding: 8px;
+
+  overflow: hidden;
+
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.periodic-info-card-header {
+  display: grid;
+  gap: 2px;
+}
+
+.periodic-info-card-header strong {
+  color: #e0f2fe;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.periodic-info-card-header span {
+  color: #cbd5e1;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.periodic-info-card dl {
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  gap: 5px;
+
+  margin: 0;
+  overflow: auto;
+}
+
+.periodic-info-card dl div {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: minmax(78px, 0.75fr) minmax(0, 1fr);
+  gap: 6px;
+
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  padding-bottom: 4px;
+}
+
+.periodic-info-card dt {
+  color: #94a3b8;
+  font-size: 0.58rem;
+  font-weight: 850;
+}
+
+.periodic-info-card dd {
+  min-width: 0;
+
+  margin: 0;
+
+  color: #f8fafc;
+  font-size: 0.6rem;
+  font-weight: 800;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.periodic-table-main {
+  min-width: 0;
+  min-height: 0;
+
+  overflow: auto;
+
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 15px;
+
+  padding: 8px;
+
+  background: rgba(2, 6, 23, 0.22);
+}
+
+.periodic-table-grid {
+  min-width: 830px;
+
+  display: grid;
+  grid-template-columns: repeat(18, 43px);
+  grid-template-rows: repeat(9, 54px);
+  gap: 5px;
+
+  align-content: start;
+  justify-content: center;
+
+  padding: 2px;
+}
+
+.periodic-element {
+  --periodic-class-accent: rgba(148, 163, 184, 0.9);
+
+  position: relative;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1px;
+  align-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9px;
+
+  padding: 4px;
+
+  background: rgba(30, 41, 59, 0.9);
+  color: #f8fafc;
+
+  text-align: center;
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(2, 6, 23, 0.18),
+    0 6px 14px rgba(0, 0, 0, 0.14);
+
+  transition:
+    transform 0.14s ease,
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.periodic-element::before {
+  content: "";
+
+  position: absolute;
+  inset: 0 0 auto 0;
+
+  height: 4px;
+
+  background: var(--periodic-class-accent);
+  opacity: 0.95;
+
+  pointer-events: none;
+}
+
+.periodic-element::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  border-left: 3px solid var(--periodic-class-accent);
+  border-radius: inherit;
+
+  pointer-events: none;
+}
+
+.periodic-element:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 0 0 2px rgba(34, 211, 238, 0.24),
+    0 10px 20px rgba(0, 0, 0, 0.22);
+}
+
+.periodic-element.selected {
+  border-color: #f8fafc;
+  box-shadow:
+    0 0 0 2px rgba(34, 211, 238, 0.7),
+    0 0 20px rgba(34, 211, 238, 0.34);
+}
+
+.periodic-atomic-number {
+  justify-self: start;
+
+  font-size: 0.48rem;
+  font-weight: 850;
+  line-height: 1;
+  opacity: 0.82;
+}
+
+.periodic-element strong {
+  font-size: 0.9rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.periodic-name {
+  max-width: 100%;
+
+  font-size: 0.44rem;
+  font-weight: 750;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  opacity: 0.9;
+}
+
+.periodic-series-placeholder,
+.periodic-series-label {
+  display: grid;
+  place-items: center;
+
+  border: 1px dashed rgba(148, 163, 184, 0.25);
+  border-radius: 9px;
+
+  padding: 4px;
+
+  background: rgba(15, 23, 42, 0.48);
+  color: #93c5fd;
+
+  text-align: center;
+}
+
+.periodic-series-placeholder strong {
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.periodic-series-placeholder span,
+.periodic-series-label {
+  font-size: 0.48rem;
+  font-weight: 850;
+}
+
+.periodic-series-label {
+  justify-items: end;
+  padding-right: 8px;
+  color: #94a3b8;
+}
+
+.periodic-table-footer {
+  min-width: 0;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  padding-top: 8px;
+}
+
+.periodic-table-footer span {
+  min-width: 0;
+
+  color: #94a3b8;
+  font-size: 0.66rem;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.periodic-clear-button {
+  min-height: 31px;
+
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  border-radius: 10px;
+
+  padding: 0 10px;
+
+  background: rgba(239, 68, 68, 0.09);
+  color: #fecaca;
+
+  font-size: 0.66rem;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+.periodic-clear-button:hover:not(:disabled) {
+  border-color: rgba(248, 113, 113, 0.58);
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.periodic-clear-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 980px) {
+  .periodic-table-window {
+    max-height: calc(100vh - 16px);
+  }
+
+  .periodic-table-body {
+    grid-template-columns: 1fr;
+  }
+
+  .periodic-selected-panel {
+    grid-template-rows: auto auto;
+  }
+
+  .periodic-info-card {
+    display: none;
+  }
+
+  .periodic-classification-legend {
+    max-height: 74px;
+  }
+
+  .periodic-table-grid {
+    justify-content: start;
+  }
+
+  .periodic-table-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .periodic-table-footer span {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 560px) {
+  .periodic-table-overlay {
+    padding: 7px;
+  }
+
+  .periodic-table-window {
+    width: calc(100vw - 14px);
+    border-radius: 15px;
+  }
+
+  .periodic-table-main {
+    padding: 6px;
+  }
+
+  .periodic-table-grid {
+    grid-template-columns: repeat(18, 39px);
+    grid-template-rows: repeat(9, 50px);
+    gap: 4px;
+    min-width: 760px;
+  }
+
+  .periodic-element strong {
+    font-size: 0.82rem;
+  }
+}
+
+

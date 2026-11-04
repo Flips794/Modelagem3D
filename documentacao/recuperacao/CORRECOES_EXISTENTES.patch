@@ -1,0 +1,497 @@
+--- a/backend/docker-compose.yml
++++ b/backend/docker-compose.yml
+@@ -8,9 +8,55 @@
+       POSTGRES_USER: modelagem3d
+       POSTGRES_PASSWORD: REMOVIDO
+     ports:
+-      - "5433:5432"
++      - "127.0.0.1:5433:5432"
+     volumes:
+       - modelagem3d_pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ["CMD-SHELL", "pg_isready -U modelagem3d -d modelagem3d_db"]
++      interval: 5s
++      timeout: 5s
++      retries: 20
++
++  backend:
++    build: .
++    restart: unless-stopped
++    environment:
++      APP_ENV: development
++      DATABASE_URL: postgresql+psycopg://modelagem3d:REMOVIDO@postgres:5432/modelagem3d_db
++      BACKEND_CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
++      OPENMM_CPU_THREADS: "2"
++    ports:
++      - "127.0.0.1:8000:8000"
++    volumes:
++      - ./app/modules/micelium/IA/trained_models:/app/app/modules/micelium/IA/trained_models:ro
++    depends_on:
++      postgres:
++        condition: service_healthy
++    command:
++      - sh
++      - -c
++      - python -m alembic upgrade head && exec python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
++    healthcheck:
++      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/database', timeout=4)"]
++      interval: 5s
++      timeout: 5s
++      retries: 20
++      start_period: 10s
++
++  frontend:
++    build:
++      context: ../frontend
++    restart: unless-stopped
++    ports:
++      - "127.0.0.1:5173:5173"
++    depends_on:
++      backend:
++        condition: service_healthy
++    healthcheck:
++      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
++      interval: 5s
++      timeout: 5s
++      retries: 20
+ 
+ volumes:
+   modelagem3d_pgdata:
+--- a/backend/pyproject.toml
++++ b/backend/pyproject.toml
+@@ -10,7 +10,12 @@
+     "psycopg[binary]",
+     "alembic",
+     "pydantic-settings",
+-    "python-dotenv"
++    "python-dotenv",
++    "rdkit",
++    "numpy",
++    "openmm",
++    "joblib",
++    "scikit-learn"
+ ]
+ 
+ [tool.pytest.ini_options]
+--- a/backend/app/modules/chemistry/parameters/router.py
++++ b/backend/app/modules/chemistry/parameters/router.py
+@@ -269,7 +269,7 @@
+     if has_smarts(active, "[SX4](=O)(=O)[O-]") or has_smarts(active, "[SX4](=O)(=O)O"):
+         # Abrange sulfato/sulfonato no painel rápido. A diferença fina pode ser feita por contexto de ligação.
+         return "sulfato/sulfonato"
+-    if has_smarts(active, "C(=O)[O-]") or has_smarts(active, "C(=O)O"):
++    if has_smarts(active, "C(=O)[O-]") or has_smarts(active, "C(=O)[OX2H1]"):
+         return "carboxilato/ácido carboxílico"
+     if has_smarts(active, "[NX4+]"):
+         return "amônio quaternário"
+@@ -286,6 +286,9 @@
+     charge = int(sum(atom.GetFormalCharge() for atom in active.GetAtoms()))
+     head = head_group(active)
+     atom_charges = [atom.GetFormalCharge() for atom in active.GetAtoms()]
++
++    if charge == 0 and any(x > 0 for x in atom_charges) and any(x < 0 for x in atom_charges):
++        return "anfotérico/zwitteriônico", head, charge
+ 
+     if charge < 0 or head in {"sulfato/sulfonato", "carboxilato/ácido carboxílico"}:
+         return "aniônico", head, charge
+--- a/backend/app/modules/chemistry/parameters/miriam21_engine.py
++++ b/backend/app/modules/chemistry/parameters/miriam21_engine.py
+@@ -662,7 +662,8 @@
+     ctab_like = (
+         len(active_fragments) == 1
+         and electro_label == "CATIONIC"
+-        and rep_c.get("quaternaryAmmoniumCount", 0) >= 1
++        and rep_c.get("quaternaryAmmoniumCount", 0) == 1
++        and tail_count == 1
+         and longest_tail == 16
+         and has_bromide_counterion
+     )
+@@ -731,14 +732,14 @@
+         return "ZWITTERIONIC_BETAINE", "CARBOBETAINE_ZWITTERIONIC_SURFACTANT", "ZWITTERIONIC_SURFACTANT_QSPR", {}
+     if fatty_alcohol_cosurfactant:
+         return "CO_SURFACTANT_FATTY_ALCOHOL", "WEAK_NONIONIC_AMPHIPHILE", "BLOCKED_CO_SURFACTANT_ONLY", {}
+-    if cationic_with_counterion:
+-        return "CLASSIC_SINGLE_TAIL_CATIONIC", "HYDROXYETHYL_QUATERNARY_AMMONIUM_SURFACTANT", "CATIONIC_KLEVENS_WITH_HYDROXYETHYL_HEAD_CORRECTION", {}
+     if bola_dicarboxylate:
+         return "BOLAAMPHIPHILE_DICARBOXYLATE_SALT", "DISODIUM_DECANEDIOATE_LIKE", "BLOCKED_BOLAAMPHIPHILE_MODEL_REQUIRED", {}
+     if gemini_16_2_16_like:
+         return "GEMINI", "GEMINI_CATIONIC_16_2_16", "GEMINI_EXPERIMENTAL_OR_QSPR_REQUIRED", {}
+     if gemini:
+         return "GEMINI", "GEMINI_CATIONIC_SURFACTANT", "GEMINI_EXPERIMENTAL_OR_QSPR_REQUIRED", {}
++    if cationic_with_counterion:
++        return "CLASSIC_SINGLE_TAIL_CATIONIC", "HYDROXYETHYL_QUATERNARY_AMMONIUM_SURFACTANT", "CATIONIC_KLEVENS_WITH_HYDROXYETHYL_HEAD_CORRECTION", {}
+     if pfos_like:
+         return "PFOS_LIKE_FLUOROSURFACTANT", "PFOS_LIKE_FLUOROSURFACTANT", "PFOS_EXPERIMENTAL_PROFILE", {}
+     if fluorosurfactant:
+--- a/backend/app/modules/micelium/IA/chemistry_rules.py
++++ b/backend/app/modules/micelium/IA/chemistry_rules.py
+@@ -116,6 +116,27 @@
+ 
+ def detect_head_group(smiles: str) -> tuple[str | None, SurfactantClass, float]:
+     cationic_classification = classify_cationic_headgroup(smiles)
++    anionic = detect_pattern_group(smiles, ANIONIC_HEAD_PATTERNS)
++    nonionic = detect_pattern_group(smiles, NONIONIC_HEAD_PATTERNS)
++
++    if anionic == "carboxylate":
++        # C(=O)O also occurs in neutral esters; inspect the oxygen before
++        # assigning the molecule to the anionic specialist.
++        from rdkit import Chem
++
++        mol = Chem.MolFromSmiles(smiles)
++        acid = Chem.MolFromSmarts("[CX3](=[OX1])[OX2H1]")
++        carboxylate = Chem.MolFromSmarts("[CX3](=[OX1])[O-]")
++        if mol is not None and not (
++            mol.HasSubstructMatch(acid) or mol.HasSubstructMatch(carboxylate)
++        ):
++            anionic = None
++
++    has_anionic = anionic is not None or "[O-]" in smiles
++
++    if has_anionic and ("[N+]" in smiles or "[n+]" in smiles):
++        zwitter = detect_pattern_group(smiles, ZWITTERIONIC_HEAD_PATTERNS)
++        return zwitter or anionic or "zwitterionic_head", "zwitterionic", 0.88
+ 
+     if cationic_classification.head_group:
+         return (
+@@ -123,15 +144,6 @@
+             "cationic",
+             cationic_classification.confidence,
+         )
+-
+-    anionic = detect_pattern_group(smiles, ANIONIC_HEAD_PATTERNS)
+-    nonionic = detect_pattern_group(smiles, NONIONIC_HEAD_PATTERNS)
+-
+-    has_anionic = anionic is not None or "[O-]" in smiles
+-
+-    if has_anionic and ("[N+]" in smiles or "[n+]" in smiles):
+-        zwitter = detect_pattern_group(smiles, ZWITTERIONIC_HEAD_PATTERNS)
+-        return zwitter or anionic or "zwitterionic_head", "zwitterionic", 0.88
+ 
+     if has_anionic:
+         return anionic or "anionic_head", "anionic", 0.86
+--- a/backend/app/modules/micelium/IA/molecular_identity_ai.py
++++ b/backend/app/modules/micelium/IA/molecular_identity_ai.py
+@@ -69,7 +69,7 @@
+         head_group, surfactant_class, head_confidence = detect_head_group(active_component)
+         cationic_head = classify_cationic_headgroup(active_component)
+ 
+-        if cationic_head.head_group:
++        if cationic_head.head_group and surfactant_class != "zwitterionic":
+             head_group = cationic_head.head_group
+             surfactant_class = "cationic"
+             head_confidence = cationic_head.confidence
+@@ -80,7 +80,7 @@
+ 
+         descriptors.head_group = descriptors.head_group or head_group
+ 
+-        if cationic_head.head_group:
++        if cationic_head.head_group and surfactant_class == "cationic":
+             descriptors.head_area_a2 = cationic_head.head_area_a2
+             descriptors.klevens_a = cationic_head.klevens_a
+             descriptors.klevens_b = cationic_head.klevens_b
+--- a/backend/app/modules/micelium/schemas.py
++++ b/backend/app/modules/micelium/schemas.py
+@@ -2,7 +2,7 @@
+ 
+ from typing import Literal
+ 
+-from pydantic import BaseModel, Field, field_validator
++from pydantic import AliasChoices, BaseModel, Field, field_validator
+ 
+ 
+ MiceliumRole = Literal["reagent", "solvent"]
+@@ -77,7 +77,10 @@
+     tail_carbon_count: int | None = None
+     head_area_a2: float | None = None
+     tail_volume_a3: float | None = None
+-    packing_parameter: float | None = None
++    packing_parameter: float | None = Field(
++        default=None,
++        validation_alias=AliasChoices("packing_parameter", "cpp"),
++    )
+     micellar_behavior: str | None = None
+ 
+ 
+--- a/backend/app/core/config.py
++++ b/backend/app/core/config.py
+@@ -1,3 +1,5 @@
++from pathlib import Path
++
+ from pydantic import Field
+ from pydantic_settings import BaseSettings, SettingsConfigDict
+ 
+@@ -11,7 +13,7 @@
+     backend_cors_origins: list[str] = Field(default_factory=list)
+ 
+     model_config = SettingsConfigDict(
+-        env_file=".env",
++        env_file=Path(__file__).resolve().parents[2] / ".env",
+         env_file_encoding="utf-8",
+         case_sensitive=False,
+     )
+@@ -19,3 +21,4 @@
+ 
+ settings = Settings()
+ 
++
+--- a/backend/alembic/env.py
++++ b/backend/alembic/env.py
+@@ -6,7 +6,7 @@
+ from app.core.config import settings
+ from app.db.base import Base
+ 
+-from app.modules.reference_data.models import ElementModel, FunctionalGroupModel
++from app.modules.reference_data.models import Element
+ from app.modules.molecules.models import MoleculeModel
+ from app.modules.analysis_packages.models import AnalysisPackageModel
+ 
+@@ -54,4 +54,4 @@
+ if context.is_offline_mode():
+     run_migrations_offline()
+ else:
+-    run_migrations_online()+    run_migrations_online()
+--- a/frontend/src/pages/3leftpage/3Leftpage.tsx
++++ b/frontend/src/pages/3leftpage/3Leftpage.tsx
+@@ -121,7 +121,7 @@
+   return value;
+ }
+ 
+-function formatValue(value: unknown, suffix = "") {
++function formatValue(value: unknown, suffix = ""): string {
+   const normalized = normalizeValue(value);
+   if (normalized === null || normalized === undefined || normalized === "") return "—";
+   if (typeof normalized === "boolean") return normalized ? "sim" : "não";
+--- a/frontend/src/pages/2dto3d/transfer.tsx
++++ b/frontend/src/pages/2dto3d/transfer.tsx
+@@ -682,7 +682,7 @@
+           smiles: molecule.smiles,
+           molarMass: molecule.molarMass,
+           status: molecule.status,
+-          concentration: item.role === "solvent" ? null : amountMmol,
++          concentration: item.role === "solvent" ? undefined : amountMmol,
+           unit: item.role === "solvent" ? "partes" : "mmol",
+           transferMetadata: {
+             measurementSystem: item.role === "solvent" ? "ratio" : "amount",
+@@ -764,7 +764,7 @@
+           smiles: molecule.smiles,
+           molarMass: molecule.molarMass,
+           status: molecule.status,
+-          concentration: item.role === "solvent" ? null : amountMmol,
++          concentration: item.role === "solvent" ? undefined : amountMmol,
+           unit: item.role === "solvent" ? "partes" : "mmol",
+           transferMetadata: {
+             measurementSystem: item.role === "solvent" ? "ratio" : "amount",
+--- a/frontend/src/pages/3dpage/components/render/rendering.tsx
++++ b/frontend/src/pages/3dpage/components/render/rendering.tsx
+@@ -86,21 +86,9 @@
+ }
+ 
+ 
+-function isSurfactantMolecule(molecule: Molecule3DItem) {
+-  return (
+-    molecule.metadata?.isSurfactant === true ||
+-    /surf|micel|sds|ctab|tween|brij|span|sles|laur/i.test(
+-      `${molecule.name} ${molecule.formula} ${molecule.smiles}`
+-    )
+-  );
+-}
+-
+-function createMicelleGuide(_groups: THREE.Group[]) {
+-  const guide = new THREE.Group();
+-  guide.name = "legacy-micelle-guide-disabled";
+-
+-  return guide;
+-}
++
++
++
+ 
+ function normalizeAtomPositions(atoms: Molecule3DAtom[]) {
+   if (atoms.length === 0) return [];
+--- a/frontend/src/pages/3dpage/type/3dpage.types.ts
++++ b/frontend/src/pages/3dpage/type/3dpage.types.ts
+@@ -487,29 +487,7 @@
+   return "partes";
+ }
+ 
+-function getSavedTransfers(): MoleculeTransferFrom2D[] {
+-  try {
+-    const raw = window.localStorage.getItem(MOLECULES_3D_STORAGE_KEY);
+-
+-    if (!raw) return [];
+-
+-    const parsed = JSON.parse(raw);
+-
+-    if (!Array.isArray(parsed)) return [];
+-
+-    return parsed.filter(
+-      (item): item is MoleculeTransferFrom2D =>
+-        Boolean(
+-          item &&
+-            typeof item === "object" &&
+-            typeof item.smiles === "string" &&
+-            item.smiles.trim().length > 0
+-        )
+-    );
+-  } catch {
+-    return [];
+-  }
+-}
++
+ 
+ function resolveSmiles(molecule: SendableMolecule2D) {
+   return (
+--- a/frontend/src/pages/3dpage/3dpage.tsx
++++ b/frontend/src/pages/3dpage/3dpage.tsx
+@@ -507,9 +507,7 @@
+   }
+ }
+ 
+-function readStoredTransfers(): MoleculeTransferFrom2D[] {
+-  return readStoredTransferPayload()?.molecules ?? [];
+-}
++
+ 
+ function looksLikeSolvent(transfer: MoleculeTransferFrom2D) {
+   const formula = transfer.formula?.replace(/\s/g, "").toUpperCase();
+@@ -940,108 +938,9 @@
+ }
+ 
+ 
+-function hashStringToUnitInterval(value: string) {
+-  let hash = 2166136261;
+-
+-  for (let index = 0; index < value.length; index += 1) {
+-    hash ^= value.charCodeAt(index);
+-    hash = Math.imul(hash, 16777619);
+-  }
+-
+-  return (hash >>> 0) / 4294967295;
+-}
+-
+-function createContinuousMiceliumFrame(
+-  baseFrame: SimulationFrame3D,
+-  topology: SimulationTopology3D | null,
+-  continuationStep: number
+-): SimulationFrame3D {
+-  if (!topology || baseFrame.coordinates.length === 0) {
+-    return {
+-      ...baseFrame,
+-      frameIndex: baseFrame.frameIndex + continuationStep,
+-      timePs: baseFrame.timePs + continuationStep * 0.05,
+-      coordinates: baseFrame.coordinates.map(
+-        (coordinate): [number, number, number] => [...coordinate]
+-      ),
+-    };
+-  }
+-
+-  const moleculeAtoms = new Map<string, SimulationAtom3D[]>();
+-
+-  topology.atoms.forEach((atom) => {
+-    const atoms = moleculeAtoms.get(atom.moleculeId) ?? [];
+-
+-    atoms.push(atom);
+-    moleculeAtoms.set(atom.moleculeId, atoms);
+-  });
+-
+-  const coordinates = baseFrame.coordinates.map(
+-    (coordinate): [number, number, number] => [...coordinate]
+-  );
+-
+-  moleculeAtoms.forEach((atoms, moleculeId) => {
+-    const sourceCoordinates = atoms
+-      .map((atom) => baseFrame.coordinates[atom.index])
+-      .filter((coordinate): coordinate is [number, number, number] =>
+-        Array.isArray(coordinate)
+-      );
+-
+-    if (sourceCoordinates.length === 0) return;
+-
+-    const center = sourceCoordinates.reduce(
+-      (sum, coordinate) => {
+-        sum[0] += coordinate[0];
+-        sum[1] += coordinate[1];
+-        sum[2] += coordinate[2];
+-
+-        return sum;
+-      },
+-      [0, 0, 0] as [number, number, number]
+-    );
+-
+-    center[0] /= sourceCoordinates.length;
+-    center[1] /= sourceCoordinates.length;
+-    center[2] /= sourceCoordinates.length;
+-
+-    const hash = hashStringToUnitInterval(moleculeId);
+-    const phase = continuationStep * 0.13 + hash * Math.PI * 2;
+-    const isSolvent = atoms.every((atom) => atom.isSolvent);
+-    const amplitude = isSolvent ? 0.030 : 0.075;
+-    const angle = Math.sin(phase * 0.41) * (isSolvent ? 0.010 : 0.055);
+-    const cos = Math.cos(angle);
+-    const sin = Math.sin(angle);
+-
+-    const drift: [number, number, number] = [
+-      Math.sin(phase) * amplitude,
+-      Math.cos(phase * 0.73) * amplitude * 0.72,
+-      Math.sin(phase * 0.57 + 1.7) * amplitude,
+-    ];
+-
+-    atoms.forEach((atom) => {
+-      const original = baseFrame.coordinates[atom.index];
+-
+-      if (!original) return;
+-
+-      const localX = original[0] - center[0];
+-      const localY = original[1] - center[1];
+-      const localZ = original[2] - center[2];
+-
+-      coordinates[atom.index] = [
+-        center[0] + localX * cos + localZ * sin + drift[0],
+-        center[1] + localY + drift[1],
+-        center[2] - localX * sin + localZ * cos + drift[2],
+-      ];
+-    });
+-  });
+-
+-  return {
+-    ...baseFrame,
+-    frameIndex: baseFrame.frameIndex + continuationStep,
+-    timePs: baseFrame.timePs + continuationStep * 0.05,
+-    coordinates,
+-  };
+-}
++
++
++
+ 
+ 
+ type WebGLAvailability = "checking" | "available" | "unavailable";
+@@ -1262,7 +1161,6 @@
+ 
+     const {
+       frames,
+-      topology: currentTopology,
+     } = latestPlaybackDataRef.current;
+ 
+     let nextFrame: SimulationFrame3D | null = null;
+--- a/frontend/src/pages/leftpage/components/chemistryParametersApi.ts
++++ b/frontend/src/pages/leftpage/components/chemistryParametersApi.ts
+@@ -145,7 +145,7 @@
+     body: JSON.stringify({
+       smiles: canonicalSmiles,
+       internal_molecule: molecule,
+-      generate_3d: false,
++      generate_3d: shouldGenerate3D(molecule),
+       deep_analysis: false,
+       environment: STABLE_ISOLATED_ENVIRONMENT,
+     }),
+@@ -164,7 +164,8 @@
+     throw new Error(detail || "Erro ao calcular parâmetros químicos.");
+   }
+ 
+-  return response.json() as Promise<ChemistryParametersResponse>;
++  const data = await response.json() as ChemistryParametersResponse;
++  return normalizeChemistryParametersResponse(data);
+ }
+ 
+ 
