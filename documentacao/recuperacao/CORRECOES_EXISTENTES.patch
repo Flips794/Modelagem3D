@@ -2,7 +2,7 @@
 +++ b/backend/docker-compose.yml
 @@ -8,9 +8,55 @@
        POSTGRES_USER: modelagem3d
-       POSTGRES_PASSWORD: REMOVIDO
+       POSTGRES_PASSWORD: <redacted>
      ports:
 -      - "5433:5432"
 +      - "127.0.0.1:5433:5432"
@@ -19,7 +19,7 @@
 +    restart: unless-stopped
 +    environment:
 +      APP_ENV: development
-+      DATABASE_URL: postgresql+psycopg://modelagem3d:REMOVIDO@postgres:5432/modelagem3d_db
++      DATABASE_URL: postgresql+psycopg://modelagem3d:<redacted>@postgres:5432/modelagem3d_db
 +      BACKEND_CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
 +      OPENMM_CPU_THREADS: "2"
 +    ports:

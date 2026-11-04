@@ -27,6 +27,9 @@ on_error() {
 }
 trap on_error ERR
 
+# backend/.env guarda a senha do banco fora do git.
+bash "$PROJECT_DIR/scripts/garantir_env_backend.sh" "$PROJECT_DIR"
+
 echo 'Iniciando PostgreSQL...'
 "${COMPOSE[@]}" up -d --wait --wait-timeout 120 postgres
 

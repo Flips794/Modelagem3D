@@ -16,6 +16,8 @@ class Settings(BaseSettings):
         env_file=Path(__file__).resolve().parents[2] / ".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        # backend/.env também alimenta o Docker Compose (POSTGRES_PASSWORD).
+        extra="ignore",
     )
 
 

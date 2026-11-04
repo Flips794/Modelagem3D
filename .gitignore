@@ -13,3 +13,7 @@ backups/
 /configuracoes/recuperadas/
 /dados/recuperados/
 /backups/
+
+# Dependências locais de teste e área de trabalho do executor
+backend/.testdeps/
+.superpowers/

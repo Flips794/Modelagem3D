@@ -96,7 +96,7 @@ def test_no_real_env_tracked():
     assert not [p for p in tracked if p.split("/")[-1] in {".env", ".env.local", ".env.production"}]
 
 def test_no_known_dev_password_in_tracked_files():
-    assert grep_tracked("REMOVIDO:") == [] and grep_tracked("POSTGRES_PASSWORD: REMOVIDO") == []
+    assert postgres_password_assignments_not_placeholders() == []   # só CHANGE_ME ou ${...}
 
 def test_no_literal_password_in_database_urls():
     # regex postgresql\+psycopg://[^:/\s]+:([^@\s$]+)@ ; senhas aceitas: CHANGE_ME, validation, ${...}
@@ -107,9 +107,9 @@ def test_no_literal_password_in_database_urls():
 - [ ] **Passo 5: tirar a senha dos arquivos versionados.**
   - `docker-compose.yml`: `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD em backend/.env}` e `DATABASE_URL: postgresql+psycopg://modelagem3d:${POSTGRES_PASSWORD}@postgres:5432/modelagem3d_db`.
   - `.env.example` e `alembic.ini`: senha `CHANGE_ME`.
-  - Patch histórico: `REMOVIDO` → `<redacted>`.
-  - `iniciar_linux.sh`: se `backend/.env` não existir, cria o arquivo com `POSTGRES_PASSWORD=REMOVIDO` e um comentário explicando que esse é o valor atual do banco local e que trocar o valor não troca a senha do banco (`ALTER USER`). Permissão `600`.
-  - O Compose lê `backend/.env` automaticamente, porque está na mesma pasta do `docker-compose.yml`. Conferir com `docker compose -f backend/docker-compose.yml config | grep -c REMOVIDO`: esperado `2` com o `.env` criado; com o `.env` ausente, o comando falha com a mensagem do `:?`.
+  - Patch histórico: senha → `<redacted>`.
+  - `iniciar_linux.sh`: se `backend/.env` não existir, chama `scripts/garantir_env_backend.sh`, que cria o arquivo com a senha lida do container existente (ou aleatória numa instalação nova) e um comentário explicando que trocar o valor não troca a senha do banco (`ALTER USER`). Permissão `600`. (Ruling da execução: a senha não fica literal no script.)
+  - O Compose lê `backend/.env` automaticamente, porque está na mesma pasta do `docker-compose.yml`. Conferir com `docker compose -f backend/docker-compose.yml config`: com o `.env` criado, a senha aparece interpolada nas duas posições; com o `.env` ausente, o comando falha com a mensagem do `:?`.
 - [ ] **Passo 6: rodar os testes.** `test_no_secrets.py` deve PASSAR, e `bash scripts/testar_backend.sh` deve dar `1217 passed`.
 - [ ] **Passo 7: commit.** `git add -A && git commit -m "chore: executores de teste e segredos fora dos arquivos versionados"`. Antes, conferir `git status` e confirmar que nenhum `.env` aparece.
 
