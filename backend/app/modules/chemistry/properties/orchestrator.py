@@ -1,0 +1,46 @@
+"""Chama os provedores e mescla o resultado na resposta do painel químico."""
+from __future__ import annotations
+
+from typing import Any
+
+from rdkit import Chem
+
+from app.modules.chemistry.properties import electronic_basic
+from app.modules.chemistry.properties.base import PropertyBundle, PropertyContext
+
+
+def build_context(mol: Chem.Mol, structure: Any, env: dict[str, Any]) -> PropertyContext:
+    """`active_atom_indices`: átomos de `mol` que formam o fragmento ativo do perfil."""
+    fragments = Chem.GetMolFrags(mol, asMols=False, sanitizeFrags=False)
+    target = Chem.MolToSmiles(structure.active)
+    active = next((frag for frag in fragments
+                   if Chem.MolFragmentToSmiles(mol, atomsToUse=list(frag)) == target), None)
+    if active is None:  # não deveria ocorrer; mantém o maior fragmento
+        active = max(fragments, key=len)
+    return PropertyContext(mol=mol, structure=structure, env=dict(env), active_atom_indices=tuple(active))
+
+
+def compute_all(ctx: PropertyContext) -> PropertyBundle:
+    bundle = PropertyBundle()
+    bundle.update(electronic_basic.compute(ctx))
+    return bundle
+
+
+def _fill(target: dict[str, Any], fields: dict[str, Any]) -> None:
+    """Só preenche campo ausente ou indisponível; nunca troca um valor já disponível."""
+    for key, new in fields.items():
+        current = target.get(key)
+        if current is None or (isinstance(current, dict) and current.get("available") is False):
+            target[key] = new
+
+
+def merge_into(molecule: dict, atoms: list[dict], bonds: list[dict], bundle: PropertyBundle) -> None:
+    _fill(molecule, bundle.molecule)
+    atoms_by_index = {atom.get("rdkit_idx"): atom for atom in atoms}
+    for index, fields in bundle.atoms.items():
+        if index in atoms_by_index:
+            _fill(atoms_by_index[index], fields)
+    bonds_by_index = {bond.get("rdkit_idx"): bond for bond in bonds}
+    for index, fields in bundle.bonds.items():
+        if index in bonds_by_index:
+            _fill(bonds_by_index[index], fields)

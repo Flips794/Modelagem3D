@@ -13,6 +13,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 
 from app.modules.chemistry.parameters import validated_calculations as validated
+from app.modules.chemistry.properties import orchestrator as properties_orchestrator
 
 from app.modules.chemistry.parameters.schemas import (
     ChemistryParametersRequest,
@@ -879,7 +880,7 @@ def build_atoms(mol) -> list[dict[str, Any]]:
                 "is_no_anel": atom.IsInRing(),
                 "tamanho_do_anel": None,
                 "chiral_tag": str(atom.GetChiralTag()),
-                "configuracao_absoluta": param(atom.GetProp("_CIPCode"), "RDKit CIP") if atom.HasProp("_CIPCode") else unavailable("RDKit CIP"),
+                "configuracao_absoluta": param(atom.GetProp("_CIPCode"), "RDKit CIP", confidence="high") if atom.HasProp("_CIPCode") else unavailable("RDKit CIP"),
                 "posicao_2d": None,
                 "posicao_3d": unavailable("3D skipped fast route"),
                 "raio_vdw": param(rounded(vdw, 4), "RDKit PeriodicTable", "Angstrom"),
@@ -1327,6 +1328,9 @@ def make_response(payload: ChemistryParametersRequest) -> dict[str, Any]:
     molecule["miriam2_calculation_plan"] = param(["RDKit graph descriptors", "shared 2D/3D identity", "domain-restricted HLB/CMC", "no quantum calculation"], validated.VERSION)
     atoms = build_atoms(mol)
     bonds = build_bonds(mol)
+    # Web Lite v1: provedores de propriedades preenchem apenas campos indisponíveis.
+    property_context = properties_orchestrator.build_context(mol, structure, env)
+    properties_orchestrator.merge_into(molecule, atoms, bonds, properties_orchestrator.compute_all(property_context))
     warnings = [
         "Descritores locais RDKit: fórmulas/massas da entrada completa; logP/TPSA do fragmento ativo.",
         "HLB/CMC/CPP são estimativas com domínio de aplicação; não comprovam auto-organização ou equilíbrio experimental.",
