@@ -1,7 +1,7 @@
 # Modelagem3D Web Lite v1 — Especificação
 
 Data: 04/11/2026
-Status: aguardando revisão do autor do projeto
+Status: aprovada com ajustes em 04/11/2026 (itens 1–6 da revisão do autor)
 Base: commit `0fedfdc` (estado inicial versionado)
 
 ## 1. Objetivo
@@ -156,7 +156,15 @@ Componente: `micelium/IA/molecular_identity_ai.py` (existente, aprimorado), que 
 
 ### 5.1 Pré-condição de surfactante
 
-A molécula precisa ter um domínio hidrofóbico (cauda alquílica linear ou ramificada com pelo menos 8 carbonos contíguos ou equivalente aromático-alquílico) **e** um grupo de cabeça reconhecido. Álcoois graxos com apenas um –OH, como dodecanol, são classificados como **anfifílico não micelizante (cossurfactante)**, e não como surfactante não iônico.
+A molécula precisa ter um domínio hidrofóbico (cauda alquílica linear ou ramificada com pelo menos 8 carbonos contíguos ou equivalente aromático-alquílico) **e** um grupo de cabeça reconhecido.
+
+**Anfifílicos de cabeça fraca** (álcoois graxos com um único –OH, como dodecanol; ácidos graxos neutros; aminas graxas neutras) não recebem classificação absoluta. A identificação devolve:
+
+- classe estrutural `nonionic` (ou a classe correspondente ao grupo ionizável, no caso de ácido ou amina), com `amphiphile_role: "surfactant_or_cosurfactant"`;
+- a nota: "Cabeça polar fraca: pode atuar como surfactante ou cossurfactante, conforme o sistema (outros surfactantes, óleo, concentração). A v1 não decide esse papel.";
+- nenhuma CMC calculada por correlação de família, porque não há correlação fundamentada de CMC para esses anfifílicos na v1.
+
+Em mistura com um surfactante, o painel mostra o anfifílico de cabeça fraca como possível cossurfactante. No 3D, ele aparece como soluto disperso que pode ser incorporado aos agregados, sem CMC própria.
 
 ### 5.2 Regras de classe
 
@@ -224,7 +232,16 @@ O ambiente 3D da v1 é uma **visualização representativa**: uma animação coa
 
 ### 7.3 Publicação
 
-Alvo: um servidor VPS com Docker Compose, o mesmo modelo de execução usado hoje no Ubuntu.
+**Decisão adiada:** VPS ou serviço gerenciado (ex.: Render, Railway, Fly.io com Postgres gerenciado). A v1 deixa as duas opções possíveis:
+
+- As imagens Docker do backend e do frontend são autossuficientes, configuradas só por variáveis de ambiente (`DATABASE_URL`, `BACKEND_CORS_ORIGINS`, `APP_ENV`, `UVICORN_WORKERS`, `PORT`).
+- O backend lê a porta de `PORT` (padrão 8000), como os serviços gerenciados exigem.
+- O frontend tem uma imagem de produção (build estático servido por Caddy). Se o serviço gerenciado servir arquivos estáticos direto, ela não é necessária.
+- O backend aplica as migrações Alembic na inicialização, como faz hoje, e funciona com qualquer PostgreSQL 16 acessível por `DATABASE_URL`.
+
+O caminho VPS é documentado e testado localmente. O caminho gerenciado é documentado como lista de variáveis e comandos, sem teste em provedor real nesta etapa.
+
+Caminho VPS: Docker Compose, o mesmo modelo de execução usado hoje no Ubuntu.
 
 ```
 Internet ──HTTPS──► Caddy (TLS automático, Let's Encrypt)
@@ -239,7 +256,18 @@ Internet ──HTTPS──► Caddy (TLS automático, Let's Encrypt)
 - Requisitos mínimos do servidor: 2 vCPUs, 2 GB de RAM e 20 GB de disco (estimativa para RDKit + Postgres + Caddy; validada pela medição de memória da seção 8.5).
 - Documento `documentacao/publicacao/PUBLICAR.md` com o passo a passo: DNS, `.env`, `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d`, verificação e backup.
 
-A escolha do provedor de VPS fica com o autor do projeto. A spec não depende do provedor.
+A escolha entre VPS e serviço gerenciado, e do provedor, fica com o autor do projeto. A spec não depende dessa escolha.
+
+### 7.4 Segredos e git
+
+Auditoria de 04/11/2026: nenhum `.env` real nem dump entrou nos commits; `backups/` e `arquivo/` estão ignorados. A senha de desenvolvimento do Postgres está gravada em `backend/docker-compose.yml` (2×), `backend/alembic.ini`, `backend/.env.example` e `documentacao/recuperacao/CORRECOES_EXISTENTES.patch`. O repositório não tem remoto.
+
+- `docker-compose.yml` passa a usar `${POSTGRES_PASSWORD}` e `${DATABASE_URL}`, lidos de `backend/.env` (ignorado pelo git). O `iniciar_linux.sh` cria esse `.env` a partir do exemplo na primeira execução, preservando a senha atual do banco local para não quebrar o volume existente.
+- `alembic.ini` e `.env.example` recebem um marcador (`CHANGE_ME`) no lugar da senha. O `alembic/env.py` já lê a URL de `settings.database_url`, então o valor do `.ini` não é usado.
+- No patch histórico da documentação, só a senha é substituída por `<redacted>`.
+- A senha de produção é sempre diferente da de desenvolvimento.
+- Um teste (`tests/test_no_secrets.py`) falha se `git ls-files` incluir `.env` real ou se o conteúdo rastreado tiver a senha conhecida ou URL de banco com senha literal.
+- Limpeza do histórico: os commits atuais ainda contêm a senha de desenvolvimento. Antes do primeiro envio para um remoto, o histórico é reescrito (o repositório é local e tem poucos commits), mediante confirmação do autor.
 
 ## 8. Testes
 
@@ -276,9 +304,12 @@ Critérios: nenhuma resposta 5xx; entradas inválidas → 400/422 com mensagem; 
 `backend/tests/test_surfactant_identification.py`, com um conjunto rotulado montado na implementação a partir de surfactantes de literatura:
 
 - 8 aniônicos, 8 catiônicos, 8 não iônicos, 6 zwitteriônicos e 6 anfotéricos, com SMILES e referência por item.
-- 12 não surfactantes: hexano, etanol, glicose, ácido benzoico, nitrobenzeno, dodecanol, ureia, glicina, acetato de sódio, cloreto de tetrametilamônio, benzeno, octano.
+- 11 não surfactantes: hexano, etanol, glicose, ácido benzoico, nitrobenzeno, ureia, glicina, acetato de sódio, cloreto de tetrametilamônio, benzeno, octano.
+- 3 anfifílicos de cabeça fraca: dodecanol, ácido dodecanoico neutro, dodecilamina neutra. Esperado: `amphiphile_role: "surfactant_or_cosurfactant"`, sem CMC por correlação.
 
 Critério: 100 % de acerto nesse conjunto, com a matriz de confusão gravada num relatório. Um erro corrige a regra; o rótulo do conjunto não é alterado para fazer o teste passar.
+
+Óxido de amina: óxido de dodecildimetilamina é classificado como anfotérico. Em pH 2, espécie catiônica (N–OH⁺); em pH 7, forma neutra/zwitteriônica N⁺–O⁻ predominante (pKa ≈ 4,6).
 
 Teste de pH: N-dodecilglicina em pH 2 → espécie catiônica; em pH 12 → espécie aniônica; classe estrutural anfotérica nos dois casos.
 
@@ -304,6 +335,7 @@ Frontend (Vitest): o selo "Visualização representativa" aparece, e o painel se
 
 Cada passo é um commit pequeno com seus testes.
 
+0. Segredos fora dos arquivos versionados (7.4).
 1. Bateria de estabilidade (8.1) e correção pontual das falhas encontradas.
 2. Provedores RDKit: `electronic_basic`, `conformer3d`, `resonance` + mescla no painel.
 3. `ionization` + regras das cinco classes + `amphoteric_ai` + roteador.
