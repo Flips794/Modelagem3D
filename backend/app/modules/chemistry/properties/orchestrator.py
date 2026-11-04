@@ -7,7 +7,7 @@ from typing import Any
 
 from rdkit import Chem
 
-from app.modules.chemistry.properties import conformer3d, electronic_basic
+from app.modules.chemistry.properties import conformer3d, electronic_basic, resonance
 from app.modules.chemistry.properties.base import PropertyBundle, PropertyContext
 
 
@@ -43,6 +43,7 @@ def _conformer_bundle(ctx: PropertyContext) -> PropertyBundle:
 def compute_all(ctx: PropertyContext, *, generate_3d: bool = True) -> PropertyBundle:
     bundle = PropertyBundle()
     bundle.update(electronic_basic.compute(ctx))
+    bundle.update(resonance.compute(ctx))
     bundle.update(_conformer_bundle(ctx) if generate_3d else conformer3d.not_requested(ctx))
     return bundle
 
