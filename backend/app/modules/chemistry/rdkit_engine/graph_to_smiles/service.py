@@ -29,7 +29,11 @@ def _normalize_symbol(symbol: str) -> str:
 
 def _validate_symbol(symbol: str) -> str:
     normalized = _normalize_symbol(symbol)
-    atomic_number = Chem.GetPeriodicTable().GetAtomicNumber(normalized)
+    try:
+        atomic_number = Chem.GetPeriodicTable().GetAtomicNumber(normalized)
+    except RuntimeError:
+        # RDKit lança RuntimeError (não devolve 0) para símbolos desconhecidos.
+        atomic_number = 0
 
     if atomic_number <= 0:
         raise ValueError(

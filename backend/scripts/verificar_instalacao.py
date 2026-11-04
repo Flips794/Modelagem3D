@@ -9,6 +9,23 @@ import sys
 from urllib.request import Request, urlopen
 
 
+def check_prediction_response(response: dict, expected_class: str) -> None:
+    """Classe correta e CMC honesta: número positivo finito ou ausente com aviso explícito.
+
+    O sistema não inventa CMC fora do domínio validado; ausência sem aviso é falha.
+    """
+    if response["molecule"]["surfactant_class"] != expected_class:
+        raise AssertionError(f"Classe {response['molecule']['surfactant_class']!r}; esperada {expected_class!r}")
+    prediction = response["prediction"]
+    cmc = prediction.get("predicted_cmc_mmol_l")
+    if cmc is None:
+        if not any(str(w).strip() for w in prediction.get("warnings") or []):
+            raise AssertionError("CMC ausente sem aviso explicando o motivo")
+        return
+    if not (isinstance(cmc, (int, float)) and math.isfinite(cmc) and cmc > 0):
+        raise AssertionError(f"CMC inválida: {cmc!r}")
+
+
 def run(base_url: str) -> list[dict[str, str]]:
     results: list[dict[str, str]] = []
     base_url = base_url.rstrip("/")
@@ -58,6 +75,8 @@ def run(base_url: str) -> list[dict[str, str]]:
             response = request("/chemistry/rdkit/parse-2d", {"identifier": smiles})
             require(response["success"] and response["formula"] == formula)
 
+        check(f"Desenho 2D: {name}", parse)
+
         check(f"Importação 2D: {name}", parse)
 
     def roundtrip():
@@ -91,8 +110,7 @@ def run(base_url: str) -> list[dict[str, str]]:
             response = request("/micelium-ai/predict", {
                 "smiles": smiles, "concentration": 10, "unit": "mmol/L",
             })
-            require(response["molecule"]["surfactant_class"] == expected)
-            require(response["prediction"]["predicted_cmc_mmol_l"] is not None)
+            check_prediction_response(response, expected)
 
         check(f"Rota de previsão: {name}", predict)
 

@@ -14,7 +14,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ALLOWED_URL_PASSWORDS = {"CHANGE_ME", "validation", "v", "<redacted>"}
-PASSWORD_ASSIGNMENT = re.compile(r"\bPOSTGRES_PASSWORD\s*[:=]\s*([^\s#]+)")
+# O valor precisa começar como um valor (não pega padrões de sed como s/^POSTGRES_PASSWORD=//p).
+PASSWORD_ASSIGNMENT = re.compile(r"\bPOSTGRES_PASSWORD\s*[:=]\s*([A-Za-z0-9_$<'\"`][^\s#]*)")
 DB_URL_WITH_PASSWORD = re.compile(r"postgresql(?:\+psycopg)?://[^:/\s\"']+:([^@\s\"']+)@")
 ENV_FILE_NAMES = {".env", ".env.local", ".env.production", ".env.fumaca"}
 # Arquivos de teste que usam senhas falsas de propósito para exercitar o script.
