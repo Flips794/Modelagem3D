@@ -84,9 +84,18 @@ def test_catalog_no_fabricated_quantum_results_or_false_physical_approval(item):
     json.dumps(ai.model_dump(), allow_nan=False)
     m = result['molecule']
     for key in ['energia_homo','energia_lumo','gap_homo_lumo','potencial_ionizacao','afinidade_eletronica',
-                'vetor_momento_dipolo','densidade','ponto_ebulicao','calor_de_formacao','energia_conformacional']:
+                'densidade','ponto_ebulicao','calor_de_formacao']:
         assert m[key]['available'] is False
         assert m[key]['value'] is None and m[key]['note']
+    # Web Lite v1 (tarefa 3): dipolo e energia conformacional passam a vir do campo de força
+    # MMFF94 (não quântico) quando há geometria 3D; continuam proibidos como valor inventado.
+    for key in ['vetor_momento_dipolo', 'energia_conformacional']:
+        field = m[key]
+        if field['available']:
+            assert 'MMFF94' in field['source'] and field['confidence'] in {'low', 'medium'}
+            assert '1 confórmero' in field['note']
+        else:
+            assert field['value'] is None and field['note']
     assert m['miriam2_physical_validation']['value']['passed'] is None
     assert m['calculation_provenance']['value']['experimental_validation'] is False
     assert all(a['carga_quantica_ou_proxy']['available'] is False for a in result['atoms'])

@@ -1330,7 +1330,8 @@ def make_response(payload: ChemistryParametersRequest) -> dict[str, Any]:
     bonds = build_bonds(mol)
     # Web Lite v1: provedores de propriedades preenchem apenas campos indisponíveis.
     property_context = properties_orchestrator.build_context(mol, structure, env)
-    properties_orchestrator.merge_into(molecule, atoms, bonds, properties_orchestrator.compute_all(property_context))
+    properties_orchestrator.merge_into(molecule, atoms, bonds, properties_orchestrator.compute_all(
+        property_context, generate_3d=payload.generate_3d))
     warnings = [
         "Descritores locais RDKit: fórmulas/massas da entrada completa; logP/TPSA do fragmento ativo.",
         "HLB/CMC/CPP são estimativas com domínio de aplicação; não comprovam auto-organização ou equilíbrio experimental.",

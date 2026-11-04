@@ -1,11 +1,13 @@
 """Chama os provedores e mescla o resultado na resposta do painel químico."""
 from __future__ import annotations
 
+import copy
+from collections import OrderedDict
 from typing import Any
 
 from rdkit import Chem
 
-from app.modules.chemistry.properties import electronic_basic
+from app.modules.chemistry.properties import conformer3d, electronic_basic
 from app.modules.chemistry.properties.base import PropertyBundle, PropertyContext
 
 
@@ -20,9 +22,28 @@ def build_context(mol: Chem.Mol, structure: Any, env: dict[str, Any]) -> Propert
     return PropertyContext(mol=mol, structure=structure, env=dict(env), active_atom_indices=tuple(active))
 
 
-def compute_all(ctx: PropertyContext) -> PropertyBundle:
+_CONFORMER_CACHE: "OrderedDict[str, PropertyBundle]" = OrderedDict()
+_CONFORMER_CACHE_SIZE = 256
+
+
+def _conformer_bundle(ctx: PropertyContext) -> PropertyBundle:
+    # Chave preserva a ordem dos átomos de entrada (SMILES canônico trocaria os índices).
+    key = Chem.MolToSmiles(ctx.mol, canonical=False, isomericSmiles=True)
+    cached = _CONFORMER_CACHE.get(key)
+    if cached is None:
+        cached = conformer3d.compute(ctx)
+        _CONFORMER_CACHE[key] = cached
+        if len(_CONFORMER_CACHE) > _CONFORMER_CACHE_SIZE:
+            _CONFORMER_CACHE.popitem(last=False)
+    else:
+        _CONFORMER_CACHE.move_to_end(key)
+    return copy.deepcopy(cached)
+
+
+def compute_all(ctx: PropertyContext, *, generate_3d: bool = True) -> PropertyBundle:
     bundle = PropertyBundle()
     bundle.update(electronic_basic.compute(ctx))
+    bundle.update(_conformer_bundle(ctx) if generate_3d else conformer3d.not_requested(ctx))
     return bundle
 
 
