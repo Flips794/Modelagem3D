@@ -12,6 +12,7 @@ from app.modules.chemistry.properties import (
     conformer3d,
     electronic_basic,
     ionization,
+    micelle_theory,
     resonance,
     surfactant_class,
 )
@@ -54,6 +55,7 @@ def compute_all(ctx: PropertyContext, *, generate_3d: bool = True) -> PropertyBu
     bundle.update(ionization.compute(ctx))
     bundle.update(surfactant_class.compute(ctx))
     bundle.update(cmc_correlations.compute(ctx))
+    bundle.update(micelle_theory.compute(ctx))
     bundle.update(_conformer_bundle(ctx) if generate_3d else conformer3d.not_requested(ctx))
     return bundle
 

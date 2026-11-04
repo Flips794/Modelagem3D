@@ -225,7 +225,7 @@ def cmc_estimate(p: StructuralProfile, env: dict) -> dict:
     """
     result = {"reference_mmol_l": None, "value": None, "method": "not_available", "origin": "indisponível",
               "note": "Fora do domínio: requer CMC experimental ou modelo treinado validado."}
-    if not p.is_surfactant or not p.linear_hydrocarbon or p.ambiguous_mixture:
+    if not p.is_surfactant or p.ambiguous_mixture:
         return result
     if p.amphiphile_role == "surfactant_or_cosurfactant":
         result["note"] = ("Cabeça polar fraca (surfactante ou cossurfactante, conforme o sistema): "
@@ -233,6 +233,12 @@ def cmc_estimate(p: StructuralProfile, env: dict) -> dict:
         return result
     others = {Chem.MolToSmiles(f) for f in p.others}
     anchor = None
+    if not p.linear_hydrocarbon:
+        # Âncoras SDS/CTAB exigem cauda linear; famílias com anel na cabeça (piridínio, glicosídeo)
+        # são reconhecidas pela estrutura exata em family_cmc.
+        from app.modules.chemistry.properties.cmc_correlations import family_cmc  # import local: evita ciclo
+        family = family_cmc(p, env)
+        return family if family["method"] != "not_available" else result
     if p.head == "sulfate" and others == {"[Na+]"} and 8 <= p.tail_c <= 18:
         if Chem.MolToSmiles(p.active) == Chem.MolToSmiles(Chem.MolFromSmiles("C" * p.tail_c + "OS(=O)(=O)[O-]")):
             anchor = (8.2, 12, 0.31, "SDS/sodium alkyl sulfate homolog")

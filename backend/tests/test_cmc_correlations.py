@@ -155,3 +155,12 @@ def test_report_lists_every_family_and_exclusions():
     for family in fitted_constants():
         assert family in text
     assert "LOO" in text and "excluída" in text.lower()
+
+
+@pytest.mark.parametrize("smiles", [
+    "CCCCCCCCCCCCCCCC[n+]1ccccc1.[Cl-]", OCTYL_BETA_GLUCOSIDE, DTAC, "CCCCCCCCCCS(=O)(=O)[O-].[Na+]", C12E5,
+])
+def test_every_family_reaches_the_panel(smiles):
+    # Regressão (achado na tarefa 8): famílias com anel na cabeça não chegavam ao painel.
+    field = molecule_of(smiles)["cmc_estimada"]
+    assert field["available"] is True and "NSRDS-NBS 36" in field["source"]
