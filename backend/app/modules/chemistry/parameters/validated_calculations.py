@@ -223,7 +223,8 @@ def cmc_estimate(p: StructuralProfile, env: dict) -> dict:
     Salt response is explicitly an uncalibrated empirical screening correction.
     No agitation, volume, particle count or visual speed enters equilibrium CMC.
     """
-    result = {"reference_mmol_l": None, "value": None, "method": "not_available", "note": "Fora do domínio: requer CMC experimental ou modelo treinado validado."}
+    result = {"reference_mmol_l": None, "value": None, "method": "not_available", "origin": "indisponível",
+              "note": "Fora do domínio: requer CMC experimental ou modelo treinado validado."}
     if not p.is_surfactant or not p.linear_hydrocarbon or p.ambiguous_mixture:
         return result
     if p.amphiphile_role == "surfactant_or_cosurfactant":
@@ -239,7 +240,10 @@ def cmc_estimate(p: StructuralProfile, env: dict) -> dict:
         if Chem.MolToSmiles(p.active) == Chem.MolToSmiles(Chem.MolFromSmiles("C" * p.tail_c + "[N+](C)(C)C")):
             anchor = (0.92, 16, 0.30, "CTAB/alkyltrimethylammonium bromide homolog")
     if anchor is None:
-        return result
+        # Web Lite v1: outras famílias por correlação ajustada a dados NSRDS-NBS 36 (sem extrapolação).
+        from app.modules.chemistry.properties.cmc_correlations import family_cmc  # import local: evita ciclo
+        family = family_cmc(p, env)
+        return family if family["method"] != "not_available" else result
     value, n_ref, slope, family = anchor
     reference = value * 10 ** (slope * (n_ref - p.tail_c))
     result.update(reference_mmol_l=reference, method=family)
@@ -253,6 +257,7 @@ def cmc_estimate(p: StructuralProfile, env: dict) -> dict:
         return result
     salt_coefficient = 5.8 if p.head == "sulfate" else 4.4
     result.update(value=reference / (1 + salt_coefficient * ionic),
+                  origin="estimada (âncora experimental + inclinação de homólogos; correção salina empírica)",
                   note="Referência aquosa 20–25 °C; homólogos por Klevens. Correção salina empírica não calibrada; não é medição nem IA treinada.")
     return result
 
