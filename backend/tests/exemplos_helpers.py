@@ -77,3 +77,25 @@ def baseline_signature(response_json: dict) -> dict:
         "last_frame": [_round(c) for c in last["coordinates"]],
         "analysis": analysis,
     }
+
+
+def example_payload(example_id: str, *, environment: dict | None = None, amounts: dict | None = None,
+                    replace: dict | None = None, drop: tuple[str, ...] = (), with_id: bool = True) -> dict:
+    """Pedido no formato da tela a partir de um exemplo do catálogo.
+
+    `amounts`: {chave do componente: mmol}; `replace`: {chave: smiles}; `drop`: chaves removidas.
+    """
+    from app.modules.micelium.documented_examples import EXAMPLES
+
+    example = EXAMPLES[example_id]
+    components = []
+    for component in example.components:
+        if component.key in drop:
+            continue
+        item = {"name": component.name, "smiles": (replace or {}).get(component.key, component.smiles),
+                "role": component.role}
+        if component.role != "solvent":
+            item["mmol"] = (amounts or {}).get(component.key, component.amount_mmol)
+        components.append(item)
+    env = {**example.environment, **(environment or {})}
+    return screen_request(components, env, example_id if with_id else None)

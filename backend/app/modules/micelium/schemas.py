@@ -228,3 +228,50 @@ class EnvironmentApplyResponse(BaseModel):
     active_environment: MiceliumEnvironment
     changed_fields: list[str]
     notes: list[str]
+
+
+# Exemplos documentados (catálogo para o painel 2D→3D).
+class DocumentedExampleComponentOut(BaseModel):
+    key: str
+    name: str
+    smiles: str
+    role: Literal["reagent", "solvent"]
+    amount_mmol: float | None = None
+    formula: str
+    molar_mass: float
+    is_surfactant: bool | None = None
+    tail_carbon_count: int | None = None
+    tail_chain_count: int | None = None
+    example_role: str | None = None
+    derived_from_w0: bool = False
+
+
+class DocumentedExampleConditionOut(BaseModel):
+    parameter: str
+    label: str
+    basis: Literal["experimental", "protocol", "technical"]
+    source: str
+    minimum: float | None = None
+    maximum: float | None = None
+    allowed: list[str] | None = None
+
+
+class DocumentedExampleReferenceOut(BaseModel):
+    label: str
+    url: str | None = None
+
+
+class DocumentedExampleOut(BaseModel):
+    id: str
+    title: str
+    kind: Literal["validated_prediction", "representative_demo"]
+    example_version: str
+    last_reviewed_at: str
+    documented_morphology: str
+    components: list[DocumentedExampleComponentOut]
+    environment: dict[str, float | str]
+    conditions: list[DocumentedExampleConditionOut]
+    protocol: str
+    references: list[DocumentedExampleReferenceOut]
+    notes: list[str]
+    w0: float | None = None

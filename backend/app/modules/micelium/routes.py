@@ -10,7 +10,9 @@ from app.modules.micelium.database_session import (
     MiceliumDatabaseUnavailable,
     open_micelium_db_session,
 )
+from app.modules.micelium.documented_examples import catalog_payload
 from app.modules.micelium.schemas import (
+    DocumentedExampleOut,
     EnvironmentApplyRequest,
     EnvironmentApplyResponse,
     MiceliumEnvironment,
@@ -24,6 +26,12 @@ from app.modules.micelium.service import (
 
 
 router = APIRouter(prefix="/micelium", tags=["Micelium Engine"])
+
+
+@router.get("/documented-examples", response_model=list[DocumentedExampleOut])
+def list_documented_examples() -> list[dict]:
+    """Catálogo dos cinco exemplos documentados (só leitura, sem banco)."""
+    return catalog_payload()
 
 
 def format_exception_detail(exc: Exception) -> str:
