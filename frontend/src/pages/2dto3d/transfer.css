@@ -766,3 +766,8 @@
 }
 
 
+
+/* Exemplos documentados: cartão com uma única ação ocupa a largura toda. */
+.saved-library-actions.single-action {
+  grid-template-columns: 1fr;
+}

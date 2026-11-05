@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { SavedMolecule } from "../2dpage/type/rdkit2d.types";
 import {
@@ -10,6 +10,13 @@ import {
   type MoleculeTransferFrom2D,
 } from "../3dpage/type/3dpage.types";
 
+import {
+  deriveCoreWaterMmol,
+  exampleToMixture,
+  fetchDocumentedExamples,
+  type DocumentedExampleDto,
+  type LoadedExampleState,
+} from "./documentedExamples";
 import "./transfer.css";
 
 type SolutionMolecule = {
@@ -267,7 +274,8 @@ function getRealConcentrationMmolLFromItem(
 
 function buildStoredSolutionItems(
   items: SolutionItem[],
-  environment: StableEnvironmentSettings
+  environment: StableEnvironmentSettings,
+  documentedExampleId: string | null = null
 ) {
   const normalized = normalizeEnvironment(environment);
 
@@ -311,6 +319,7 @@ function buildStoredSolutionItems(
           realAmountMmol: item.role === "solvent" ? null : amountMmol,
           realConcentrationMmolL,
           environment: normalized,
+          documentedExampleId,
         },
       };
     })
@@ -320,7 +329,8 @@ function buildStoredSolutionItems(
 function saveTransferState(
   items: SolutionItem[],
   environment: StableEnvironmentSettings,
-  reason: string
+  reason: string,
+  documentedExampleId: string | null = null
 ) {
   if (typeof window === "undefined") return;
 
@@ -339,7 +349,7 @@ function saveTransferState(
   window.localStorage.setItem(
     MIXTURE_TRANSFER_STATE_STORAGE_KEY,
     JSON.stringify({
-      items: buildStoredSolutionItems(items, environment),
+      items: buildStoredSolutionItems(items, environment, documentedExampleId),
       environment: normalized,
       updatedAt,
       reason,
@@ -414,6 +424,21 @@ export default function Transfer2DTo3D({
   );
   const [hasUnmixedChanges, setHasUnmixedChanges] = useState(false);
   const [message, setMessage] = useState<TransferMessage | null>(null);
+  const [documentedExamples, setDocumentedExamples] = useState<DocumentedExampleDto[] | null>(null);
+  const [documentedExamplesError, setDocumentedExamplesError] = useState<string | null>(null);
+  const [loadedExample, setLoadedExample] = useState<LoadedExampleState | null>(null);
+  const loadedExampleId = loadedExample?.id ?? null;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchDocumentedExamples(controller.signal)
+      .then((examples) => setDocumentedExamples(examples))
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        setDocumentedExamplesError(error instanceof Error ? error.message : "Falha ao carregar os exemplos documentados.");
+      });
+    return () => controller.abort();
+  }, []);
 
   const hasCurrentMolecule = currentSmiles.trim().length > 0;
   const normalizedEnvironment = useMemo(() => normalizeEnvironment(environment), [environment]);
@@ -477,10 +502,81 @@ export default function Transfer2DTo3D({
     setHasUnmixedChanges(true);
   }
 
+  function exampleItemId(example: LoadedExampleState, key: string) {
+    return `exemplo:${example.id}:${key}`;
+  }
+
+  // Exemplo AOT: a água do núcleo é derivada de w0 × AOT sempre que o AOT ou o w0 mudam.
+  function withDerivedWater(items: SolutionItem[], example: LoadedExampleState | null): SolutionItem[] {
+    if (!example || example.w0 === null || !example.aotKey || !example.waterKey) return items;
+    const aot = items.find((item) => item.id === exampleItemId(example, example.aotKey as string));
+    if (!aot) return items;
+    const waterMmol = deriveCoreWaterMmol(example.w0, getAmountMmol(aot.moleculeCount));
+    return items.map((item) =>
+      item.id === exampleItemId(example, example.waterKey as string)
+        ? { ...item, moleculeCount: String(Number(waterMmol.toFixed(4))) }
+        : item
+    );
+  }
+
+  function isDerivedWater(item: SolutionItem) {
+    return Boolean(loadedExample?.waterKey && item.id === exampleItemId(loadedExample, loadedExample.waterKey));
+  }
+
   function commitSolutionItems(nextItems: SolutionItem[], reason: string) {
-    setSolutionItems(nextItems);
-    saveTransferState(nextItems, environment, reason);
+    const derived = withDerivedWater(nextItems, loadedExample);
+    setSolutionItems(derived);
+    saveTransferState(derived, environment, reason, loadedExampleId);
     markSolutionDirty();
+  }
+
+  function loadDocumentedExample(example: DocumentedExampleDto) {
+    const { items, environment: exampleEnvironment, state } = exampleToMixture(example);
+    const nextItems: SolutionItem[] = items.map((item) => ({
+      id: exampleItemId(state, item.key),
+      molecule: {
+        id: exampleItemId(state, item.key),
+        name: item.name,
+        formula: item.formula,
+        smiles: item.smiles,
+        molarMass: item.molarMass,
+        status: "Otimizada",
+      },
+      role: item.role,
+      moleculeCount: item.role === "solvent" ? DEFAULT_SOLVENT_COUNT : String(item.amountMmol ?? 0),
+    }));
+    const nextEnvironment = { ...environment, ...exampleEnvironment } as StableEnvironmentSettings;
+    setEnvironment(nextEnvironment);
+    setLoadedExample(state);
+    setSolutionItems(nextItems);
+    saveTransferState(nextItems, nextEnvironment, "solution:example-loaded", state.id);
+    markSolutionDirty();
+    setMessage({
+      type: "info",
+      text: `Exemplo carregado: ${example.title}. Confira o meio e clique em Misturar no 3D.`,
+    });
+  }
+
+  function updateExampleW0(value: string) {
+    if (!loadedExample) return;
+    const w0 = Number(sanitizeDecimalInput(value, String(loadedExample.w0 ?? "")));
+    if (!Number.isFinite(w0) || w0 < 0) return;
+    const nextExample = { ...loadedExample, w0 };
+    setLoadedExample(nextExample);
+    const derived = withDerivedWater(solutionItems, nextExample);
+    setSolutionItems(derived);
+    saveTransferState(derived, environment, "solution:example-w0", nextExample.id);
+    markSolutionDirty();
+  }
+
+  function unlinkDocumentedExample() {
+    setLoadedExample(null);
+    saveTransferState(solutionItems, environment, "solution:example-unlinked", null);
+    markSolutionDirty();
+    setMessage({
+      type: "info",
+      text: "Exemplo desvinculado. A mistura continua aqui e será tratada pelo cálculo normal.",
+    });
   }
 
   function updateEnvironmentField(key: keyof StableEnvironmentSettings, value: string) {
@@ -634,6 +730,7 @@ export default function Transfer2DTo3D({
   }
 
   function clearSolution() {
+    setLoadedExample(null);
     setSolutionItems([]);
     saveTransferState([], environment, "solution:cleared");
     markSolutionDirty();
@@ -700,6 +797,7 @@ export default function Transfer2DTo3D({
             role: item.role,
             roleLabel: item.role === "solvent" ? "Solvente" : "Reagente",
             environment: normalized,
+            documentedExampleId: loadedExampleId,
           },
         });
       })
@@ -709,7 +807,7 @@ export default function Transfer2DTo3D({
   function applyEnvironmentChanges() {
     setActiveEnvironment(environment);
     saveEnvironment(environment);
-    saveTransferState(solutionItems, environment, "environment:applied");
+    saveTransferState(solutionItems, environment, "environment:applied", loadedExampleId);
 
     if (reagentItems.length > 0 && totalReagentCount > 0) {
       const mixtureId = createMixtureId();
@@ -745,7 +843,7 @@ export default function Transfer2DTo3D({
     const mixtureId = createMixtureId();
     const mixedAt = new Date().toISOString();
     saveEnvironment(environment);
-    saveTransferState(solutionItems, environment, "solution:mixed-to-3d");
+    saveTransferState(solutionItems, environment, "solution:mixed-to-3d", loadedExampleId);
 
     const payloads: MoleculeTransferFrom2D[] = solutionItems
       .map((item) => {
@@ -782,6 +880,7 @@ export default function Transfer2DTo3D({
             role: item.role,
             roleLabel: item.role === "solvent" ? "Solvente" : "Reagente",
             environment: normalizedEnvironment,
+            documentedExampleId: loadedExampleId,
           },
         });
       })
@@ -821,6 +920,7 @@ export default function Transfer2DTo3D({
     const renderCount = getVisualRenderCountFromAmount(item.moleculeCount, item.role, environment);
     const realConcentrationMmolL = getRealConcentrationMmolLFromItem(item, environment);
     const fraction = totalMoleculeCount > 0 ? (renderCount / totalMoleculeCount) * 100 : 0;
+    const derivedWater = isDerivedWater(item);
 
     return (
       <article key={item.id} className={`solution-item-card role-${item.role}`}>
@@ -844,7 +944,7 @@ export default function Transfer2DTo3D({
             </div>
           ) : (
             <div>
-              <button type="button" onClick={() => incrementMoleculeCount(item.id, -1)}>−</button>
+              <button type="button" onClick={() => incrementMoleculeCount(item.id, -1)} disabled={derivedWater}>−</button>
               <input
                 type="number"
                 min={0}
@@ -853,15 +953,18 @@ export default function Transfer2DTo3D({
                 value={item.moleculeCount}
                 onChange={(event) => updateSolutionMoleculeCount(item.id, event.target.value)}
                 inputMode="decimal"
+                disabled={derivedWater}
               />
-              <button type="button" onClick={() => incrementMoleculeCount(item.id, 1)}>+</button>
+              <button type="button" onClick={() => incrementMoleculeCount(item.id, 1)} disabled={derivedWater}>+</button>
             </div>
           )}
 
           <small>
             {item.role === "solvent"
               ? "A quantidade molar não é editada porque o solvente é tratado como componente majoritário."
-              : `${amountMmol.toLocaleString("pt-BR")} mmol · ${realConcentrationMmolL?.toFixed(3) ?? "—"} mmol/L · render ≈ ${formatInteger(renderCount)}`}
+              : `${amountMmol.toLocaleString("pt-BR")} mmol · ${realConcentrationMmolL?.toFixed(3) ?? "—"} mmol/L · render ≈ ${formatInteger(renderCount)}${
+                  derivedWater ? ` · derivada de w0 = ${loadedExample?.w0?.toLocaleString("pt-BR") ?? "—"} × AOT` : ""
+                }`}
           </small>
         </label>
 
@@ -935,6 +1038,56 @@ export default function Transfer2DTo3D({
               );
             })}
           </div>
+
+          <div className="solution-panel-title">
+            <strong>Exemplos documentados</strong>
+            <span>Morfologias com condições de referências experimentais. Carregar substitui a solução e o meio.</span>
+          </div>
+
+          <div className="saved-library-list">
+            {documentedExamplesError && (
+              <div className="solution-empty-state compact">
+                <strong>Exemplos indisponíveis</strong>
+                <span>{documentedExamplesError}</span>
+              </div>
+            )}
+            {!documentedExamplesError && documentedExamples === null && (
+              <div className="solution-empty-state compact">
+                <strong>Carregando exemplos…</strong>
+                <span>Catálogo do servidor.</span>
+              </div>
+            )}
+            {documentedExamples !== null && documentedExamples.length === 0 && (
+              <div className="solution-empty-state compact">
+                <strong>Nenhum exemplo</strong>
+                <span>O servidor não devolveu exemplos documentados.</span>
+              </div>
+            )}
+            {documentedExamples?.map((example) => {
+              const reagents = example.components.filter((component) => component.role === "reagent");
+              const point = reagents
+                .map((component) => `${component.name} ${component.amount_mmol ?? "—"} mmol`)
+                .join(" + ");
+              return (
+                <article key={example.id} className="saved-library-card">
+                  <button type="button" className="saved-library-main" onClick={() => loadDocumentedExample(example)} title="Carregar exemplo">
+                    <span className="saved-library-formula">{reagents[0]?.formula ?? "—"}</span>
+                    <span className="saved-library-info">
+                      <strong>{example.title}</strong>
+                      <small>{example.kind === "validated_prediction" ? "Previsão validada" : "Demonstração representativa"} · v{example.example_version}</small>
+                      <small>{point} · {example.environment.temperature_k} K{example.w0 !== null ? ` · w0 = ${example.w0}` : ""}</small>
+                    </span>
+                  </button>
+
+                  <div className="saved-library-actions single-action">
+                    <button type="button" className={loadedExampleId === example.id ? "selected" : ""} onClick={() => loadDocumentedExample(example)}>
+                      Carregar exemplo
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </aside>
 
         <section className="solution-lab-panel">
@@ -958,6 +1111,34 @@ export default function Transfer2DTo3D({
               <strong>Solução em preparo</strong>
               <span>Defina solvente, reagentes e quantidades. Clique em Misturar para recalcular.</span>
             </div>
+
+            {loadedExample && (
+              <section className="mixture-role-section">
+                <header>
+                  <strong>Exemplo documentado</strong>
+                  <span>
+                    {(() => {
+                      const example = documentedExamples?.find((item) => item.id === loadedExample.id);
+                      const kind = example?.kind === "validated_prediction" ? "Previsão validada" : "Demonstração representativa";
+                      return `${example?.title ?? loadedExample.id} · ${kind}`;
+                    })()}
+                  </span>
+                </header>
+                <small>A forma no 3D vem da referência enquanto a mistura estiver dentro das condições documentadas; fora delas, o cálculo normal com aviso.</small>
+                {loadedExample.w0 !== null && (
+                  <label className="solution-item-count">
+                    <span>w0 = [H₂O]/[AOT]</span>
+                    <input type="number" step="0.5" min="0" value={loadedExample.w0} onChange={(event) => updateExampleW0(event.target.value)} inputMode="decimal" />
+                    <small>parâmetro principal · água do núcleo = w0 × AOT</small>
+                  </label>
+                )}
+                <div className="solution-footer-actions">
+                  <button type="button" onClick={unlinkDocumentedExample}>
+                    Desvincular exemplo
+                  </button>
+                </div>
+              </section>
+            )}
 
             <section className="mixture-role-section">
               <header>

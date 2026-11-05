@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildObservationRows, buildPredictionRows } from "./3dpage";
+import { buildDocumentedExampleRows, buildObservationRows, buildPredictionRows } from "./3dpage";
 import { REPRESENTATION_LABEL, pinchDistance, viewerSealText } from "./components/render/SimulationViewer3D";
 import type { MiceliumAnalysis3D } from "./type/3dpage.types";
 
@@ -97,5 +97,55 @@ describe("visualizador", () => {
     expect(pinchDistance(100, 200, 100)).toBeCloseTo(200);
     expect(pinchDistance(10, 100, 1000)).toBe(8);
     expect(pinchDistance(200, 100, 10)).toBe(220);
+  });
+});
+
+
+describe("exemplo documentado no card Previsto", () => {
+  const report = (updates: Record<string, unknown> = {}) => ({
+    id: "dppc_vesicula_extrusao", title: "DPPC — vesícula unilamelar (extrusão)", kind: "representative_demo" as const,
+    example_version: "1.0.0", last_reviewed_at: "2026-11-05", documented_morphology: "vesícula/bicamada fechada",
+    within_range: true, out_of_range_reasons: [] as string[],
+    conditions: [
+      { parameter: "temperature_c", label: "temperatura de extrusão 51–61 °C", basis: "protocol" as const, source: "ref" },
+      { parameter: "method", label: "método: extrusão por 100 nm", basis: "experimental" as const, source: "ref" },
+      { parameter: "temperature_c", label: "temperatura < 100 °C", basis: "technical" as const, source: "limite" },
+    ],
+    protocol: "Extrusão por 100 nm a 55 °C.", references: [{ label: "Hope et al. 1985", url: null }, { label: "Tm 41 °C", url: null }],
+    notes: [], w0: null, ...updates,
+  });
+
+  it("demonstração: origem 'exemplo documentado', condições com a natureza e referências", () => {
+    const rows = buildDocumentedExampleRows(analysis({ morphology_source: "documented_example", documented_example: report() }));
+    expect(valueOf(rows, "Origem da forma")).toBe("exemplo documentado (demonstração representativa)");
+    expect(valueOf(rows, "Exemplo")).toBe("DPPC — vesícula unilamelar (extrusão) · v1.0.0 · revisão 2026-11-05");
+    expect(valueOf(rows, "Condição: temperatura de extrusão 51–61 °C")).toBe("protocolo");
+    expect(valueOf(rows, "Condição: método: extrusão por 100 nm")).toBe("experimental");
+    expect(valueOf(rows, "Condição: temperatura < 100 °C")).toBe("limite técnico");
+    expect(valueOf(rows, "Protocolo")).toBe("Extrusão por 100 nm a 55 °C.");
+    expect(valueOf(rows, "Referências")).toBe("Hope et al. 1985; Tm 41 °C");
+    expect(valueOf(rows, "Fora das condições documentadas")).toBeUndefined();
+    expect(valueOf(rows, "w0")).toBeUndefined();
+  });
+
+  it("SDS: origem 'calculada'", () => {
+    const rows = buildDocumentedExampleRows(analysis({ morphology_source: "calculated",
+      documented_example: report({ id: "sds_esferica", kind: "validated_prediction", title: "SDS" }) }));
+    expect(valueOf(rows, "Origem da forma")).toBe("calculada (previsão validada)");
+  });
+
+  it("fora das condições: aviso com os motivos e origem calculada", () => {
+    const rows = buildDocumentedExampleRows(analysis({ morphology_source: "calculated",
+      documented_example: report({ within_range: false, out_of_range_reasons: ["temperatura = 45 fora de: 51–61 °C"] }) }));
+    expect(valueOf(rows, "Origem da forma")).toBe("calculada (fora das condições do exemplo)");
+    expect(valueOf(rows, "Fora das condições documentadas")).toBe("temperatura = 45 fora de: 51–61 °C");
+  });
+
+  it("w0 só no AOT; sem exemplo, nenhuma linha", () => {
+    const rows = buildDocumentedExampleRows(analysis({ morphology_source: "documented_example",
+      documented_example: report({ id: "aot_inversa_isooctano", w0: 10 }) }));
+    expect(valueOf(rows, "w0")).toBe("10");
+    expect(buildDocumentedExampleRows(analysis())).toEqual([]);
+    expect(buildDocumentedExampleRows(null)).toEqual([]);
   });
 });

@@ -894,6 +894,42 @@ export function buildPredictionRows(
   return { rows, partialNote: partial !== null ? analysis?.prediction_note ?? null : null };
 }
 
+const CONDITION_BASIS_LABEL: Record<string, string> = {
+  experimental: "experimental",
+  protocol: "protocolo",
+  technical: "limite técnico",
+};
+
+/** Exemplo documentado no card "Previsto": origem da forma, condições com a natureza, protocolo e referências. */
+export function buildDocumentedExampleRows(analysis: MiceliumAnalysis3D | null | undefined): InspectorRow[] {
+  const example = analysis?.documented_example;
+  if (!example) return [];
+  const demonstration = analysis?.morphology_source === "documented_example";
+  const origin = demonstration
+    ? "exemplo documentado (demonstração representativa)"
+    : example.within_range
+      ? "calculada (previsão validada)"
+      : "calculada (fora das condições do exemplo)";
+  const rows: InspectorRow[] = [
+    { label: "Origem da forma", value: origin },
+    { label: "Exemplo", value: `${example.title} · v${example.example_version} · revisão ${example.last_reviewed_at}` },
+  ];
+  if (!example.within_range) {
+    rows.push({ label: "Fora das condições documentadas", value: example.out_of_range_reasons.join("; ") || "—" });
+  }
+  for (const condition of example.conditions) {
+    rows.push({ label: `Condição: ${condition.label}`, value: CONDITION_BASIS_LABEL[condition.basis] ?? condition.basis });
+  }
+  if (example.w0 !== undefined && example.w0 !== null) {
+    rows.push({ label: "w0", value: String(Number(example.w0.toPrecision(4))) });
+  }
+  rows.push(
+    { label: "Protocolo", value: example.protocol || "—" },
+    { label: "Referências", value: example.references.map((reference) => reference.label).join("; ") || "—" },
+  );
+  return rows;
+}
+
 /** "Observado na visualização": medido nas coordenadas da animação coarse-grained. */
 export function buildObservationRows(
   analysis: MiceliumAnalysis3D | null | undefined,
@@ -972,6 +1008,7 @@ export function Page3D() {
     | undefined;
   const environmentVolumeMl = typeof currentEnvironment?.volume_ml === "number" ? currentEnvironment.volume_ml : undefined;
   const { rows: predictionRows, partialNote: predictionPartialNote } = buildPredictionRows(miceliumAnalysis, environmentVolumeMl);
+  const documentedExampleRows = buildDocumentedExampleRows(miceliumAnalysis);
   const observationRows = buildObservationRows(miceliumAnalysis, {
     clusterMorphology: topology?.clusters?.[0]?.morphology ?? null,
     clusterCount: topology?.clusters?.length ?? 0,
@@ -1641,7 +1678,7 @@ export function Page3D() {
               <strong>Previsto pelos cálculos</strong>
               {predictionPartialNote && <span className="empty-inspector">{predictionPartialNote}</span>}
               <div className="inline-inspector-grid two-col">
-                {predictionRows.map((row) => (
+                {[...predictionRows, ...documentedExampleRows].map((row) => (
                   <Fragment key={row.label}>
                     <span>{row.label}</span>
                     <strong>{row.value}</strong>
