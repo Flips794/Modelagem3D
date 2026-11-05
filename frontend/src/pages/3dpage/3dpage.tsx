@@ -1278,6 +1278,14 @@ export function Page3D() {
 
     const signature = createTransferSimulationSignature(validTransfers, eventContext);
 
+    if (eventContext?.reason !== "auto-continuation") {
+      // Mistura nova: o trecho antigo não pode terminar a reprodução e pedir continuação da mistura
+      // anterior (isso cancelava o pedido novo e a cena voltava à mistura antiga).
+      stopPlaybackTimer();
+      autoContinueChunkRef.current = false;
+      currentTransfersRef.current = validTransfers;
+    }
+
     userPausedPlaybackRef.current = false;
     setIsPlaybackPausedByUser(false);
 
