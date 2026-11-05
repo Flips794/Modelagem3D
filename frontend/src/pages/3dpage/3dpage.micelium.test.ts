@@ -39,3 +39,24 @@ describe("dados químicos enviados ao motor 3D", () => {
     expect(request.molecules[0].real_concentration_mmol_l).toBe(30);
   });
 });
+
+describe("exemplo documentado no pedido 3D", () => {
+  const marked = (id: string | null) => ({ documentedExampleId: id });
+
+  it("envia o id quando todos os transfers trazem o mesmo exemplo", () => {
+    const request = buildMiceliumRequest([
+      transfer({ transferMetadata: marked("sds_esferica") }),
+      transfer({ id: "water", name: "Água", smiles: "O", transferMetadata: { role: "solvent", ...marked("sds_esferica") } }),
+    ]);
+    expect(request.documented_example_id).toBe("sds_esferica");
+  });
+
+  it("sem marcação ou com marcações diferentes, não envia exemplo", () => {
+    expect(buildMiceliumRequest([transfer()]).documented_example_id).toBeNull();
+    const mixed = buildMiceliumRequest([
+      transfer({ transferMetadata: marked("sds_esferica") }),
+      transfer({ id: "b", smiles: "CCO", transferMetadata: marked(null) }),
+    ]);
+    expect(mixed.documented_example_id).toBeNull();
+  });
+});

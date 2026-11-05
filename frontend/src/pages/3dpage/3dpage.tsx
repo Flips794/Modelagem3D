@@ -512,9 +512,15 @@ export function buildMiceliumRequest(
         ? 160
         : 220;
 
+  // Exemplo documentado: só quando todos os transfers vêm do mesmo exemplo carregado no painel.
+  const exampleIds = new Set(transfers.map((item) => item.transferMetadata?.documentedExampleId ?? null));
+  const [onlyExampleId] = exampleIds;
+  const documentedExampleId = exampleIds.size === 1 && onlyExampleId ? onlyExampleId : null;
+
   return {
     molecules,
     environment,
+    documented_example_id: documentedExampleId,
     max_particles: MAX_PARTICLES,
     steps,
     dt: 0.016,

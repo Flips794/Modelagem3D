@@ -62,6 +62,8 @@ export type MoleculeTransferMetadata = {
   realAmountMmol?: number | null;
   realConcentrationMmolL?: number | null;
   solventExcess?: boolean | null;
+  // Exemplo documentado carregado no painel 2D→3D (null = mistura comum).
+  documentedExampleId?: string | null;
 };
 
 export type Molecule3DAtom = {
@@ -225,7 +227,25 @@ export type MiceliumCluster3D = {
   phase?: string | null;
 };
 
+export type DocumentedExampleReport3D = {
+  id: string;
+  title: string;
+  kind: "validated_prediction" | "representative_demo";
+  example_version: string;
+  last_reviewed_at: string;
+  documented_morphology: string;
+  within_range: boolean;
+  out_of_range_reasons: string[];
+  conditions: { parameter: string; label: string; basis: "experimental" | "protocol" | "technical"; source: string }[];
+  protocol: string;
+  references: { label: string; url: string | null }[];
+  notes: string[];
+  w0?: number | null;
+};
+
 export type MiceliumAnalysis3D = {
+  morphology_source?: "calculated" | "documented_example";
+  documented_example?: DocumentedExampleReport3D | null;
   total_particles: number;
   molecule_count: number;
   surfactant_count: number;
@@ -375,6 +395,7 @@ export type MiceliumMoleculeInput3D = {
 export type MiceliumSimulationRequest3D = {
   molecules: MiceliumMoleculeInput3D[];
   environment: MiceliumEnvironment3D;
+  documented_example_id?: string | null;
   max_particles?: number;
   steps?: number;
   dt?: number;
