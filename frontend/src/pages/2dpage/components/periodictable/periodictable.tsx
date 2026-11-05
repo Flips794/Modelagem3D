@@ -1,5 +1,7 @@
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
+import { API_BASE_URL } from "../../../../config/apiBaseUrl";
+
 import "./periodictable.css";
 
 export type PeriodicElement = {
@@ -246,9 +248,7 @@ function getElementClassification(element: PeriodicElement) {
 
 
 function getApiBaseUrl() {
-  return String(
-    import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api/v1"
-  ).replace(/\/$/, "");
+  return API_BASE_URL;
 }
 
 function getDefaultEndpoint() {

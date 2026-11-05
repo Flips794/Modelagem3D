@@ -1,9 +1,6 @@
 import type { InternalMoleculeModel } from "../../2dpage/type/rdkit2d.types";
 import type { ChemistryParametersResponse } from "./chemistryParameters.types";
-
-const API_BASE_URL = String(
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api/v1"
-).replace(/\/$/, "");
+import { API_BASE_URL } from "../../../config/apiBaseUrl";
 
 /**
  * Ambiente padrão da molécula individual.

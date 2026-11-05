@@ -10,7 +10,6 @@ from app.modules.reference_data.routes import (
     legacy_router as chemical_parameters_legacy_router,
     router as reference_data_router,
 )
-from app.modules.simulation.router import router as simulation_router
 from app.modules.micelium.routes import router as micelium_router
 
 try:
@@ -20,6 +19,9 @@ except Exception:
 
 
 api_router = APIRouter()
+
+# O WebSocket OpenMM (/simulation/stream) é rota de demonstração: incluído por
+# app.main.create_app só quando Settings.demo_routes_enabled (desligado em produção).
 
 
 @api_router.get("/health", tags=["Health"])
@@ -46,7 +48,6 @@ api_router.include_router(chemical_parameters_legacy_router)
 api_router.include_router(chemistry_router)
 api_router.include_router(molecules_router)
 api_router.include_router(analysis_packages_router)
-api_router.include_router(simulation_router)
 api_router.include_router(micelium_router)
 
 if micelium_ai_router is not None:

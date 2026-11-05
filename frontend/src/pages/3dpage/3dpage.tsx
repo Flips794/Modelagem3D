@@ -24,6 +24,8 @@ import {
   MOLECULES_3D_TRANSFER_EVENT,
 } from "./type/3dpage.types";
 
+import { API_BASE_URL } from "../../config/apiBaseUrl";
+
 import "./3dpage.css";
 
 type BuildSimulationResult = {
@@ -57,10 +59,6 @@ type BackendElement = {
 };
 
 type ElementColorMap = Record<string, string>;
-
-const API_BASE_URL = String(
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api/v1"
-).replace(/\/$/, "");
 
 const MICELIUM_SIMULATE_ENDPOINT = `${API_BASE_URL}/micelium/simulate`;
 

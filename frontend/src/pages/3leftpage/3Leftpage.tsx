@@ -6,6 +6,8 @@ import { MOLECULES_3D_STORAGE_KEY, MOLECULES_3D_TRANSFER_EVENT } from "../3dpage
 
 import { ParameterMetric } from "./components/ParameterMetric";
 
+import { API_BASE_URL } from "../../config/apiBaseUrl";
+
 import "./3Leftpage.css";
 
 type DynamicRecord = Record<string, unknown>;
@@ -102,9 +104,7 @@ const REFRESH_EVENTS = [
 ];
 
 function getApiBaseUrl() {
-  return String(
-    import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api/v1"
-  ).replace(/\/$/, "");
+  return API_BASE_URL;
 }
 
 function asRecord(value: unknown): DynamicRecord {

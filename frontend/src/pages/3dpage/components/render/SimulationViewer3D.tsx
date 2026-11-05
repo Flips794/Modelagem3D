@@ -10,6 +10,8 @@ import type {
   SimulationTopology3D,
 } from "../../type/3dpage.types";
 
+import { API_BASE_URL } from "../../../../config/apiBaseUrl";
+
 import "./SimulationViewer3D.css";
 
 type SimulationViewer3DProps = {
@@ -118,10 +120,6 @@ function collectNearbyCenters(
 
   return results;
 }
-
-const API_BASE_URL = String(
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api/v1"
-).replace(/\/$/, "");
 
 const ELEMENT_COLOR_ENDPOINTS = [
   "/reference-data/elements",

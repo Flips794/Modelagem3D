@@ -32,10 +32,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command:
-      - sh
-      - -c
-      - python -m alembic upgrade head && exec python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/database', timeout=4)"]
       interval: 5s
@@ -46,6 +42,9 @@ services:
   frontend:
     build:
       context: ../frontend
+      target: dev
+      args:
+        VITE_API_URL: http://127.0.0.1:8000/api/v1
     restart: unless-stopped
     ports:
       - "127.0.0.1:5173:5173"

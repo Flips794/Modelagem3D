@@ -6,10 +6,7 @@ import type {
   Optimize2DInput,
   RDKitMolecule2D,
 } from "../../../type/rdkit2d.types";
-
-const API_BASE_URL = String(
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/api/v1"
-).replace(/\/$/, "");
+import { API_BASE_URL } from "../../../../../config/apiBaseUrl";
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {

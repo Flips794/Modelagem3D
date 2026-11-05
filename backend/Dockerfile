@@ -9,4 +9,7 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 RUN python -c "from rdkit import Chem; from rdkit.Chem.Draw import rdMolDraw2D; import openmm; d = rdMolDraw2D.MolDraw2DSVG(200, 150); d.DrawMolecule(Chem.MolFromSmiles('CCO')); d.FinishDrawing(); assert '<svg' in d.GetDrawingText(); assert openmm.Platform.getNumPlatforms() > 0; print('RDKit SVG e OpenMM: OK')"
 COPY . .
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Configurável só por ambiente (spec 7.3): PORT para serviços gerenciados, migrações na inicialização.
+# UVICORN_WORKERS padrão 1: o estado da animação 3D entre trechos fica na memória do processo;
+# com mais workers, trechos da mesma mistura podem cair em processos diferentes e recomeçar a cena.
+CMD ["sh", "-c", "python -m alembic upgrade head && exec python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${UVICORN_WORKERS:-1} --proxy-headers --forwarded-allow-ips=\"${FORWARDED_ALLOW_IPS:-*}\""]

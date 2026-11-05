@@ -1,0 +1,39 @@
+# Imagem de produção do frontend (estágio prod do Dockerfile).
+# SITE_ADDRESS: o domínio em produção (TLS automático) ou :80 em teste local.
+# API_UPSTREAM: endereço interno do backend (padrão backend:8000, rede do Compose).
+{
+	# Painel administrativo do Caddy desligado: nada além do site fica exposto.
+	admin off
+}
+
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	handle /api/* {
+		# Mesmo limite do backend (MAX_REQUEST_BYTES = 2 MB), recusado já na borda.
+		request_body {
+			max_size 2MB
+		}
+		reverse_proxy {$API_UPSTREAM:backend:8000}
+	}
+
+	handle {
+		root * /srv
+		# Arquivos de /assets têm hash no nome: cache longo. O resto (index.html) sempre revalida.
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		@pages not path /assets/*
+		header @pages Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}
