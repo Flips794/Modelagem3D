@@ -2414,6 +2414,7 @@ class MiceliumEngine:
             # Só dentro das condições de um exemplo cuja CMC não se aplica (o plano só leva o id nesse caso).
             cmc_not_applicable=bool(plan.documented_example_id
                                     and EXAMPLES[plan.documented_example_id].cmc_note),
+            require_shape_confirmation=bool(plan.documented_example_id),
         )
 
         prediction_note = None

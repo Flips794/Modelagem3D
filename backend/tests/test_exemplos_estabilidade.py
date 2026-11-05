@@ -33,18 +33,37 @@ client = TestClient(create_app(Settings(database_url=DB, app_env="development"))
 CHUNKS = 6   # ~4,5 min de animação na tela
 
 
-@pytest.mark.parametrize("example_id", ["ctab_nasal_vermiforme", "aot_inversa_isooctano"])
-def test_organizacao_estavel_em_todos_os_trechos(example_id):
+def chunk_analyses(example_id: str, chunks: int = CHUNKS) -> list[dict]:
     _MICELIUM_SESSION_STATE.clear()
     payload = example_payload(example_id)
-    seen = []
-    for _ in range(CHUNKS):
+    analyses = []
+    for _ in range(chunks):
         response = client.post("/api/v1/micelium/simulate", json=payload)
         assert response.status_code == 200, response.text
-        analysis = response.json()["analysis"]
-        seen.append((round(analysis["micellized_fraction"], 2), analysis["dominant_morphology"]))
-    documented = EXAMPLES[example_id].documented_morphology
+        analyses.append(response.json()["analysis"])
+    return analyses
+
+
+def test_aot_organizado_em_todos_os_trechos():
+    seen = [(round(a["micellized_fraction"], 2), a["dominant_morphology"]) for a in chunk_analyses("aot_inversa_isooctano")]
+    documented = EXAMPLES["aot_inversa_isooctano"].documented_morphology
     assert all(fraction > 0.5 and morphology == documented for fraction, morphology in seen), seen
+
+
+# Forma não esférica no rótulo da cena só quando a forma medida sem a previsão concorda.
+CONFIRMS = {"micela cilíndrica/wormlike": "agregado alongado",
+            "bicamada plana/lamelar": MEASURED_LAMELLAR,
+            "vesícula/bicamada fechada": MEASURED_SHELL}
+
+
+def test_ctab_nao_mostra_cilindro_sem_confirmacao_em_nenhum_trecho():
+    seen = [(a["dominant_morphology"], a["measured_morphology"], round(a["micellized_fraction"], 2))
+            for a in chunk_analyses("ctab_nasal_vermiforme")]
+    for label, measured_shape, fraction in seen:
+        if label in CONFIRMS:
+            assert measured_shape == CONFIRMS[label], seen
+        else:
+            assert fraction == 0.0, seen
 
 
 _MEASURED: dict[str, str] = {}
@@ -112,6 +131,37 @@ def test_sintetico_vesicula_fechada_e_casca():
 def test_sintetico_taca_aberta_nao_e_casca():
     inner, outer = fibonacci(24), fibonacci(48)
     assert measured_membrane_shape(*shell(inner[inner[:, 2] > 0.1], outer[outer[:, 2] > 0.1])) is None
+
+
+def test_rotulo_de_membrana_concorda_com_a_forma_medida():
+    for example_id in ("dppc_bicamada_hidratacao", "dppc_vesicula_extrusao"):
+        analysis = run_chunks(client, example_payload(example_id), 3)["analysis"]
+        if analysis["dominant_morphology"] in CONFIRMS:
+            assert analysis["measured_morphology"] == CONFIRMS[analysis["dominant_morphology"]], (example_id, analysis)
+
+
+def test_sintetico_taca_de_80_por_cento_nao_e_casca():
+    inner, outer = fibonacci(30), fibonacci(60)
+    assert measured_membrane_shape(*shell(inner[inner[:, 2] > -0.6], outer[outer[:, 2] > -0.6])) is None
+
+
+def test_sintetico_estrela_de_seis_direcoes_nao_e_casca():
+    axes = np.vstack([np.eye(3), -np.eye(3)])
+    assert measured_membrane_shape(*shell(axes, np.vstack([axes, axes * 1.0]))) is None
+
+
+def test_sintetico_feixe_sem_extensao_lateral_nao_e_lamelar():
+    rng = np.random.default_rng(3)
+    lateral = rng.normal(scale=0.2, size=(8, 2))
+    tails = np.array([[x, y, (0.5 if k < 4 else -0.5)] for k, (x, y) in enumerate(lateral)])
+    heads = tails + np.array([[0.0, 0.0, (1.5 if k < 4 else -1.5)] for k in range(8)])
+    assert measured_membrane_shape(heads, tails) is None
+
+
+def test_sintetico_coordenada_invalida_nao_quebra():
+    heads, tails = bilayer()
+    heads[0, 0] = np.nan
+    assert measured_membrane_shape(heads, tails) is None
 
 
 @pytest.mark.parametrize("name", ["micela", "inversa", "monocamada", "aleatorio"])

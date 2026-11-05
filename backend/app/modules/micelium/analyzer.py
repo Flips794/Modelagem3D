@@ -311,7 +311,7 @@ def classify_morphology(
         return "agregado irregular"
 
     if anisotropy > 0.68:
-        return "agregado alongado"
+        return MEASURED_ELONGATED
 
     if irregularity > 0.42:
         return "agregado irregular em estabilização"
@@ -324,21 +324,47 @@ def classify_morphology(
 
 MEASURED_LAMELLAR = "agregado lamelar (duas folhas)"
 MEASURED_SHELL = "casca fechada de duas folhas"
+MEASURED_ELONGATED = "agregado alongado"
+# Formas não esféricas: o rótulo da previsão só vale quando a forma medida sem a previsão concorda.
+CONFIRMING_SHAPE = {"cilíndrica": MEASURED_ELONGATED, "wormlike": MEASURED_ELONGATED,
+                    "vesícula": MEASURED_SHELL, "lamelar": MEASURED_LAMELLAR, "bicamada": MEASURED_LAMELLAR}
+
+
+def _sphere_probes(count: int = 400) -> np.ndarray:
+    golden = math.pi * (3.0 - math.sqrt(5.0))
+    z = 1.0 - 2.0 * (np.arange(count) + 0.5) / count
+    r = np.sqrt(np.maximum(0.0, 1.0 - z * z))
+    return np.stack([r * np.cos(golden * np.arange(count)), r * np.sin(golden * np.arange(count)), z], axis=1)
+
+
+_SPHERE_PROBES = _sphere_probes()
+
+
+def confirming_shape(morphology_hint: str) -> str | None:
+    hint = morphology_hint.lower()
+    if "inversa" in hint:
+        return None
+    for key, shape in CONFIRMING_SHAPE.items():   # vesícula antes de bicamada ("vesícula/bicamada fechada")
+        if key in hint:
+            return shape
+    return None
 
 
 def measured_membrane_shape(heads: np.ndarray, tails: np.ndarray) -> str | None:
     """Membrana medida só nas coordenadas (cabeça e centro da cauda de cada molécula), sem a previsão.
 
-    - lamelar: cadeias alinhadas num diretor comum (S ≥ 0,75), cabeças nas duas faces (≥ 25 % em cada)
-      e ≥ 80 % das cabeças mais longe do plano médio que a própria cauda;
+    Exige ≥ 12 moléculas e coordenadas finitas.
+    - lamelar: cadeias alinhadas num diretor comum (S ≥ 0,75), cabeças nas duas faces (≥ 25 % em cada),
+      ≥ 80 % das cabeças mais longe do plano médio que a própria cauda e caudas espalhadas no plano
+      (variância lateral > 2 × a variância na normal; um feixe estreito falha aqui);
     - casca fechada: caudas numa casca oca (mediana ≥ 1,5, desvio ≤ 35 % do raio), ≥ 20 % das cabeças
       dentro e ≥ 20 % fora, com as caudas entre as duas populações, cadeias radiais (|cos| médio ≥ 0,75)
-      e caudas em todas as seis direções principais (uma taça aberta falha aqui).
+      e nenhuma abertura angular sem caudas maior que 45° (taça aberta e estrela falham aqui).
     Fora disso, None: o classificador geral decide.
     """
     heads = np.asarray(heads, dtype=float)
     tails = np.asarray(tails, dtype=float)
-    if len(heads) < 6:
+    if len(heads) < 12 or not (np.isfinite(heads).all() and np.isfinite(tails).all()):
         return None
     chain = heads - tails
     chain /= np.maximum(np.linalg.norm(chain, axis=1)[:, None], 1e-9)
@@ -347,8 +373,11 @@ def measured_membrane_shape(heads: np.ndarray, tails: np.ndarray) -> str | None:
     middle = tails.mean(axis=0)
     head_height = (heads - middle) @ director
     tail_height = (tails - middle) @ director
+    normal_variance = float(np.mean(tail_height ** 2))
+    lateral_variance = float(np.mean(np.sum((tails - middle) ** 2, axis=1))) - normal_variance
     if (order[-1] >= 0.75 and min(np.mean(head_height > 0), np.mean(head_height < 0)) >= 0.25
-            and np.mean(np.abs(head_height) > np.abs(tail_height)) >= 0.80):
+            and np.mean(np.abs(head_height) > np.abs(tail_height)) >= 0.80
+            and lateral_variance > 2.0 * max(normal_variance, 1e-9)):
         return MEASURED_LAMELLAR
 
     tail_r = np.linalg.norm(tails - middle, axis=1)
@@ -365,10 +394,10 @@ def measured_membrane_shape(heads: np.ndarray, tails: np.ndarray) -> str | None:
     # Cadeias radiais (na casca, cada molécula aponta para dentro ou para fora); ao acaso a média é 0,5.
     if float(np.mean(np.abs(np.sum(chain * directions, axis=1)))) < 0.75:
         return None
-    _values, axes = principal_axes(tails)
-    for axis in np.hstack([axes, -axes]).T:
-        if float(np.max(directions @ axis)) < 0.6:
-            return None
+    # Maior abertura sem caudas: ângulo de cada sonda (esfera densa) até a cauda mais próxima.
+    nearest = np.max(_SPHERE_PROBES @ directions.T, axis=1)
+    if float(np.degrees(np.arccos(np.clip(np.min(nearest), -1.0, 1.0)))) > 45.0:
+        return None
     return MEASURED_SHELL
 
 
@@ -475,6 +504,7 @@ def analyze_micelium_state(
     visual_scale_factor: float | None = None,
     morphology_hint: str | None = None,
     cmc_not_applicable: bool = False,
+    require_shape_confirmation: bool = False,
 ) -> tuple[list[MicelleCluster], MiceliumAnalysis]:
     safe_positions = sanitize_positions(positions)
     groups = group_by_molecule(particles)
@@ -583,6 +613,9 @@ def analyze_micelium_state(
             and core_score >= 0.70 and shape_ok
             # Exemplo documentado sem CMC no domínio (DPPC, AOT): só a geometria decide.
             and (cmc_not_applicable or (c_over_cmc_proxy is not None and c_over_cmc_proxy >= 1.0))
+            # Exemplos documentados: cilindro, bicamada e vesícula só com confirmação da forma medida sem a previsão.
+            and (not require_shape_confirmation or not morphology_hint
+                 or confirming_shape(morphology_hint) in (None, morphology))
         )
         if morphology_hint:
             morphology = morphology_hint if organized else "agregado em reorganização"

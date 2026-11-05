@@ -167,7 +167,6 @@ def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, p
         core_radius = max(0.65, (3.0 * (head_volume if reverse else tail_volume) / (4.0 * math.pi)) ** (1.0 / 3.0))
         cylinder_radius = max(0.65, contour * 0.85)
         half_length = max(0.25, (tail_volume - 4.0 * math.pi * cylinder_radius ** 3 / 3.0) / (2.0 * math.pi * cylinder_radius ** 2))
-        cluster["organization_half_length"] = half_length   # lido pelo exemplo documentado do cilindro
         axial_sigma = float(np.std((np.asarray(anchors) - center) @ axis))
         axial_dilation = float(np.clip((half_length / math.sqrt(3.0)) / max(axial_sigma, 0.1), 0.8, 1.3))
         membrane_radius = max(contour + 0.9, math.sqrt(tail_volume / (4.0 * math.pi * max(2.0 * contour, 0.9)) ))
