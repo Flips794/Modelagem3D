@@ -60,3 +60,30 @@ describe("exemplo documentado no pedido 3D", () => {
     expect(mixed.documented_example_id).toBeNull();
   });
 });
+
+describe("papel explícito do painel", () => {
+  it("água marcada como reagente (núcleo do AOT) continua reagente com a quantidade real", () => {
+    const request = buildMiceliumRequest([
+      transfer({ id: "aot", name: "AOT", smiles: "CCCCC(CC)COC(=O)CC(C(=O)OCC(CC)CCCC)S(=O)(=O)[O-].[Na+]", concentration: 10,
+        transferMetadata: { role: "reagent", realAmountMmol: 10, documentedExampleId: "aot_inversa_isooctano" } }),
+      transfer({ id: "agua", name: "Água (núcleo, derivada de w0)", smiles: "O", concentration: 100,
+        transferMetadata: { role: "reagent", realAmountMmol: 100, documentedExampleId: "aot_inversa_isooctano" } }),
+      transfer({ id: "isooctano", name: "Isooctano", smiles: "CC(C)CC(C)(C)C",
+        transferMetadata: { role: "solvent", renderCount: 80, documentedExampleId: "aot_inversa_isooctano" } }),
+    ]);
+    const water = request.molecules.find((molecule) => molecule.name?.startsWith("Água"));
+    expect(water?.role).toBe("reagent");
+    expect(water?.real_amount_mmol).toBe(100);
+    expect(request.molecules.find((molecule) => molecule.name === "Isooctano")?.role).toBe("solvent");
+  });
+
+  it("mistura comum: água marcada como reagente continua tratada como solvente (comportamento anterior)", () => {
+    const request = buildMiceliumRequest([transfer(), transfer({ id: "w", name: "Água", smiles: "O", transferMetadata: { role: "reagent" } })]);
+    expect(request.molecules.find((molecule) => molecule.smiles === "O")?.role).toBe("solvent");
+  });
+
+  it("sem papel marcado, a água continua sendo reconhecida como solvente", () => {
+    const request = buildMiceliumRequest([transfer(), transfer({ id: "w", name: "Água", smiles: "O" })]);
+    expect(request.molecules.find((molecule) => molecule.smiles === "O")?.role).toBe("solvent");
+  });
+});

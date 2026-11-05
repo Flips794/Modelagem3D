@@ -392,10 +392,16 @@ function buildMiceliumMolecules(
   return transfers
     .map((transfer) => {
       const count = getRenderCount(transfer);
+      // Exemplo documentado: o papel do catálogo prevalece (a água do núcleo do AOT é reagente).
+      // Mistura comum: comportamento anterior (marcação de solvente ou heurística).
+      const markedRole = transfer.transferMetadata?.role;
+      const fromExample = Boolean(transfer.transferMetadata?.documentedExampleId);
       const role: MiceliumMoleculeInput3D["role"] =
-        transfer.transferMetadata?.role === "solvent" || looksLikeSolvent(transfer)
-          ? "solvent"
-          : "reagent";
+        fromExample && markedRole === "reagent"
+          ? "reagent"
+          : markedRole === "solvent" || looksLikeSolvent(transfer)
+            ? "solvent"
+            : "reagent";
 
       const quantity =
         role === "solvent"

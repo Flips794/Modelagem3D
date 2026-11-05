@@ -1,5 +1,11 @@
 # Guia de moléculas para demonstrar morfologias
 
+> **Nota (05/11/2026):** os valores abaixo são de uma versão anterior e não têm referência citada
+> (DDAB, AOT em hexano, CTAB com força iônica 0,08). Para demonstrar as morfologias com condições
+> documentadas, use os **Exemplos documentados** do painel 2D→3D (catálogo em
+> `documented_examples.py`; spec em `docs/superpowers/specs/2026-11-05-exemplos-documentados-morfologias-design.md`).
+> Este guia foi mantido apenas como histórico.
+
 Ambiente padrão:
 - volume = 100 mL
 - temperatura = 298,15 K
