@@ -95,18 +95,24 @@ def chain_director(heads: np.ndarray, tails: np.ndarray) -> np.ndarray:
     return np.linalg.eigh(chain.T @ chain / len(chain))[1][:, -1]
 
 
-def test_bicamada_dppc_duas_faixas_de_cabecas():
-    _, xyz, indices, _, heads, tails = cluster_geometry("dppc_bicamada_hidratacao")
+def face_fraction(heads: np.ndarray, tails: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
+    """Fração de cabeças a ≥ 1,0 do plano médio (ao longo do diretor das cadeias) e |projeção| mediana das caudas."""
     normal = chain_director(heads, tails)
     mid = tails.mean(axis=0)
     head_proj = (heads - mid) @ normal
     tail_proj = (tails - mid) @ normal
-    upper, lower = fraction(head_proj > 0), fraction(head_proj < 0)
-    assert upper >= 0.30 and lower >= 0.30
-    assert float(np.median(np.abs(tail_proj))) < float(np.median(np.abs(head_proj)))
-    # Recorte plano: espessura (ao longo da normal) menor que a extensão lateral.
-    lateral = (heads - mid) - np.outer(head_proj, normal)
-    assert float(np.std(head_proj)) < float(np.sqrt(np.mean(np.sum(lateral ** 2, axis=1))))
+    return fraction(np.abs(head_proj) >= 1.0), float(np.median(np.abs(tail_proj))), head_proj, tail_proj
+
+
+def test_bicamada_dppc_duas_faixas_de_cabecas():
+    # Recorte de poucas dezenas de lipídios: largura comparável à espessura (também na escala real), então o
+    # critério é onde ficam as cabeças: nas duas faces, longe do plano médio, e não em volta (esfera).
+    _, _, _, _, heads, tails = cluster_geometry("dppc_bicamada_hidratacao")
+    faces, tail_mid, head_proj, _ = face_fraction(heads, tails)
+    assert fraction(head_proj > 0) >= 0.30 and fraction(head_proj < 0) >= 0.30
+    assert faces >= 0.70 and tail_mid < 1.0
+    _, _, _, _, sds_heads, sds_tails = cluster_geometry("sds_esferica")
+    assert faces > face_fraction(sds_heads, sds_tails)[0]
 
 
 def test_vesicula_dppc_duas_populacoes_radiais():

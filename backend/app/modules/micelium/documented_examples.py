@@ -217,6 +217,8 @@ EXAMPLES: dict[str, DocumentedExample] = {
         notes=("Demonstração por protocolo: a forma não é previsão espontânea do motor; CMC não é usada.",
                "A hidratação produz uma dispersão multilamelar (lamelas concêntricas), não uma bicamada plana isolada: "
                "a cena mostra um recorte representativo de uma lamela.",
+               "Com poucas dezenas de lipídios o recorte tem largura comparável à espessura (também na escala real); "
+               "a forma é guiada por um molde visual de membrana (cabeças nas duas faces, caudas no meio).",
                "Quantidade ilustrativa (1 mmol em 100 mL): o protocolo não fixa uma concentração única.",
                "Duas caudas palmitoíla (16 C) por molécula."),
     ),
@@ -238,7 +240,10 @@ EXAMPLES: dict[str, DocumentedExample] = {
         protocol="Dispersão de DPPC hidratada e extrudada repetidamente por membrana de 100 nm a 55 °C.",
         references=(REF_HOPE, REF_TM),
         notes=("Demonstração por protocolo: a forma não é previsão espontânea do motor; CMC não é usada.",
-               "Vesículas unilamelares de 60–100 nm na referência; a cena mostra uma vesícula em escala reduzida.",
+               "Vesículas unilamelares de 60–100 nm na referência (milhares de lipídios); a cena mostra uma vesícula mínima "
+               "com poucas dezenas de moléculas, em escala reduzida.",
+               "A forma na cena é guiada por um molde visual de membrana (casca com folha interna e externa); não é "
+               "resultado de dinâmica molecular.",
                "Quantidade ilustrativa (1 mmol em 100 mL): o protocolo não fixa uma concentração única.",
                "Duas caudas palmitoíla (16 C) por molécula."),
     ),
