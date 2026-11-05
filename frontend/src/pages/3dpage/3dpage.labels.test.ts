@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { buildDocumentedExampleRows, buildObservationRows, buildPredictionRows } from "./3dpage";
-import { REPRESENTATION_LABEL, pinchDistance, viewerSealText } from "./components/render/SimulationViewer3D";
+import {
+  REPRESENTATION_LABEL, cameraFrameForClusters, framingKey, pinchDistance, sceneMorphologyLabel, viewerSealText,
+} from "./components/render/SimulationViewer3D";
 import type { MiceliumAnalysis3D } from "./type/3dpage.types";
 
 function analysis(updates: Partial<MiceliumAnalysis3D> = {}): MiceliumAnalysis3D {
@@ -151,5 +153,40 @@ describe("exemplo documentado no card Previsto", () => {
     expect(valueOf(dppc, "CMC neste exemplo")).toBe("não usada neste exemplo (base: Tm e protocolo)");
     expect(valueOf(rows, "CMC neste exemplo")).toBeUndefined();
     expect(buildDocumentedExampleRows(null)).toEqual([]);
+  });
+});
+
+describe("Rótulo da cena e enquadramento", () => {
+  it("forma de exemplo documentado confirmada leva o qualificador de recurso visual", () => {
+    const demo = analysis({ morphology_source: "documented_example", predicted_morphology: "micela inversa",
+      dominant_morphology: "micela inversa" });
+    expect(sceneMorphologyLabel(demo)).toBe("micela inversa (recurso visual ilustrativo)");
+    expect(valueOf(buildObservationRows(demo), "Rótulo dos agregados na cena")).toBe("micela inversa (recurso visual ilustrativo)");
+  });
+
+  it("sem confirmação ou forma calculada: rótulo sem qualificador", () => {
+    expect(sceneMorphologyLabel(analysis({ morphology_source: "documented_example",
+      predicted_morphology: "micela cilíndrica/wormlike", dominant_morphology: "agregado em reorganização" })))
+      .toBe("agregado em reorganização");
+    expect(sceneMorphologyLabel(analysis())).toBe("micela esférica");
+    expect(sceneMorphologyLabel(null, "emergente")).toBe("emergente");
+  });
+
+  it("enquadra o maior agregado, com distância proporcional ao raio e dentro dos limites", () => {
+    const cluster = (surfactant_count: number, center: number[], radius: number) => ({
+      id: "c", particle_ids: [], surfactant_count, center, radius, core_radius: 1, stability_score: 1,
+      aggregation_number: surfactant_count, morphology: "x" });
+    const frame = cameraFrameForClusters([cluster(5, [9, 9, 9], 1), cluster(36, [-3, 2, 1], 6)]);
+    expect(frame?.target).toEqual([-3, 2, 1]);
+    expect(frame?.distance).toBeCloseTo(3.4 * 6 + 12);
+    expect(cameraFrameForClusters([cluster(10, [0, 0, 0], 0.1)])?.distance).toBe(12.34);
+    expect(cameraFrameForClusters([])).toBeNull();
+    expect(cameraFrameForClusters(undefined)).toBeNull();
+  });
+
+  it("a chave do enquadramento muda com a mistura, não com o trecho", () => {
+    const base = { atoms: new Array(10), analysis: analysis({ documented_example: null }) };
+    expect(framingKey(base)).toBe(framingKey({ ...base, analysis: analysis({ micellized_fraction: 0.9 }) }));
+    expect(framingKey(base)).not.toBe(framingKey({ ...base, atoms: new Array(12) }));
   });
 });

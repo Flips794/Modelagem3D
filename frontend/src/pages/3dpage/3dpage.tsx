@@ -1,7 +1,7 @@
 import { resolveRealQuantity } from "./realQuantities";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
-import SimulationViewer3D from "./components/render/SimulationViewer3D";
+import SimulationViewer3D, { sceneMorphologyLabel } from "./components/render/SimulationViewer3D";
 
 import type {
   MiceliumAnalysis3D,
@@ -952,7 +952,7 @@ export function buildObservationRows(
     { label: "Forma dominante medida (sem usar a previsão)", value: analysis?.measured_morphology ?? "—" },
     // Com molde previsto, os agregados organizados recebem o rótulo da previsão (ver texto do card).
     // Mesmos recursos de antes: morfologia do 1º cluster e contagem de clusters da topologia.
-    { label: "Rótulo dos agregados na cena", value: analysis?.dominant_morphology ?? topologyFallback.clusterMorphology ?? "—" },
+    { label: "Rótulo dos agregados na cena", value: sceneMorphologyLabel(analysis, topologyFallback.clusterMorphology ?? "—") },
     { label: "Fase observada na cena", value: analysis?.formation_phase ?? "—" },
     { label: "Clusters", value: String(topologyFallback.clusterCount ?? analysis?.cluster_count ?? 0) },
     { label: "Maior agregado", value: analysis ? `${analysis.largest_cluster_size} moléculas` : "—" },

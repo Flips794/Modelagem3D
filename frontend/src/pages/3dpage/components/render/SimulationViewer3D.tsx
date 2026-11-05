@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 import type {
+  MiceliumAnalysis3D,
+  MiceliumCluster3D,
   SimulationAtom3D,
   SimulationBond3D,
   SimulationBox3D,
@@ -209,6 +211,30 @@ export function viewerSealText(analysis: { representation_label?: string | null 
 export function pinchDistance(current: number, previousSpan: number, nextSpan: number) {
   if (previousSpan <= 0 || nextSpan <= 0) return current;
   return clamp(current * (previousSpan / nextSpan), CAMERA_MIN_DISTANCE, CAMERA_MAX_DISTANCE);
+}
+
+/** Rótulo da cena; forma confirmada de exemplo documentado vem de molde/força visual e é identificada. */
+export function sceneMorphologyLabel(analysis: MiceliumAnalysis3D | null | undefined, fallback = "—") {
+  const label = analysis?.dominant_morphology ?? fallback;
+  const fromTemplate = analysis?.morphology_source === "documented_example" && label === analysis?.predicted_morphology;
+  return fromTemplate ? `${label} (recurso visual ilustrativo)` : label;
+}
+
+/** Enquadramento: centro do maior agregado e distância proporcional ao raio, dentro dos limites do zoom. */
+export function cameraFrameForClusters(clusters: MiceliumCluster3D[] | null | undefined) {
+  const largest = [...(clusters ?? [])].sort((a, b) => b.surfactant_count - a.surfactant_count)[0];
+  if (!largest || largest.center.length < 3) return null;
+  return {
+    target: largest.center.slice(0, 3) as [number, number, number],
+    distance: clamp(3.4 * largest.radius + 12, CAMERA_MIN_DISTANCE, CAMERA_MAX_DISTANCE),
+  };
+}
+
+/** Mesma mistura (trechos seguidos) → mesma chave: a câmera só é reenquadrada quando a mistura muda. */
+export function framingKey(topology: { atoms: unknown[]; analysis?: MiceliumAnalysis3D | null } | null | undefined) {
+  if (!topology) return "";
+  const analysis = topology.analysis;
+  return `${topology.atoms.length}|${analysis?.predicted_morphology ?? ""}|${analysis?.documented_example?.id ?? ""}`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -639,11 +665,23 @@ export default function SimulationViewer3D({
     return `${activeTopology.atoms.length} partículas · ${activeTopology.bonds.length} ligações`;
   }, [activeTopology]);
 
-  const morphologyLabel = activeTopology?.analysis?.dominant_morphology ?? activeTopology?.clusters?.[0]?.morphology ?? "emergente";
+  const morphologyLabel = sceneMorphologyLabel(activeTopology?.analysis, activeTopology?.clusters?.[0]?.morphology ?? "emergente");
   const formationPhaseLabel = activeTopology?.analysis?.formation_phase ?? "formação";
 
   useEffect(() => {
     latestTopologyRef.current = activeTopology;
+  }, [activeTopology]);
+
+  // Mistura nova: enquadra o maior agregado (sem isso, agregados fora da origem ficavam cortados).
+  const framedKeyRef = useRef("");
+  useEffect(() => {
+    const key = framingKey(activeTopology);
+    if (!key || key === framedKeyRef.current) return;
+    const frame = cameraFrameForClusters(activeTopology?.clusters);
+    if (!frame) return;
+    framedKeyRef.current = key;
+    cameraStateRef.current.target.set(...frame.target);
+    cameraStateRef.current.distance = frame.distance;
   }, [activeTopology]);
 
   useEffect(() => {
