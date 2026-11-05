@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildDocumentedExampleRows, buildObservationRows, buildPredictionRows } from "./3dpage";
 import {
-  REPRESENTATION_LABEL, cameraFrameForClusters, framingKey, pinchDistance, sceneMorphologyLabel, viewerSealText,
+  REPRESENTATION_LABEL, cameraFrameForClusters, framingKey, orbitCameraPosition, pinchDistance, sceneMorphologyLabel, viewerSealText,
 } from "./components/render/SimulationViewer3D";
 import type { MiceliumAnalysis3D } from "./type/3dpage.types";
 
@@ -188,5 +188,14 @@ describe("Rótulo da cena e enquadramento", () => {
     const base = { atoms: new Array(10), analysis: analysis({ documented_example: null }) };
     expect(framingKey(base)).toBe(framingKey({ ...base, analysis: analysis({ micellized_fraction: 0.9 }) }));
     expect(framingKey(base)).not.toBe(framingKey({ ...base, atoms: new Array(12) }));
+  });
+});
+
+describe("Órbita da câmera", () => {
+  it("gira em volta do alvo, à distância pedida", () => {
+    const target: [number, number, number] = [-3, 2, 1];
+    const [x, y, z] = orbitCameraPosition(-0.62, 0.74, 20, target);
+    expect(Math.hypot(x - target[0], y - target[1], z - target[2])).toBeCloseTo(20);
+    expect(orbitCameraPosition(0, 0, 10, target)).toEqual([-3, 2, 11]);
   });
 });

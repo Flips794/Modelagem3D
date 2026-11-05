@@ -230,6 +230,16 @@ export function cameraFrameForClusters(clusters: MiceliumCluster3D[] | null | un
   };
 }
 
+/** Posição da câmera na órbita em volta do alvo (ângulos e distância do controle de arrastar e zoom). */
+export function orbitCameraPosition(angleX: number, angleY: number, distance: number,
+  target: [number, number, number]): [number, number, number] {
+  return [
+    target[0] + Math.cos(angleX) * Math.sin(angleY) * distance,
+    target[1] + Math.sin(angleX) * distance,
+    target[2] + Math.cos(angleX) * Math.cos(angleY) * distance,
+  ];
+}
+
 /** Mesma mistura (trechos seguidos) → mesma chave: a câmera só é reenquadrada quando a mistura muda. */
 export function framingKey(topology: { atoms: unknown[]; analysis?: MiceliumAnalysis3D | null } | null | undefined) {
   if (!topology) return "";
@@ -912,17 +922,10 @@ export default function SimulationViewer3D({
 
       const cameraState = cameraStateRef.current;
 
-      cameraInstance.position.x =
-        Math.cos(cameraState.angleX) *
-        Math.sin(cameraState.angleY) *
-        cameraState.distance;
-      cameraInstance.position.y =
-        Math.sin(cameraState.angleX) * cameraState.distance;
-      cameraInstance.position.z =
-        Math.cos(cameraState.angleX) *
-        Math.cos(cameraState.angleY) *
-        cameraState.distance;
-      cameraInstance.lookAt(cameraState.target);
+      const target = cameraState.target;
+      cameraInstance.position.set(...orbitCameraPosition(
+        cameraState.angleX, cameraState.angleY, cameraState.distance, [target.x, target.y, target.z]));
+      cameraInstance.lookAt(target);
 
       const topologyNow = latestTopologyRef.current;
       const frameNow = latestFrameRef.current;
