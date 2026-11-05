@@ -1,9 +1,10 @@
 import { resolveRealQuantity } from "./realQuantities";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import SimulationViewer3D from "./components/render/SimulationViewer3D";
 
 import type {
+  MiceliumAnalysis3D,
   MiceliumEnvironment3D,
   MiceliumMoleculeInput3D,
   MiceliumSimulationRequest3D,
@@ -856,6 +857,59 @@ function WebGLCheckingPanel() {
   );
 }
 
+type InspectorRow = { label: string; value: string };
+
+const fixed = (value: number | null | undefined, digits: number) =>
+  value !== undefined && value !== null && Number.isFinite(value) ? value.toFixed(digits) : "—";
+
+/** "Previsto pelos cálculos": vem da química (CMC/CPP), não das coordenadas. */
+export function buildPredictionRows(
+  analysis: MiceliumAnalysis3D | null | undefined,
+  volumeMl: number | undefined
+): { rows: InspectorRow[]; partialNote: string | null } {
+  const partial = analysis?.c_over_cmc_parcial ?? null;
+  const totalUnknown = analysis !== null && analysis !== undefined && (analysis.c_over_cmc_proxy ?? null) === null && partial !== null;
+  const critical = analysis?.critical_amount_mmol ?? null;
+  const cmcMix = critical !== null && volumeMl ? critical / (volumeMl / 1000) : null;
+  const rows: InspectorRow[] = [
+    { label: "CMC da mistura (Clint)", value: cmcMix !== null ? `${Number(cmcMix.toPrecision(4))} mmol/L` : "—" },
+    { label: "C/CMC", value: totalUnknown ? "— (total desconhecido)" : fixed(analysis?.c_over_cmc_proxy, 2) },
+  ];
+  if (partial !== null) {
+    rows.push({ label: "C/CMC parcial (só visualização)", value: fixed(partial, 2) });
+  }
+  rows.push(
+    { label: "Morfologia prevista", value: analysis?.predicted_morphology ?? "—" },
+    { label: "Regime de concentração (c/CMC)", value: analysis?.formation_phase ?? "—" },
+    { label: "Base da previsão", value: analysis?.morphology_basis ?? "—" },
+  );
+  if (analysis?.ignored_components?.length) {
+    rows.push({ label: "Componentes fora do C/CMC", value: analysis.ignored_components.join("; ") });
+  }
+  rows.push({ label: "Validação", value: analysis?.validation_status ?? "—" });
+  return { rows, partialNote: partial !== null ? analysis?.prediction_note ?? null : null };
+}
+
+/** "Observado na visualização": medido nas coordenadas da animação coarse-grained. */
+export function buildObservationRows(
+  analysis: MiceliumAnalysis3D | null | undefined,
+  topologyFallback: { clusterMorphology?: string | null; clusterCount?: number } = {}
+): InspectorRow[] {
+  const shapes = Object.entries(analysis?.independent_shape_distribution ?? {})
+    .map(([name, count]) => `${name} ×${count}`).join("; ");
+  const fraction = analysis?.micellized_fraction;
+  return [
+    // Mesmos recursos de antes: morfologia do 1º cluster e contagem de clusters da topologia.
+    { label: "Morfologia observada", value: analysis?.dominant_morphology ?? topologyFallback.clusterMorphology ?? "—" },
+    { label: "Clusters", value: String(topologyFallback.clusterCount ?? analysis?.cluster_count ?? 0) },
+    { label: "Maior agregado", value: analysis ? `${analysis.largest_cluster_size} moléculas` : "—" },
+    { label: "Tamanho médio dos agregados", value: analysis ? `${fixed(analysis.average_cluster_size, 1)} moléculas` : "—" },
+    { label: "Fração organizada na amostra 3D", value: fraction !== undefined && fraction !== null ? `${(fraction * 100).toFixed(1)}%` : "—" },
+    { label: "Forma medida (sem usar a previsão)", value: shapes || "—" },
+    { label: "Índice micelar (heurístico)", value: analysis ? analysis.micelle_probability.toFixed(2) : "—" },
+  ];
+}
+
 export function Page3D() {
   const [topology, setTopology] = useState<SimulationTopology3D | null>(null);
   const [frame, setFrame] = useState<SimulationFrame3D | null>(null);
@@ -905,10 +959,15 @@ export function Page3D() {
   }, [selectedMoleculeId, topology]);
 
   const miceliumAnalysis = topology?.analysis ?? null;
-  const clusterCount = topology?.clusters?.length ?? 0;
   const currentEnvironment = currentTransfers[0]?.transferMetadata?.environment as
     | Record<string, unknown>
     | undefined;
+  const environmentVolumeMl = typeof currentEnvironment?.volume_ml === "number" ? currentEnvironment.volume_ml : undefined;
+  const { rows: predictionRows, partialNote: predictionPartialNote } = buildPredictionRows(miceliumAnalysis, environmentVolumeMl);
+  const observationRows = buildObservationRows(miceliumAnalysis, {
+    clusterMorphology: topology?.clusters?.[0]?.morphology ?? null,
+    clusterCount: topology?.clusters?.length ?? 0,
+  });
 
   useEffect(() => {
     const available = canCreateWebGLContext();
@@ -1519,39 +1578,6 @@ export function Page3D() {
                 <span>Frames Micelium</span>
                 <strong>{miceliumFrames.length}</strong>
 
-                <span>Clusters</span>
-                <strong>{clusterCount}</strong>
-
-                <span>Índice micelar (heurístico)</span>
-                <strong>
-                  {miceliumAnalysis
-                    ? miceliumAnalysis.micelle_probability.toFixed(2)
-                    : "—"}
-                </strong>
-
-                <span>Morfologia dominante</span>
-                <strong>{miceliumAnalysis?.dominant_morphology ?? topology?.clusters?.[0]?.morphology ?? "—"}</strong>
-
-                <span>Tendência prevista</span>
-                <strong>{miceliumAnalysis?.predicted_morphology ?? "—"}</strong>
-
-                <span>Fase visual</span>
-                <strong>{miceliumAnalysis?.formation_phase ?? "—"}</strong>
-
-                <span>Fração organizada na amostra 3D</span>
-                <strong>
-                  {miceliumAnalysis?.micellized_fraction !== undefined && miceliumAnalysis?.micellized_fraction !== null
-                    ? `${(miceliumAnalysis.micellized_fraction * 100).toFixed(1)}%`
-                    : "—"}
-                </strong>
-
-                <span>C/CMC</span>
-                <strong>
-                  {miceliumAnalysis?.c_over_cmc_proxy !== undefined && miceliumAnalysis?.c_over_cmc_proxy !== null
-                    ? miceliumAnalysis.c_over_cmc_proxy.toFixed(2)
-                    : "—"}
-                </strong>
-
                 <span>Quantidade real</span>
                 <strong>
                   {miceliumAnalysis?.real_amount_mmol !== undefined && miceliumAnalysis?.real_amount_mmol !== null
@@ -1600,6 +1626,38 @@ export function Page3D() {
               a topologia química das moléculas.
             </span>
           </section>
+
+          {currentTransfers.length > 0 && (
+          <div className="inspector-comparison">
+            <section className="bottom-inspector-card">
+              <strong>Previsto pelos cálculos</strong>
+              {predictionPartialNote && <span className="empty-inspector">{predictionPartialNote}</span>}
+              <div className="inline-inspector-grid two-col">
+                {predictionRows.map((row) => (
+                  <Fragment key={row.label}>
+                    <span>{row.label}</span>
+                    <strong>{row.value}</strong>
+                  </Fragment>
+                ))}
+              </div>
+            </section>
+
+            <section className="bottom-inspector-card">
+              <strong>Observado na visualização</strong>
+              <span className="empty-inspector">
+                Medido nas coordenadas da animação coarse-grained; não é simulação física nem medida experimental.
+              </span>
+              <div className="inline-inspector-grid two-col">
+                {observationRows.map((row) => (
+                  <Fragment key={row.label}>
+                    <span>{row.label}</span>
+                    <strong>{row.value}</strong>
+                  </Fragment>
+                ))}
+              </div>
+            </section>
+          </div>
+          )}
         </div>
       </section>
     </main>

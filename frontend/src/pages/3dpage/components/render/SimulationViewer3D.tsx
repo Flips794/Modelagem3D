@@ -198,6 +198,21 @@ const MAX_RENDERED_TOPOLOGICAL_BOND_LENGTH = 1.65;
 const MIN_VISIBLE_LUMINANCE = 0.34;
 const DARK_COLOR_LIFT_TARGET = new THREE.Color("#CBD5E1");
 
+export const REPRESENTATION_LABEL = "Visualização representativa — não é simulação física";
+const CAMERA_MIN_DISTANCE = 8;
+const CAMERA_MAX_DISTANCE = 220;
+
+/** Selo permanente: vem da análise quando houver, senão a mesma frase fixa. */
+export function viewerSealText(analysis: { representation_label?: string | null } | null | undefined) {
+  return analysis?.representation_label || REPRESENTATION_LABEL;
+}
+
+/** Zoom de pinça: afastar os dedos (span maior) aproxima a câmera, dentro dos limites da roda. */
+export function pinchDistance(current: number, previousSpan: number, nextSpan: number) {
+  if (previousSpan <= 0 || nextSpan <= 0) return current;
+  return clamp(current * (previousSpan / nextSpan), CAMERA_MIN_DISTANCE, CAMERA_MAX_DISTANCE);
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
@@ -752,7 +767,22 @@ export default function SimulationViewer3D({
     const observer = new ResizeObserver(resize);
     observer.observe(mount);
 
+    // Ponteiros ativos (mouse, dedo, caneta): 1 gira, 2 fazem pinça.
+    const activePointers = new Map<number, { x: number; y: number }>();
+    let pinchSpan: number | null = null;
+    const currentSpan = () => {
+      const [a, b] = [...activePointers.values()];
+      return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+    };
+
     const handlePointerDown = (event: PointerEvent) => {
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      renderer.domElement.setPointerCapture?.(event.pointerId);
+      if (activePointers.size === 2) {
+        pinchSpan = currentSpan();
+        return; // segundo dedo: começa a pinça, não seleciona molécula
+      }
+
       const rendererInstance = rendererRef.current;
       const cameraInstance = cameraRef.current;
       const atomMeshes = atomMeshGroupsRef.current.map((group) => group.mesh);
@@ -790,14 +820,32 @@ export default function SimulationViewer3D({
     };
 
     const handlePointerMove = (event: PointerEvent) => {
-      if (event.buttons !== 1) return;
+      const previous = activePointers.get(event.pointerId);
+      if (!previous) return;
+      if (event.pointerType === "mouse" && event.buttons !== 1) return;
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
-      cameraStateRef.current.angleY -= event.movementX * 0.005;
+      if (activePointers.size >= 2) {
+        const span = currentSpan();
+        if (pinchSpan) {
+          cameraStateRef.current.distance = pinchDistance(cameraStateRef.current.distance, pinchSpan, span);
+        }
+        pinchSpan = span;
+        return;
+      }
+
+      // Delta pela posição (movementX falta em alguns navegadores para toque).
+      cameraStateRef.current.angleY -= (event.clientX - previous.x) * 0.005;
       cameraStateRef.current.angleX = clamp(
-        cameraStateRef.current.angleX - event.movementY * 0.004,
+        cameraStateRef.current.angleX - (event.clientY - previous.y) * 0.004,
         -1.35,
         1.35
       );
+    };
+
+    const handlePointerEnd = (event: PointerEvent) => {
+      activePointers.delete(event.pointerId);
+      if (activePointers.size < 2) pinchSpan = null;
     };
 
     const handleWheel = (event: WheelEvent) => {
@@ -805,13 +853,16 @@ export default function SimulationViewer3D({
 
       cameraStateRef.current.distance = clamp(
         cameraStateRef.current.distance + event.deltaY * 0.04,
-        8,
-        220
+        CAMERA_MIN_DISTANCE,
+        CAMERA_MAX_DISTANCE
       );
     };
 
     renderer.domElement.addEventListener("pointerdown", handlePointerDown);
     renderer.domElement.addEventListener("pointermove", handlePointerMove);
+    renderer.domElement.addEventListener("pointerup", handlePointerEnd);
+    renderer.domElement.addEventListener("pointercancel", handlePointerEnd);
+    renderer.domElement.addEventListener("lostpointercapture", handlePointerEnd);
     renderer.domElement.addEventListener("wheel", handleWheel, {
       passive: false,
     });
@@ -872,6 +923,9 @@ export default function SimulationViewer3D({
 
       renderer.domElement.removeEventListener("pointerdown", handlePointerDown);
       renderer.domElement.removeEventListener("pointermove", handlePointerMove);
+      renderer.domElement.removeEventListener("pointerup", handlePointerEnd);
+      renderer.domElement.removeEventListener("pointercancel", handlePointerEnd);
+      renderer.domElement.removeEventListener("lostpointercapture", handlePointerEnd);
       renderer.domElement.removeEventListener("wheel", handleWheel);
 
       disposeAtomMeshes();
@@ -1362,13 +1416,14 @@ export default function SimulationViewer3D({
         <div>
           <strong>{activeTopology?.title ?? "Visualizador molecular 3D"}</strong>
           <span>{atomCountLabel}</span>
+          <span className="simulation-viewer-seal" role="note">{viewerSealText(activeTopology?.analysis)}</span>
         </div>
 
         <div className="simulation-viewer-badges">
           <span>{showSolvent ? "solvente visível" : "solvente oculto"}</span>
           <span>Micelium</span>
           <span>{formationPhaseLabel}</span>
-          <span>{morphologyLabel}</span>
+          <span>observado: {morphologyLabel}</span>
           <span>clusters</span>
           <span>interações</span>
         </div>
@@ -1386,7 +1441,7 @@ export default function SimulationViewer3D({
       )}
 
       <div className="simulation-viewer-help">
-        Arraste para rotacionar · Scroll para zoom · Clique em uma partícula para selecionar a molécula
+        Arraste para rotacionar · Scroll ou pinça (dois dedos) para zoom · Toque/clique em uma partícula para selecionar a molécula
       </div>
     </section>
   );

@@ -253,6 +253,14 @@ export type MiceliumAnalysis3D = {
   orientation_score?: number | null;
   hydrophobic_core_score?: number | null;
   hydrophobic_exposure?: number | null;
+  // Web Lite v1: previsto × observado × validado; mistura com C/CMC parcial.
+  morphology_basis?: string | null;
+  representation_label?: string | null;
+  validation_status?: string | null;
+  ignored_components?: string[];
+  prediction_note?: string | null;
+  c_over_cmc_parcial?: number | null;
+  independent_shape_distribution?: Record<string, number>;
   warnings: string[];
 };
 
