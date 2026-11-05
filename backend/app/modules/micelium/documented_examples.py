@@ -195,7 +195,11 @@ EXAMPLES: dict[str, DocumentedExample] = {
         notes=("Demonstração representativa: a forma vem do estudo de SANS, não de CMC/CPP calculados.",
                "Raio da seção transversal medido ≈ 22 Å; CMC do CTAB em água 0,9 mM a 25 °C (citada no mesmo artigo).",
                "Salicilato na interface, anel para dentro e carboxilato para o meio: regra representativa baseada em RMN.",
-               "As amostras do estudo foram feitas em D₂O."),
+               "As amostras do estudo foram feitas em D₂O.",
+               "A forma na cena é guiada por um molde visual cilíndrico (recurso ilustrativo, não formação "
+               "espontânea): cabeças na superfície, caudas para o eixo. Com poucas dezenas de CTAB visuais, o trecho é "
+               "esticado para o alongamento ficar visível; a densidade das moléculas não é a real, e uma micela "
+               "vermiforme real tem comprimento de centenas de nanômetros."),
     ),
     "dppc_bicamada_hidratacao": DocumentedExample(
         id="dppc_bicamada_hidratacao",
@@ -246,9 +250,10 @@ EXAMPLES: dict[str, DocumentedExample] = {
                "Vesículas unilamelares de 60–100 nm na referência (milhares de lipídios); a cena mostra uma vesícula mínima "
                "com poucas dezenas de moléculas, em escala reduzida. Com tão poucos lipídios a folha externa fica "
                "esparsa (cadeias separadas, aspecto de estrela num corte); o que a cena demonstra é a ordem das "
-               "camadas: cabeças internas, caudas no meio e cabeças externas.",
-               "A forma na cena é guiada por um molde visual de membrana (casca com folha interna e externa); não é "
-               "resultado de dinâmica molecular.",
+               "camadas: cabeças internas, caudas no meio e cabeças externas, em volta de uma cavidade aquosa central "
+               "de escala também reduzida.",
+               "A forma na cena é guiada por um molde visual de membrana (casca com folha interna, folha externa e "
+               "cavidade central; recurso ilustrativo); não é resultado de dinâmica molecular.",
                "Quantidade ilustrativa (1 mmol em 100 mL): o protocolo não fixa uma concentração única.",
                "Duas caudas palmitoíla (16 C) por molécula."),
         cmc_note="não usada neste exemplo (base: Tm e protocolo)",

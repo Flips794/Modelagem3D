@@ -19,7 +19,7 @@ from app.modules.micelium.documented_examples import (
 from app.modules.micelium.documented_example_forces import (
     apply_documented_example_forces,
     build_example_groups,
-    is_membrane_demo,
+    is_template_demo,
 )
 from app.modules.micelium.mapping import build_particle_template, infer_surfactant_like, stable_id
 from app.modules.micelium.organization import (
@@ -2011,8 +2011,8 @@ def apply_cluster_self_organization_forces(
     request: MiceliumSimulationRequest,
 ) -> None:
     """Campo médio local com tamanho finito e orientação molecular."""
-    if is_membrane_demo(plan):
-        return   # exemplos DPPC: o molde visual de membrana (documented_example_forces) dá a forma
+    if is_template_demo(plan):
+        return   # exemplos DPPC e CTAB: o molde visual (documented_example_forces) dá a forma
     apply_finite_cluster_forces(
         positions=positions, velocities=velocities, particles=particles,
         clusters=clusters, plan=plan,
@@ -2414,7 +2414,6 @@ class MiceliumEngine:
             # Só dentro das condições de um exemplo cuja CMC não se aplica (o plano só leva o id nesse caso).
             cmc_not_applicable=bool(plan.documented_example_id
                                     and EXAMPLES[plan.documented_example_id].cmc_note),
-            require_shape_confirmation=bool(plan.documented_example_id),
         )
 
         prediction_note = None

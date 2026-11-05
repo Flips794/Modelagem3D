@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from app.modules.micelium.ai_bridge import enrich_molecules_with_ai
-from app.modules.micelium.analyzer import geometry_evidence_for_cluster
+from app.modules.micelium.analyzer import confirming_shape, geometry_evidence_for_cluster
 from app.modules.micelium.engine import (
     MiceliumEngine, _MICELIUM_SESSION_STATE, apply_autonomous_pairwise_forces,
     build_initial_state, calculate_micellization_metrics, choose_formation_plan,
@@ -137,7 +137,13 @@ def test_coordinates_organize_without_stretching_bonds(name, cpp, sc, count, con
     second = engine.run(req)
     assert fragment in second.analysis.predicted_morphology
     organized = [c for c in second.clusters if fragment in c.morphology]
-    assert organized, [(c.surfactant_count, c.morphology) for c in second.clusters]
+    confirm = confirming_shape(second.analysis.predicted_morphology)
+    if confirm is None:
+        assert organized, [(c.surfactant_count, c.morphology) for c in second.clusters]
+    else:
+        # Cilindro e bicamada só são rotulados quando a forma medida sem a previsão confirma.
+        assert not organized or confirm in second.analysis.independent_shape_distribution, (
+            [(c.surfactant_count, c.morphology) for c in second.clusters], second.analysis.independent_shape_distribution)
     assert second.analysis.orientation_score > .62
     assert second.analysis.hydrophobic_core_score >= .70
     # Continuidade, sem reabrir a mesma mistura nas posições de dispersão.

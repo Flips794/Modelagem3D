@@ -122,7 +122,14 @@ def cluster_surfactant_molecules(
         return []
 
     molecule_ids = list(tail_centers.keys())
-    cell_size = max(cutoff, 0.5)
+    # Raio por par: uma molécula de k caudas ocupa ~k vezes a área de uma cauda na folha, e a distância entre
+    # vizinhos cresce com √k. Com uma cauda (todo o resto do motor), o raio continua `cutoff`.
+    chains: dict[str, set[int]] = defaultdict(set)
+    for particle in particles:
+        if particle.kind == "tail":
+            chains[particle.molecule_id].add(particle.chain_index)
+    scale = {mid: math.sqrt(max(1, len(chains.get(mid, ())))) for mid in molecule_ids}
+    cell_size = max(cutoff * max(scale.values(), default=1.0), 0.5)
 
     def cell_key(position: Vector) -> tuple[int, int, int]:
         return (
@@ -151,7 +158,8 @@ def cluster_surfactant_molecules(
                         if other_id <= molecule_id:
                             continue
 
-                        if distance_3d(center, tail_centers[other_id]) <= cutoff:
+                        pair_cutoff = cutoff * math.sqrt(scale[molecule_id] * scale[other_id])
+                        if distance_3d(center, tail_centers[other_id]) <= pair_cutoff:
                             graph[molecule_id].append(other_id)
                             graph[other_id].append(molecule_id)
 
@@ -325,6 +333,8 @@ def classify_morphology(
 MEASURED_LAMELLAR = "agregado lamelar (duas folhas)"
 MEASURED_SHELL = "casca fechada de duas folhas"
 MEASURED_ELONGATED = "agregado alongado"
+# Agregado orientado e compacto cuja forma medida não confirma a forma prevista (não é estrutura formada).
+UNCONFIRMED_SHAPE = "agregado orientado (forma prevista não confirmada)"
 # Formas não esféricas: o rótulo da previsão só vale quando a forma medida sem a previsão concorda.
 CONFIRMING_SHAPE = {"cilíndrica": MEASURED_ELONGATED, "wormlike": MEASURED_ELONGATED,
                     "vesícula": MEASURED_SHELL, "lamelar": MEASURED_LAMELLAR, "bicamada": MEASURED_LAMELLAR}
@@ -504,7 +514,6 @@ def analyze_micelium_state(
     visual_scale_factor: float | None = None,
     morphology_hint: str | None = None,
     cmc_not_applicable: bool = False,
-    require_shape_confirmation: bool = False,
 ) -> tuple[list[MicelleCluster], MiceliumAnalysis]:
     safe_positions = sanitize_positions(positions)
     groups = group_by_molecule(particles)
@@ -608,17 +617,18 @@ def analyze_micelium_state(
         )
 
         independent_shapes[morphology] = independent_shapes.get(morphology, 0) + 1
-        organized = (
+        geometry_ok = (
             aggregation_number >= 6 and orientation_score >= 0.62
             and core_score >= 0.70 and shape_ok
             # Exemplo documentado sem CMC no domínio (DPPC, AOT): só a geometria decide.
             and (cmc_not_applicable or (c_over_cmc_proxy is not None and c_over_cmc_proxy >= 1.0))
-            # Exemplos documentados: cilindro, bicamada e vesícula só com confirmação da forma medida sem a previsão.
-            and (not require_shape_confirmation or not morphology_hint
-                 or confirming_shape(morphology_hint) in (None, morphology))
         )
+        # Cilindro, bicamada e vesícula só com confirmação da forma medida sem a previsão (todo pedido).
+        confirmed = not morphology_hint or confirming_shape(morphology_hint) in (None, morphology)
+        organized = geometry_ok and confirmed
         if morphology_hint:
-            morphology = morphology_hint if organized else "agregado em reorganização"
+            morphology = (morphology_hint if organized
+                          else UNCONFIRMED_SHAPE if geometry_ok else "agregado em reorganização")
         if organized:
             organized_molecules += aggregation_number
 

@@ -23,6 +23,9 @@ CORE_FRACTION = 0.70       # água até 70 % do raio mediano das cabeças
 INTERFACE_OFFSET = 0.46    # anel/carboxilato a ± um comprimento de ligação da camada de cabeças
 TEMPLATE_K = 0.500         # molde de membrana (bicamada/vesícula) por conta, proporcional ao deslocamento
 MAX_TEMPLATE_DELTA_V = 0.120
+VESICLE_LUMEN = 1.6        # raio das cabeças internas da vesícula: deixa uma cavidade visível no centro
+ROD_STEP = 0.33            # comprimento do cilindro por molécula (CTAB): 27 moléculas → ~9 unidades
+ROD_TIP_RADIUS = 0.35      # pontas das caudas perto do eixo, sem empilhar contas no mesmo ponto
 BOND = 0.46                # comprimento de ligação do modelo CG
 
 
@@ -93,6 +96,10 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
     if is_membrane_demo(plan):
         apply_membrane_template(xyz=xyz, velocities=velocities, particles=particles, groups=groups, plan=plan)
         return
+    # Exemplo CTAB: o molde de cilindro substitui a guia e as forças gerais; o salicilato segue abaixo.
+    rod = is_rod_demo(plan)
+    if rod:
+        apply_rod_template(xyz=xyz, velocities=velocities, particles=particles, groups=groups, plan=plan)
 
     # 1) Guia de agregação: só as moléculas FORA dos agregados principais (os nucleation_count maiores)
     #    vão até a superfície do agregado principal mais próximo. A forma do agregado principal fica com
@@ -109,7 +116,7 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
         hub_members.update(cluster["particle_indices"])
     for point in nucleus_points(count, box_size)[len(targets):]:
         targets.append((point, GUIDE_FREE_RADIUS))
-    for heads, tails in groups.surfactants:
+    for heads, tails in ([] if rod else groups.surfactants):
         if heads[0] in hub_members:
             continue
         anchor = xyz[heads if reverse else tails].mean(axis=0)
@@ -186,6 +193,54 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
                     _push(velocities, particles, index, displacement * (PLACEMENT_K * alpha))
 
 
+def is_rod_demo(plan) -> bool:
+    morphology = plan.morphology.lower()
+    return bool(plan.documented_example_id) and ("cilíndrica" in morphology or "wormlike" in morphology)
+
+
+def is_template_demo(plan) -> bool:
+    """Exemplos cuja forma vem de um molde visual (membranas DPPC, cilindro CTAB)."""
+    return is_membrane_demo(plan) or is_rod_demo(plan)
+
+
+def apply_rod_template(*, xyz, velocities, particles, groups: ExampleGroups, plan) -> None:
+    """Molde visual de cilindro do exemplo CTAB (demonstração representativa, força visual).
+
+    Um trecho de micela vermiforme ao longo de x, em volta do centro das moléculas: as cabeças ocupam uma
+    hélice de ângulo áureo na superfície e as caudas apontam para o eixo. Cada molécula fica com o ponto livre
+    mais próximo da sua cabeça atual. Comprimento ROD_STEP por molécula: com poucas moléculas, um cilindro
+    compacto de mesmo volume seria quase esférico; a cena mostra a geometria, não a densidade real.
+    """
+    molecules = groups.surfactants
+    if len(molecules) < 6:
+        return
+    gain = TEMPLATE_K * float(plan.final_alpha)
+    every = [i for heads, tails in molecules for i in heads + tails]
+    center = xyz[every].mean(axis=0)
+    axis, side_u, side_v = np.eye(3)
+    longest = max((groups.chain_length.get(t[0], len(t)) for _h, t in molecules), default=1)
+    head_radius = ROD_TIP_RADIUS + (longest - 1) * BOND + 0.48
+    count = len(molecules)
+    length = ROD_STEP * count
+    golden = math.pi * (3.0 - math.sqrt(5.0))
+    sites = []
+    for k in range(count):
+        radial = math.cos(golden * k) * side_u + math.sin(golden * k) * side_v
+        sites.append((axis * (-length / 2.0 + (k + 0.5) * length / count), radial))
+    free = list(range(count))
+    for heads, tails in molecules:
+        head = xyz[heads].mean(axis=0) - center
+        best = min(free, key=lambda k: float(np.linalg.norm(sites[k][0] + sites[k][1] * head_radius - head)))
+        free.remove(best)
+        base, radial = sites[best]
+        head_target = center + base + radial * head_radius
+        for index in heads:
+            _push(velocities, particles, index, (head_target - xyz[index]) * gain, cap=MAX_TEMPLATE_DELTA_V)
+        for index in tails:
+            target = center + base + radial * (ROD_TIP_RADIUS + groups.chain_position.get(index, 0) * BOND)
+            _push(velocities, particles, index, (target - xyz[index]) * gain, cap=MAX_TEMPLATE_DELTA_V)
+
+
 def is_membrane_demo(plan) -> bool:
     morphology = plan.morphology.lower()
     return bool(plan.documented_example_id) and ("vesícula" in morphology or "bicamada" in morphology or "lamelar" in morphology)
@@ -197,7 +252,8 @@ def apply_membrane_template(*, xyz, velocities, particles, groups: ExampleGroups
     Atua sobre TODAS as moléculas do exemplo, em volta do centro delas (um agregado só):
     - bicamada: disco de duas folhas perpendicular a z; a folha de cada molécula segue a orientação atual
       da sua cadeia; as moléculas se espalham pelo disco na ordem da distância ao eixo;
-    - vesícula: casca mínima com folha interna e externa (cabeças internas a 0,9 do centro).
+    - vesícula: casca mínima com folha interna e externa e cavidade central (cabeças internas a
+      VESICLE_LUMEN do centro).
     As caudas das duas cadeias vão para o meio da membrana e a cabeça para a face.
     """
     morphology = plan.morphology.lower()
@@ -215,7 +271,7 @@ def apply_membrane_template(*, xyz, velocities, particles, groups: ExampleGroups
     count = len(molecules)
     # Disco com metade das moléculas por folha e ~0,8 de espaçamento entre cabeças.
     disk_radius = 0.8 * math.sqrt(count / 2.0)
-    shell_radius = head_height + 0.9
+    shell_radius = head_height + VESICLE_LUMEN
     shell_direction: dict[int, np.ndarray] = {}
     if vesicle:
         # Direções-alvo uniformes na casca (espiral de Fibonacci); cada molécula fica com o ponto livre mais
