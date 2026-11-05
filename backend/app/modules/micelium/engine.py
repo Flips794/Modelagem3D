@@ -3,10 +3,19 @@ from __future__ import annotations
 import math
 import random
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from app.modules.micelium.analyzer import analyze_micelium_state
 from app.modules.micelium.ai_bridge import enrich_molecules_with_ai
+from app.modules.micelium.documented_examples import (
+    EXAMPLES,
+    OUT_OF_RANGE_PREFIX,
+    DocumentedExample,
+    ExampleVerdict,
+    annotate_request,
+    documented_example_report,
+    evaluate,
+)
 from app.modules.micelium.mapping import build_particle_template, infer_surfactant_like, stable_id
 from app.modules.micelium.organization import (
     apply_local_encounter_forces,
@@ -62,6 +71,8 @@ class FormationPlan:
     # Web Lite v1: sem CPP válido não há molde geométrico; base declarada da previsão.
     geometry_template: bool = True
     morphology_basis: str = ""
+    # Exemplo documentado que substituiu a forma calculada (None = forma do cálculo).
+    documented_example_id: str | None = None
 
 
 @dataclass(slots=True)
@@ -110,7 +121,9 @@ def infer_solvent_profile(request: MiceliumSimulationRequest) -> SolventEnvironm
             solvent_hydrophobicity = 0.12
             protic_score = 0.90
             solvent_name = "metanol"
-        elif "óleo" in label or "oleo" in label or "oil" in label or "hexan" in label or re.fullmatch(r"C{5,}", first.smiles.strip()):
+        elif ("óleo" in label or "oleo" in label or "oil" in label or "hexan" in label
+              or re.search(r"isooctan|trimetilpentan|trimethylpentan", label)
+              or re.fullmatch(r"C{5,}", first.smiles.strip())):
             solvent_polarity = 0.08
             dielectric_hint = 1.9
             solvent_hydrophobicity = 0.88
@@ -127,7 +140,8 @@ def infer_solvent_profile(request: MiceliumSimulationRequest) -> SolventEnvironm
                 solvent_polarity, protic_score, dielectric_hint = 0.62, 0.82, 24.5
             elif "metanol" in label or "methanol" in label:
                 solvent_polarity, protic_score, dielectric_hint = 0.78, 0.90, 32.6
-            elif any(token in label for token in ("hexan", "heptan", "óleo", "oleo", "oil", "apolar")):
+            elif any(token in label for token in ("hexan", "heptan", "óleo", "oleo", "oil", "apolar", "isooctan",
+                                                  "trimetilpentan", "trimethylpentan")):
                 solvent_polarity, protic_score, dielectric_hint = 0.08, 0.05, 1.9
         solvent_hydrophobicity = 1.0 - solvent_polarity
 
@@ -482,6 +496,73 @@ def estimate_nucleation_count(surfactant_count: int, ccmc: float | None, strengt
 
 
 
+def _morphology_adjustments(morphology: str, final_alpha: float, surfactant_count: int) -> tuple[float, float, float, int]:
+    """Ajustes visuais de estabilidade por morfologia: (final_alpha, orientação, núcleo, nucleação)."""
+    if "esférica" in morphology:
+        orientation_score = clamp(0.30 + 0.72 * final_alpha, 0.0, 1.0)
+        hydrophobic_core_score = clamp(0.26 + 0.76 * final_alpha, 0.0, 1.0)
+        nucleation_count = max(1, min(10, math.ceil(max(surfactant_count, 1) / 18)))
+    elif "cilíndrica" in morphology or "wormlike" in morphology:
+        final_alpha = clamp(final_alpha + 0.03, 0.0, 0.90)
+        orientation_score = clamp(0.34 + 0.70 * final_alpha, 0.0, 1.0)
+        hydrophobic_core_score = clamp(0.24 + 0.70 * final_alpha, 0.0, 1.0)
+        nucleation_count = max(1, min(8, math.ceil(max(surfactant_count, 1) / 24)))
+    elif "vesícula" in morphology:
+        final_alpha = clamp(final_alpha + 0.05, 0.0, 0.92)
+        orientation_score = clamp(0.40 + 0.66 * final_alpha, 0.0, 1.0)
+        hydrophobic_core_score = clamp(0.18 + 0.56 * final_alpha, 0.0, 1.0)
+        nucleation_count = max(1, min(5, math.ceil(max(surfactant_count, 1) / 42)))
+    elif "lamelar" in morphology or "bicamada" in morphology:
+        final_alpha = clamp(final_alpha + 0.02, 0.0, 0.90)
+        orientation_score = clamp(0.38 + 0.64 * final_alpha, 0.0, 1.0)
+        hydrophobic_core_score = clamp(0.16 + 0.52 * final_alpha, 0.0, 1.0)
+        nucleation_count = max(1, min(6, math.ceil(max(surfactant_count, 1) / 36)))
+    elif "inversa" in morphology:
+        final_alpha = clamp(final_alpha + 0.04, 0.0, 0.92)
+        orientation_score = clamp(0.34 + 0.74 * final_alpha, 0.0, 1.0)
+        hydrophobic_core_score = clamp(0.20 + 0.70 * final_alpha, 0.0, 1.0)
+        nucleation_count = max(1, min(7, math.ceil(max(surfactant_count, 1) / 28)))
+    else:
+        orientation_score = clamp(0.24 + 0.58 * final_alpha, 0.0, 1.0)
+        hydrophobic_core_score = clamp(0.16 + 0.54 * final_alpha, 0.0, 1.0)
+        nucleation_count = max(1, min(10, math.ceil(max(surfactant_count, 1) / 20)))
+    return final_alpha, orientation_score, hydrophobic_core_score, nucleation_count
+
+
+DEMONSTRATION_REGIME = "demonstração representativa (protocolo documentado)"
+
+
+def apply_documented_plan(plan: FormationPlan, example: DocumentedExample, verdict: ExampleVerdict,
+                          surfactant_count: int) -> FormationPlan:
+    """Demonstração representativa dentro das condições: a forma vem do exemplo documentado.
+
+    A fase e as frações visuais usam os valores que o motor aplica a "micelização estabelecida"
+    (0,72 e 0,62); são parâmetros da visualização, não resultado de dinâmica molecular.
+    """
+    if example.kind != "representative_demo" or not verdict.within_range:
+        return plan
+    morphology = example.documented_morphology
+    final_alpha, orientation, core, nucleation = _morphology_adjustments(morphology, 0.72, surfactant_count)
+    micellized_fraction = 0.62
+    first_reference = example.references[0].label if example.references else ""
+    return replace(
+        plan,
+        morphology=morphology,
+        formation_phase=DEMONSTRATION_REGIME,
+        micellized_fraction=micellized_fraction,
+        free_monomer_fraction=clamp(1.0 - micellized_fraction, 0.0, 1.0),
+        nucleation_count=nucleation,
+        final_alpha=final_alpha,
+        orientation_score=orientation,
+        hydrophobic_core_score=core,
+        hydrophobic_exposure=clamp(1.0 - core, 0.0, 1.0),
+        geometry_template=True,
+        morphology_basis=(f"exemplo documentado {example.id} (v{example.example_version}): forma da referência "
+                          f"({first_reference}); demonstração representativa, não previsão de CMC/CPP"),
+        documented_example_id=example.id,
+    )
+
+
 def choose_formation_plan(
     request: MiceliumSimulationRequest,
     surfactant_count: int,
@@ -602,34 +683,9 @@ def choose_formation_plan(
             morphology = "micela inversa" if polarity < 0.60 else "bicamada plana/lamelar"
 
     # Ajustes de estabilidade por morfologia.
-    if "esférica" in morphology:
-        orientation_score = clamp(0.30 + 0.72 * final_alpha, 0.0, 1.0)
-        hydrophobic_core_score = clamp(0.26 + 0.76 * final_alpha, 0.0, 1.0)
-        nucleation_count = max(1, min(10, math.ceil(max(surfactant_count, 1) / 18)))
-    elif "cilíndrica" in morphology or "wormlike" in morphology:
-        final_alpha = clamp(final_alpha + 0.03, 0.0, 0.90)
-        orientation_score = clamp(0.34 + 0.70 * final_alpha, 0.0, 1.0)
-        hydrophobic_core_score = clamp(0.24 + 0.70 * final_alpha, 0.0, 1.0)
-        nucleation_count = max(1, min(8, math.ceil(max(surfactant_count, 1) / 24)))
-    elif "vesícula" in morphology:
-        final_alpha = clamp(final_alpha + 0.05, 0.0, 0.92)
-        orientation_score = clamp(0.40 + 0.66 * final_alpha, 0.0, 1.0)
-        hydrophobic_core_score = clamp(0.18 + 0.56 * final_alpha, 0.0, 1.0)
-        nucleation_count = max(1, min(5, math.ceil(max(surfactant_count, 1) / 42)))
-    elif "lamelar" in morphology or "bicamada" in morphology:
-        final_alpha = clamp(final_alpha + 0.02, 0.0, 0.90)
-        orientation_score = clamp(0.38 + 0.64 * final_alpha, 0.0, 1.0)
-        hydrophobic_core_score = clamp(0.16 + 0.52 * final_alpha, 0.0, 1.0)
-        nucleation_count = max(1, min(6, math.ceil(max(surfactant_count, 1) / 36)))
-    elif "inversa" in morphology:
-        final_alpha = clamp(final_alpha + 0.04, 0.0, 0.92)
-        orientation_score = clamp(0.34 + 0.74 * final_alpha, 0.0, 1.0)
-        hydrophobic_core_score = clamp(0.20 + 0.70 * final_alpha, 0.0, 1.0)
-        nucleation_count = max(1, min(7, math.ceil(max(surfactant_count, 1) / 28)))
-    else:
-        orientation_score = clamp(0.24 + 0.58 * final_alpha, 0.0, 1.0)
-        hydrophobic_core_score = clamp(0.16 + 0.54 * final_alpha, 0.0, 1.0)
-        nucleation_count = max(1, min(10, math.ceil(max(surfactant_count, 1) / 20)))
+    final_alpha, orientation_score, hydrophobic_core_score, nucleation_count = _morphology_adjustments(
+        morphology, final_alpha, surfactant_count
+    )
 
     if ccmc is not None and ccmc < 1.0:
         final_alpha = min(final_alpha, 0.10)
@@ -871,12 +927,15 @@ def request_session_key(request: MiceliumSimulationRequest) -> str:
                 getattr(molecule, "effective_hlb", None),
                 getattr(molecule, "surfactant_class", None),
                 bool(getattr(molecule, "is_surfactant", False)),
+                getattr(molecule, "tail_chain_count", None),
+                getattr(molecule, "example_role", None),
             )
         )
 
     # A assinatura preserva a ordem usada nos arrays de partículas. Ordená-la
     # permitia reutilizar coordenadas em moléculas diferentes após reordenar.
-    return repr((tuple(env_parts), tuple(molecule_parts), int(request.max_particles)))
+    return repr((tuple(env_parts), tuple(molecule_parts), int(request.max_particles),
+                 getattr(request, "documented_example_id", None)))
 
 
 
@@ -2238,6 +2297,14 @@ class MiceliumEngine:
         if enriched_molecules != request.molecules:
             request = request.model_copy(update={"molecules": enriched_molecules})
 
+        # Exemplo documentado: confere as condições e anota os fatos moleculares do catálogo.
+        example = EXAMPLES.get(request.documented_example_id) if request.documented_example_id else None
+        verdict: ExampleVerdict | None = None
+        if example is not None:
+            pre_metrics = calculate_micellization_metrics(request.molecules, request.environment.volume_ml, solvent_profile)
+            verdict = evaluate(example, request, pre_metrics.c_over_cmc)
+            request = request.model_copy(update={"molecules": annotate_request(example, request, verdict)})
+
         session_key = request_session_key(request)
 
         particles, bonds, positions, velocities, box_size, representation = build_initial_state(request)
@@ -2267,6 +2334,8 @@ class MiceliumEngine:
 
         surfactant_count = len({p.molecule_id for p in particles if p.kind == "head"})
         plan = choose_formation_plan(request, surfactant_count, metrics, solvent_profile)
+        if example is not None and verdict is not None:
+            plan = apply_documented_plan(plan, example, verdict, surfactant_count)
 
         # v28: o motor autônomo não usa trajetória por alvo.
         # Evita pré-cálculo morfológico pesado sem perder a física local.
@@ -2332,7 +2401,20 @@ class MiceliumEngine:
             "prediction_note": prediction_note,
             "c_over_cmc_parcial": metrics.partial_c_over_cmc,
             "c_over_cmc_proxy": metrics.c_over_cmc,   # total estrito (None se a mistura está incompleta)
+            "morphology_source": "documented_example" if plan.documented_example_id else "calculated",
         })
+        if example is not None and verdict is not None:
+            extra_warnings: list[str] = []
+            if not verdict.within_range:
+                extra_warnings.append(OUT_OF_RANGE_PREFIX + "; ".join(verdict.reasons)
+                                      + ". A forma mostrada é a do cálculo normal.")
+            elif example.kind == "validated_prediction" and plan.morphology != example.documented_morphology:
+                extra_warnings.append(f"cálculo diverge da referência: previsto '{plan.morphology}', "
+                                      f"documentado '{example.documented_morphology}'.")
+            analysis = analysis.model_copy(update={
+                "documented_example": documented_example_report(example, verdict),
+                "warnings": [*analysis.warnings, *extra_warnings],
+            })
 
         notes = [
             "Motor CG: campo médio local com raio finito, orientação cabeça/cauda e restrições de comprimento; chunks continuam do último estado.",
@@ -2344,6 +2426,10 @@ class MiceliumEngine:
         ]
 
         notes.extend(solvent_profile.notes)
+        if plan.documented_example_id:
+            notes.append("Exemplo documentado: a forma vem da referência experimental citada (demonstração "
+                         "representativa). As forças e o ritmo da cena são visuais e não são evidência de dinâmica "
+                         "molecular real.")
 
         if ai_notes:
             notes.extend(ai_notes)

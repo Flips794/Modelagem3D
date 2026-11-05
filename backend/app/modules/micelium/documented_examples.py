@@ -15,12 +15,17 @@ from typing import Literal
 from rdkit import Chem
 from rdkit.Chem import Descriptors, rdMolDescriptors
 
-from app.modules.micelium.schemas import MiceliumSimulationRequest
+from app.modules.micelium.schemas import (
+    DocumentedExampleConditionOut,
+    DocumentedExampleId,
+    DocumentedExampleReferenceOut,
+    DocumentedExampleReport,
+    MiceliumMoleculeInput,
+    MiceliumSimulationRequest,
+)
 
-DocumentedExampleId = Literal[
-    "sds_esferica", "ctab_nasal_vermiforme", "dppc_bicamada_hidratacao", "dppc_vesicula_extrusao",
-    "aot_inversa_isooctano",
-]
+__all__ = ["DocumentedExampleId", "EXAMPLES", "evaluate", "canonical_smiles", "annotate_request",
+           "documented_example_report"]
 ConditionBasis = Literal["experimental", "protocol", "technical"]
 ExampleRole = Literal["core_water", "interfacial_aromatic_anion"]
 
@@ -405,3 +410,41 @@ def condition_payload(condition: Condition) -> dict:
     return {"parameter": condition.parameter, "label": condition.label, "basis": condition.basis,
             "source": condition.source, "minimum": condition.minimum, "maximum": condition.maximum,
             "allowed": list(condition.allowed) if condition.allowed is not None else None}
+
+
+def annotate_request(example: DocumentedExample, request: MiceliumSimulationRequest,
+                     verdict: ExampleVerdict) -> list[MiceliumMoleculeInput]:
+    """Moléculas do pedido com os fatos do catálogo (surfactante, carbonos por cadeia, duas caudas).
+
+    Os fatos moleculares valem sempre que o exemplo é pedido; o papel no exemplo (água do núcleo,
+    salicilato interfacial) só dentro das condições documentadas. Comparação por SMILES canônico.
+    """
+    by_key = {(c.role, canonical_smiles(c.smiles)): c for c in example.components}
+    annotated = []
+    for molecule in request.molecules:
+        component = by_key.get((molecule.role, canonical_smiles(molecule.smiles)))
+        if component is None:
+            annotated.append(molecule)
+            continue
+        update: dict = {}
+        if component.is_surfactant is not None:
+            update["is_surfactant"] = component.is_surfactant
+        if component.tail_carbon_count is not None:
+            update["tail_carbon_count"] = component.tail_carbon_count
+        if component.tail_chain_count is not None:
+            update["tail_chain_count"] = component.tail_chain_count
+        update["example_role"] = component.example_role if verdict.within_range else None
+        annotated.append(molecule.model_copy(update=update))
+    return annotated
+
+
+def documented_example_report(example: DocumentedExample, verdict: ExampleVerdict) -> DocumentedExampleReport:
+    return DocumentedExampleReport(
+        id=example.id, title=example.title, kind=example.kind, example_version=example.example_version,
+        last_reviewed_at=example.last_reviewed_at, documented_morphology=example.documented_morphology,
+        within_range=verdict.within_range, out_of_range_reasons=list(verdict.reasons),
+        conditions=[DocumentedExampleConditionOut(**condition_payload(c)) for c in example.conditions],
+        protocol=example.protocol,
+        references=[DocumentedExampleReferenceOut(label=r.label, url=r.url) for r in example.references],
+        notes=list(example.notes), w0=verdict.w0,
+    )

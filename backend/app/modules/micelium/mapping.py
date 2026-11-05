@@ -204,6 +204,7 @@ def _particle(
     color: str,
     y: float = 0.0,
     chain_index: int = 0,
+    example_role: str | None = None,
 ) -> MiceliumParticle:
     return MiceliumParticle(
         id=particle_id,
@@ -213,6 +214,7 @@ def _particle(
         kind=kind,  # type: ignore[arg-type]
         bead_index=bead_index,
         chain_index=chain_index,
+        example_role=example_role,
         position=[x, y, 0.0],
         velocity=[0.0, 0.0, 0.0],
         charge=charge,
@@ -225,7 +227,36 @@ def _particle(
 
 
 def build_particle_template(molecule: MiceliumMoleculeInput) -> MoleculeParticleTemplate:
+    template = _build_particle_template(molecule)
+    if molecule.example_role is not None:
+        # Exemplos documentados: o papel do componente acompanha cada conta (água do núcleo, salicilato).
+        template.particles = [p.model_copy(update={"example_role": molecule.example_role}) for p in template.particles]
+    return template
+
+
+def _interfacial_aromatic_anion_template(molecule: MiceliumMoleculeInput) -> MoleculeParticleTemplate:
+    """Salicilato no exemplo CTAB + NaSal: anel (conta 0, apolar) ligado ao carboxilato (conta 1, polar, −1).
+
+    Representação CG não calibrada, só para mostrar a regra representativa da interface (anel para dentro,
+    carboxilato para o meio). Fora do exemplo o salicilato continua com uma conta de soluto.
+    """
+    molecule_id = molecule.id or stable_id(molecule.name, molecule.smiles)
+    molecule_name = molecule.name or molecule.formula or molecule.smiles[:24]
+    ring = _particle(particle_id=f"{molecule_id}:solute:0", molecule_id=molecule_id, molecule_name=molecule_name,
+                     role=molecule.role, kind="solute", bead_index=0, x=0.0, charge=0.0, radius=0.34, mass=1.2,
+                     polarity=0.15, hydrophobicity=0.80, color="#a78bfa")
+    carboxylate = _particle(particle_id=f"{molecule_id}:solute:1", molecule_id=molecule_id,
+                            molecule_name=molecule_name, role=molecule.role, kind="solute", bead_index=1, x=0.46,
+                            charge=-1.0, radius=0.30, mass=1.0, polarity=1.0, hydrophobicity=0.05, color="#38bdf8")
+    bond = MiceliumBond(id=f"{molecule_id}:solutebond:0:1", particle_a=ring.id, particle_b=carboxylate.id,
+                        length=0.46, stiffness=2.0)
+    return MoleculeParticleTemplate(representation="solute-bead", particles=[ring, carboxylate], bonds=[bond])
+
+
+def _build_particle_template(molecule: MiceliumMoleculeInput) -> MoleculeParticleTemplate:
     representation = choose_representation(molecule)
+    if representation == "solute-bead" and molecule.example_role == "interfacial_aromatic_anion":
+        return _interfacial_aromatic_anion_template(molecule)
     molecule_id = molecule.id or stable_id(molecule.name, molecule.smiles)
     molecule_name = molecule.name or molecule.formula or molecule.smiles[:24]
 

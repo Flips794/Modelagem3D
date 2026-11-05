@@ -17,6 +17,13 @@ ParticleKind = Literal[
 ]
 
 
+# Exemplos documentados: ids aceitos no pedido.
+DocumentedExampleId = Literal[
+    "sds_esferica", "ctab_nasal_vermiforme", "dppc_bicamada_hidratacao", "dppc_vesicula_extrusao",
+    "aot_inversa_isooctano",
+]
+
+
 class MiceliumEnvironment(BaseModel):
     model_config = ConfigDict(allow_inf_nan=False)
     """
@@ -80,6 +87,8 @@ class MiceliumMoleculeInput(BaseModel):
     tail_carbon_count: int | None = None
     # Número de cadeias de cauda do modelo CG (2 para DPPC e AOT nos exemplos documentados). None = 1 cadeia.
     tail_chain_count: int | None = Field(default=None, ge=1, le=2)
+    # Papel do componente num exemplo documentado (preenchido só pelo backend, dentro das condições).
+    example_role: Literal["core_water", "interfacial_aromatic_anion"] | None = None
     head_area_a2: float | None = None
     tail_volume_a3: float | None = None
     packing_parameter: float | None = Field(
@@ -93,6 +102,8 @@ class MiceliumSimulationRequest(BaseModel):
     model_config = ConfigDict(allow_inf_nan=False)
     molecules: list[MiceliumMoleculeInput]
     environment: MiceliumEnvironment = Field(default_factory=MiceliumEnvironment)
+    # Exemplo documentado escolhido no painel 2D→3D (None = mistura comum, cálculo normal).
+    documented_example_id: DocumentedExampleId | None = None
     max_particles: int = Field(2500, ge=64, le=20000)
     steps: int = Field(120, ge=0, le=5000)
     dt: float = Field(0.015, gt=0, le=0.2)
@@ -119,6 +130,7 @@ class MiceliumParticle(BaseModel):
     bead_index: int
     # Cadeia de cauda a que a conta pertence (0 = primeira); cabeça e solutos ficam em 0.
     chain_index: int = 0
+    example_role: str | None = None
     position: list[float]
     velocity: list[float]
     charge: float = 0.0
@@ -154,6 +166,38 @@ class MicelleCluster(BaseModel):
     aggregation_number: int
     morphology: str
     phase: str | None = None
+
+
+# Exemplos documentados: condições e relatório na análise.
+class DocumentedExampleConditionOut(BaseModel):
+    parameter: str
+    label: str
+    basis: Literal["experimental", "protocol", "technical"]
+    source: str
+    minimum: float | None = None
+    maximum: float | None = None
+    allowed: list[str] | None = None
+
+
+class DocumentedExampleReferenceOut(BaseModel):
+    label: str
+    url: str | None = None
+
+
+class DocumentedExampleReport(BaseModel):
+    id: str
+    title: str
+    kind: Literal["validated_prediction", "representative_demo"]
+    example_version: str
+    last_reviewed_at: str
+    documented_morphology: str
+    within_range: bool
+    out_of_range_reasons: list[str] = Field(default_factory=list)
+    conditions: list[DocumentedExampleConditionOut] = Field(default_factory=list)
+    protocol: str
+    references: list[DocumentedExampleReferenceOut] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+    w0: float | None = None
 
 
 class MiceliumAnalysis(BaseModel):
@@ -200,6 +244,9 @@ class MiceliumAnalysis(BaseModel):
     prediction_note: str | None = None
     c_over_cmc_parcial: float | None = None
     independent_shape_distribution: dict[str, int] = Field(default_factory=dict)
+    # Exemplos documentados: de onde veio a forma prevista, e o relatório do exemplo (None sem exemplo).
+    morphology_source: Literal["calculated", "documented_example"] = "calculated"
+    documented_example: DocumentedExampleReport | None = None
 
     warnings: list[str] = Field(default_factory=list)
 
@@ -244,21 +291,6 @@ class DocumentedExampleComponentOut(BaseModel):
     tail_chain_count: int | None = None
     example_role: str | None = None
     derived_from_w0: bool = False
-
-
-class DocumentedExampleConditionOut(BaseModel):
-    parameter: str
-    label: str
-    basis: Literal["experimental", "protocol", "technical"]
-    source: str
-    minimum: float | None = None
-    maximum: float | None = None
-    allowed: list[str] | None = None
-
-
-class DocumentedExampleReferenceOut(BaseModel):
-    label: str
-    url: str | None = None
 
 
 class DocumentedExampleOut(BaseModel):
