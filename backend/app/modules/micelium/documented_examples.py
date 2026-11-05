@@ -27,11 +27,15 @@ from app.modules.micelium.schemas import (
 __all__ = ["DocumentedExampleId", "EXAMPLES", "evaluate", "canonical_smiles", "annotate_request",
            "documented_example_report"]
 ConditionBasis = Literal["experimental", "protocol", "technical"]
-ExampleRole = Literal["core_water", "interfacial_aromatic_anion"]
+ExampleRole = Literal["core_water", "interfacial_aromatic_anion", "ion_pair_surfactant"]
 
 EXAMPLE_VERSION = "1.0.0"
 LAST_REVIEWED_AT = "2026-11-05"
 OUT_OF_RANGE_PREFIX = "fora das condições documentadas: "
+# Água visual do núcleo por AOT visual: capacidade geométrica do núcleo desenhado. Com ~20 AOT por micela o
+# raio mediano das cabeças fica ≈ 1,17; contas de água (exclusão ≈ 0,375) dentro de 70 % desse raio cabem
+# ≈ 0,64·(0,82/0,375)³ ≈ 6,7 por micela, ou ≈ 0,33 por AOT. Parâmetro de visualização, não w0.
+CORE_WATER_VISUAL_PER_SURFACTANT = 0.30
 
 
 @dataclass(frozen=True)
@@ -245,7 +249,7 @@ EXAMPLES: dict[str, DocumentedExample] = {
         documented_morphology="micela inversa",
         components=(
             ExampleComponent("aot", "AOT", AOT, "reagent", 10.0, is_surfactant=True, tail_carbon_count=8,
-                             tail_chain_count=2),
+                             tail_chain_count=2, example_role="ion_pair_surfactant"),
             ExampleComponent("agua", "Água (núcleo, derivada de w0)", WATER, "reagent", 100.0,
                              example_role="core_water", derived_from_w0=True),
             ExampleComponent("isooctano", "Isooctano", ISOOCTANE, "solvent", None),
@@ -269,9 +273,12 @@ EXAMPLES: dict[str, DocumentedExample] = {
         references=(REF_POSITRON, REF_BOHIDAR, REF_ABEL, REF_FAYER, REF_STENUTZ),
         notes=("Demonstração representativa: a forma vem dos estudos citados; CMC não se aplica (meio apolar).",
                "Forma aproximadamente esférica (pode ser levemente elipsoidal). Raio do núcleo aquoso ≈ 1,9 nm em w0 = 10.",
-               "A água é derivada de w0 (n(água) = w0 × n(AOT)); a contagem visual de águas é sublinear e não representa "
-               "w0 numericamente.",
-               "Duas caudas 2-etil-hexila (8 C) por molécula; a ramificação não é representada."),
+               "A água é derivada de w0 (n(água) = w0 × n(AOT)); a contagem visual de águas é limitada à capacidade do "
+               "núcleo desenhado (≈ 0,30 por AOT visual) e não representa w0 numericamente.",
+               "Duas caudas 2-etil-hexila (8 C) por molécula; a ramificação não é representada.",
+               "Cabeça do AOT representada como par iônico com o Na⁺ (carga zero na cena): o modelo não tem contraíons "
+               "explícitos e, com ε = 1,94, a repulsão entre cabeças carregadas impediria qualquer agregado. É uma escolha "
+               "de representação, não uma medida."),
         w0=10.0,
     ),
 }
@@ -420,6 +427,9 @@ def annotate_request(example: DocumentedExample, request: MiceliumSimulationRequ
     salicilato interfacial) só dentro das condições documentadas. Comparação por SMILES canônico.
     """
     by_key = {(c.role, canonical_smiles(c.smiles)): c for c in example.components}
+    surfactant_smiles = {canonical_smiles(c.smiles) for c in example.components if c.is_surfactant}
+    surfactant_visual = sum(m.count for m in request.molecules
+                            if m.role == "reagent" and canonical_smiles(m.smiles) in surfactant_smiles)
     annotated = []
     for molecule in request.molecules:
         component = by_key.get((molecule.role, canonical_smiles(molecule.smiles)))
@@ -434,6 +444,10 @@ def annotate_request(example: DocumentedExample, request: MiceliumSimulationRequ
         if component.tail_chain_count is not None:
             update["tail_chain_count"] = component.tail_chain_count
         update["example_role"] = component.example_role if verdict.within_range else None
+        if verdict.within_range and component.example_role == "core_water" and surfactant_visual:
+            capped = max(1, min(molecule.count, round(CORE_WATER_VISUAL_PER_SURFACTANT * surfactant_visual)))
+            update["count"] = capped
+            update["visual_count"] = capped
         annotated.append(molecule.model_copy(update=update))
     return annotated
 

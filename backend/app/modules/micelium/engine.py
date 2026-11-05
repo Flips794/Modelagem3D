@@ -16,6 +16,7 @@ from app.modules.micelium.documented_examples import (
     documented_example_report,
     evaluate,
 )
+from app.modules.micelium.documented_example_forces import apply_documented_example_forces, build_example_groups
 from app.modules.micelium.mapping import build_particle_template, infer_surfactant_like, stable_id
 from app.modules.micelium.organization import (
     apply_local_encounter_forces,
@@ -543,6 +544,10 @@ def apply_documented_plan(plan: FormationPlan, example: DocumentedExample, verdi
         return plan
     morphology = example.documented_morphology
     final_alpha, orientation, core, nucleation = _morphology_adjustments(morphology, 0.72, surfactant_count)
+    if "cilíndrica" in morphology or "wormlike" in morphology:
+        # Um trecho representativo de micela vermiforme: com poucas moléculas visuais, dois núcleos dariam
+        # dois glóbulos quase esféricos em vez de um cilindro.
+        nucleation = 1
     micellized_fraction = 0.62
     first_reference = example.references[0].label if example.references else ""
     return replace(
@@ -2122,6 +2127,8 @@ def build_dynamic_formation_frames(
     frames: list[MiceliumFrame] = []
 
     cached_clusters: dict[str, dict] = {}
+    # Exemplos documentados: grupos para as forças visuais do exemplo (None = mistura comum).
+    example_groups = build_example_groups(particles) if plan.documented_example_id else None
     cluster_update_interval = 6 if len(particles) > 900 else 4
     organization_interval = 2 if len(particles) > 900 else 1
 
@@ -2192,6 +2199,11 @@ def build_dynamic_formation_frames(
                     plan=plan,
                     request=request,
                 )
+                if example_groups is not None:
+                    apply_documented_example_forces(
+                        positions=positions, velocities=velocities, particles=particles, groups=example_groups,
+                        clusters=cached_clusters, plan=plan, box_size=box_size,
+                    )
 
             apply_autonomous_confinement(
                 positions=positions,

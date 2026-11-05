@@ -88,7 +88,7 @@ class MiceliumMoleculeInput(BaseModel):
     # Número de cadeias de cauda do modelo CG (2 para DPPC e AOT nos exemplos documentados). None = 1 cadeia.
     tail_chain_count: int | None = Field(default=None, ge=1, le=2)
     # Papel do componente num exemplo documentado (preenchido só pelo backend, dentro das condições).
-    example_role: Literal["core_water", "interfacial_aromatic_anion"] | None = None
+    example_role: Literal["core_water", "interfacial_aromatic_anion", "ion_pair_surfactant"] | None = None
     head_area_a2: float | None = None
     tail_volume_a3: float | None = None
     packing_parameter: float | None = Field(

@@ -296,6 +296,8 @@ def _build_particle_template(molecule: MiceliumMoleculeInput) -> MoleculeParticl
             charge = 1.0
         elif molecule.surfactant_class and "anion" in molecule.surfactant_class.lower():
             charge = -1.0
+        if molecule.example_role == "ion_pair_surfactant":
+            charge = 0.0   # exemplo AOT: par iônico com o Na⁺ (sem contraíons explícitos no modelo CG)
 
         particles: list[MiceliumParticle] = []
         bonds: list[MiceliumBond] = []
