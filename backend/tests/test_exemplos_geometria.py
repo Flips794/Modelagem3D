@@ -95,35 +95,47 @@ def chain_director(heads: np.ndarray, tails: np.ndarray) -> np.ndarray:
     return np.linalg.eigh(chain.T @ chain / len(chain))[1][:, -1]
 
 
-def face_fraction(heads: np.ndarray, tails: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
-    """Fração de cabeças a ≥ 1,0 do plano médio (ao longo do diretor das cadeias) e |projeção| mediana das caudas."""
+def all_dppc(example_id: str):
+    """Todas as moléculas de DPPC da cena (não só o maior agregado): cabeças e centros de cauda."""
+    body = body_of(example_id)
+    xyz = last_frame(body)
+    every = list(range(len(body["particles"])))
+    molecules = surfactants(body, every)
+    heads = np.array([xyz[m["head"]].mean(axis=0) for m in molecules])
+    tails = np.array([xyz[m["tail"]].mean(axis=0) for m in molecules])
+    return molecules, heads, tails
+
+
+def test_bicamada_dppc_cabecas_nas_duas_faces():
+    # Recorte de poucas dezenas de lipídios: o critério é onde ficam as cabeças — nas duas faces, longe do
+    # plano médio, com as caudas entre elas. Um glóbulo (cabeças em volta) não passa.
+    molecules, heads, tails = all_dppc("dppc_bicamada_hidratacao")
     normal = chain_director(heads, tails)
     mid = tails.mean(axis=0)
     head_proj = (heads - mid) @ normal
     tail_proj = (tails - mid) @ normal
-    return fraction(np.abs(head_proj) >= 1.0), float(np.median(np.abs(tail_proj))), head_proj, tail_proj
-
-
-def test_bicamada_dppc_duas_faixas_de_cabecas():
-    # Recorte de poucas dezenas de lipídios: largura comparável à espessura (também na escala real), então o
-    # critério é onde ficam as cabeças: nas duas faces, longe do plano médio, e não em volta (esfera).
-    _, _, _, _, heads, tails = cluster_geometry("dppc_bicamada_hidratacao")
-    faces, tail_mid, head_proj, _ = face_fraction(heads, tails)
     assert fraction(head_proj > 0) >= 0.30 and fraction(head_proj < 0) >= 0.30
-    assert faces >= 0.70 and tail_mid < 1.0
-    _, _, _, _, sds_heads, sds_tails = cluster_geometry("sds_esferica")
-    assert faces > face_fraction(sds_heads, sds_tails)[0]
+    assert fraction(np.abs(head_proj) >= 1.2) >= 0.85
+    assert float(np.percentile(np.abs(tail_proj), 80)) < 1.0
+    # Uma só membrana: extensão lateral das caudas maior que a espessura das caudas.
+    lateral = (tails - mid) - np.outer(tail_proj, normal)
+    assert float(np.median(np.linalg.norm(lateral, axis=1))) > float(np.median(np.abs(tail_proj))) * 2
 
 
-def test_vesicula_dppc_duas_populacoes_radiais():
-    _, xyz, indices, _, heads, tails = cluster_geometry("dppc_vesicula_extrusao")
-    center = xyz[indices].mean(axis=0)
-    head_r = np.sort(np.linalg.norm(heads - center, axis=1))
-    half = len(head_r) // 2
-    inner, outer = float(np.median(head_r[:half])), float(np.median(head_r[half:]))
-    tail_med = float(np.median(np.linalg.norm(tails - center, axis=1)))
-    assert inner < tail_med < outer
-    assert outer - inner > 1.0      # duas folhas separadas pela espessura das caudas
+def test_vesicula_dppc_casca_com_duas_folhas():
+    molecules, heads, tails = all_dppc("dppc_vesicula_extrusao")
+    center = tails.mean(axis=0)
+    tail_r = np.linalg.norm(tails - center, axis=1)
+    head_r = np.linalg.norm(heads - center, axis=1)
+    shell = float(np.median(tail_r))
+    # Caudas numa casca (não num núcleo nem em blocos separados).
+    assert shell > 1.5 and float(np.std(tail_r)) < 0.35 * shell
+    # A casca cobre todas as direções: blocos separados deixam um eixo quase vazio.
+    directions = (tails - center) / np.maximum(tail_r[:, None], 1e-9)
+    assert float(np.linalg.eigvalsh(directions.T @ directions / len(directions))[0]) >= 0.15
+    inner, outer = head_r[head_r < shell], head_r[head_r >= shell]
+    assert len(inner) >= 0.2 * len(head_r) and len(outer) >= 0.2 * len(head_r)
+    assert float(np.median(inner)) < shell - 0.8 and float(np.median(outer)) > shell + 0.8
 
 
 def test_inversa_aot_cabecas_para_dentro_agua_no_centro():
@@ -139,7 +151,9 @@ def test_inversa_aot_cabecas_para_dentro_agua_no_centro():
 
 @pytest.mark.parametrize("example_id", ["dppc_bicamada_hidratacao", "dppc_vesicula_extrusao", "aot_inversa_isooctano"])
 def test_duas_caudas_mesmo_lado(example_id):
-    _, xyz, _, molecules, _, _ = cluster_geometry(example_id)
+    body = body_of(example_id)
+    xyz = last_frame(body)
+    molecules = surfactants(body, list(range(len(body["particles"]))))
     agree = []
     for m in molecules:
         chains = [c for c in m["chains"].values() if c]

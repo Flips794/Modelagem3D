@@ -21,7 +21,8 @@ PLACEMENT_K = 0.120        # água do núcleo e salicilato interfacial
 MAX_DELTA_V = 0.030        # teto por conta e por aplicação
 CORE_FRACTION = 0.70       # água até 70 % do raio mediano das cabeças
 INTERFACE_OFFSET = 0.46    # anel/carboxilato a ± um comprimento de ligação da camada de cabeças
-TEMPLATE_K = 0.050         # molde de membrana (bicamada/vesícula) por conta, proporcional ao deslocamento
+TEMPLATE_K = 0.500         # molde de membrana (bicamada/vesícula) por conta, proporcional ao deslocamento
+MAX_TEMPLATE_DELTA_V = 0.120
 BOND = 0.46                # comprimento de ligação do modelo CG
 
 
@@ -70,10 +71,10 @@ def nucleus_points(count: int, box_size: float) -> np.ndarray:
                      for k in range(count)])
 
 
-def _push(velocities, particles, index: int, force: np.ndarray) -> None:
+def _push(velocities, particles, index: int, force: np.ndarray, cap: float = MAX_DELTA_V) -> None:
     norm = float(np.linalg.norm(force))
-    if norm > MAX_DELTA_V:
-        force = force * (MAX_DELTA_V / norm)
+    if norm > cap:
+        force = force * (cap / norm)
     mass = max(float(particles[index].mass), 0.1)
     for k in range(3):
         velocities[index][k] += float(force[k]) / mass
@@ -87,6 +88,11 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
     morphology = plan.morphology.lower()
     reverse = "inversa" in morphology
     alpha = float(plan.final_alpha)
+
+    # Exemplos DPPC: o molde de membrana substitui a guia e as forças gerais de organização (ver engine).
+    if is_membrane_demo(plan):
+        apply_membrane_template(xyz=xyz, velocities=velocities, particles=particles, groups=groups, plan=plan)
+        return
 
     # 1) Guia de agregação: só as moléculas FORA dos agregados principais (os nucleation_count maiores)
     #    vão até a superfície do agregado principal mais próximo. A forma do agregado principal fica com
@@ -115,9 +121,6 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
         pull = offset / distance * (GUIDE_K * alpha * min(distance - radius - 0.5, 3.0))
         for index in heads + tails:
             _push(velocities, particles, index, pull)
-
-    # 2) Molde de membrana (DPPC: bicamada e vesícula), só nos agregados principais.
-    apply_membrane_template(xyz=xyz, velocities=velocities, particles=particles, groups=groups, hubs=hubs, plan=plan)
 
     big = [c for c in clusters.values() if c.get("size", 0) >= 3 and c.get("head_indices")]
     if not big:
@@ -183,70 +186,102 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
                     _push(velocities, particles, index, displacement * (PLACEMENT_K * alpha))
 
 
-def apply_membrane_template(*, xyz, velocities, particles, groups: ExampleGroups, hubs, plan) -> None:
+def is_membrane_demo(plan) -> bool:
+    morphology = plan.morphology.lower()
+    return bool(plan.documented_example_id) and ("vesícula" in morphology or "bicamada" in morphology or "lamelar" in morphology)
+
+
+def apply_membrane_template(*, xyz, velocities, particles, groups: ExampleGroups, plan) -> None:
     """Molde de membrana dos exemplos DPPC (demonstração representativa, força visual).
 
-    Bicamada: disco de duas folhas perpendicular ao eixo que o motor guarda para o agregado.
-    Vesícula: casca com folha interna e externa. Cada molécula fica na folha indicada pela orientação
-    atual da sua cadeia; as caudas das duas cadeias vão para o meio da membrana, a cabeça para fora dela.
+    Atua sobre TODAS as moléculas do exemplo, em volta do centro delas (um agregado só):
+    - bicamada: disco de duas folhas perpendicular a z; a folha de cada molécula segue a orientação atual
+      da sua cadeia; as moléculas se espalham pelo disco na ordem da distância ao eixo;
+    - vesícula: casca mínima com folha interna e externa (cabeças internas a 0,9 do centro).
+    As caudas das duas cadeias vão para o meio da membrana e a cabeça para a face.
     """
     morphology = plan.morphology.lower()
     vesicle = "vesícula" in morphology
-    planar = not vesicle and ("bicamada" in morphology or "lamelar" in morphology)
-    if not (vesicle or planar):
+    molecules = groups.surfactants
+    if len(molecules) < 6:
         return
     alpha = float(plan.final_alpha)
-    for cluster in hubs:
-        members = set(cluster["particle_indices"])
-        molecules = [(h, t) for h, t in groups.surfactants if h[0] in members]
-        if len(molecules) < 6:
-            continue
-        center = xyz[cluster["particle_indices"]].mean(axis=0)
-        normal = np.asarray(cluster.get("organization_axis") or np.linalg.eigh(
-            np.cov((xyz[cluster["particle_indices"]] - center).T))[1][:, 0], dtype=float)
-        normal /= max(float(np.linalg.norm(normal)), 1e-9)
-        count = len(molecules)
-        # Disco com metade das moléculas por folha, ~0,8 de espaçamento entre cabeças (sem sobreposição).
-        disk_radius = 0.8 * math.sqrt(count / 2.0 / math.pi) * math.sqrt(math.pi)
-        # Vesícula mínima (escala reduzida): folha interna com cabeças a 0,9 do centro; mantém as caudas das
-        # duas folhas dentro do alcance de contato do detector de agregados (casca maior se partia).
-        longest = max((groups.chain_length.get(t[0], len(t)) for _h, t in molecules), default=1)
-        shell_radius = (longest - 1) * BOND + 0.68 + 0.9
-        # Espalhamento lateral (bicamada): cada molécula vai para o raio do disco que corresponde à sua
-        # posição na ordem atual de distância ao eixo (preenche o disco sem trocar vizinhanças).
-        lateral_rank: dict[int, float] = {}
-        if planar:
-            def lateral_distance(molecule):
-                offset = (xyz[molecule[0]].mean(axis=0) + xyz[molecule[1]].mean(axis=0)) / 2.0 - center
-                return float(np.linalg.norm(offset - normal * float(offset @ normal)))
-            ordered = sorted(molecules, key=lateral_distance)
-            for rank, (heads_r, _tails_r) in enumerate(ordered):
-                lateral_rank[heads_r[0]] = disk_radius * math.sqrt((rank + 0.5) / len(ordered))
-        for heads, tails in molecules:
-            head = xyz[heads].mean(axis=0)
-            tail = xyz[tails].mean(axis=0)
-            molecular = (head + tail) / 2.0
-            length = max(groups.chain_length.get(tails[0], len(tails)), 1)
-            head_height = (length - 1) * BOND + 0.68
-            if planar:
-                leaflet = 1.0 if float((head - tail) @ normal) >= 0 else -1.0
-                offset = molecular - center
-                lateral = offset - normal * float(offset @ normal)
-                lateral_length = float(np.linalg.norm(lateral))
-                if lateral_length > 1e-9:
-                    lateral *= lateral_rank.get(heads[0], disk_radius) / lateral_length
-                base, direction = center + lateral, normal * leaflet
-                head_target = base + direction * head_height
-                tail_target = {i: base + direction * (0.20 + groups.chain_position.get(i, 0) * BOND) for i in tails}
-            else:
-                radial = molecular - center
-                radial_length = float(np.linalg.norm(radial))
-                outward = radial / radial_length if radial_length > 1e-9 else normal
-                leaflet = 1.0 if float((head - tail) @ outward) >= 0 else -1.0
-                head_target = center + outward * max(0.3, shell_radius + leaflet * head_height)
-                tail_target = {i: center + outward * max(0.3, shell_radius + leaflet * (0.20 + groups.chain_position.get(i, 0) * BOND))
-                               for i in tails}
-            for index in heads:
-                _push(velocities, particles, index, (head_target - xyz[index]) * (TEMPLATE_K * alpha))
-            for index in tails:
-                _push(velocities, particles, index, (tail_target[index] - xyz[index]) * (TEMPLATE_K * alpha))
+    gain = TEMPLATE_K * alpha
+    every = [i for heads, tails in molecules for i in heads + tails]
+    center = xyz[every].mean(axis=0)
+    normal = np.array([0.0, 0.0, 1.0])
+    longest = max((groups.chain_length.get(t[0], len(t)) for _h, t in molecules), default=1)
+    head_height = (longest - 1) * BOND + 0.68
+    count = len(molecules)
+    # Disco com metade das moléculas por folha e ~0,8 de espaçamento entre cabeças.
+    disk_radius = 0.8 * math.sqrt(count / 2.0)
+    shell_radius = head_height + 0.9
+    shell_direction: dict[int, np.ndarray] = {}
+    if vesicle:
+        # Direções-alvo uniformes na casca (espiral de Fibonacci); cada molécula fica com o ponto livre mais
+        # próximo da sua direção atual (preenche a casca toda, sem lado vazio).
+        golden = math.pi * (3.0 - math.sqrt(5.0))
+        points = []
+        for k in range(count):
+            z = 1.0 - 2.0 * (k + 0.5) / count
+            r = math.sqrt(max(0.0, 1.0 - z * z))
+            points.append(np.array([r * math.cos(golden * k), r * math.sin(golden * k), z]))
+        free = list(range(count))
+        for heads_m, tails_m in molecules:
+            current = (xyz[heads_m].mean(axis=0) + xyz[tails_m].mean(axis=0)) / 2.0 - center
+            norm = float(np.linalg.norm(current))
+            current = current / norm if norm > 1e-9 else normal
+            best = max(free, key=lambda k: float(points[k] @ current))
+            free.remove(best)
+            shell_direction[heads_m[0]] = points[best]
+    # Folhas por cota (não pela orientação do momento): bicamada 1/2 + 1/2; vesícula 1/3 interna + 2/3 externa
+    # (folha interna densa com cabeças a 0,9 do centro). As moléculas que já apontam para o lado certo ficam nele.
+    leaflet_of: dict[int, float] = {}
+    def orientation(molecule):
+        heads_m, tails_m = molecule
+        chain = xyz[heads_m].mean(axis=0) - xyz[tails_m].mean(axis=0)
+        if vesicle:
+            return float(chain @ shell_direction[heads_m[0]])
+        return float(chain @ normal)
+    ranked = sorted(molecules, key=orientation)
+    lower_quota = round(count / 3) if vesicle else count // 2
+    for rank, (heads_m, _tails_m) in enumerate(ranked):
+        leaflet_of[heads_m[0]] = -1.0 if rank < lower_quota else 1.0
+    lateral_target: dict[int, np.ndarray] = {}
+    if not vesicle:
+        # Cada face preenche o disco em padrão de girassol; cada molécula fica com o ponto livre mais próximo
+        # da sua posição lateral atual (sem lobos vazios).
+        axis_u = np.array([1.0, 0.0, 0.0])
+        axis_v = np.array([0.0, 1.0, 0.0])
+        golden = math.pi * (3.0 - math.sqrt(5.0))
+        for side in (-1.0, 1.0):
+            members = [m for m in molecules if leaflet_of[m[0][0]] == side]
+            total = max(len(members), 1)
+            points = [disk_radius * math.sqrt((k + 0.5) / total) * (math.cos(golden * k) * axis_u + math.sin(golden * k) * axis_v)
+                      for k in range(len(members))]
+            free = list(range(len(members)))
+            for heads_m, tails_m in members:
+                current = (xyz[heads_m].mean(axis=0) + xyz[tails_m].mean(axis=0)) / 2.0 - center
+                current = current - normal * float(current @ normal)
+                best = min(free, key=lambda k: float(np.linalg.norm(points[k] - current)))
+                free.remove(best)
+                lateral_target[heads_m[0]] = points[best]
+    for heads, tails in molecules:
+        head = xyz[heads].mean(axis=0)
+        tail = xyz[tails].mean(axis=0)
+        molecular = (head + tail) / 2.0
+        if not vesicle:
+            leaflet = leaflet_of[heads[0]]
+            base, direction = center + lateral_target[heads[0]], normal * leaflet
+            head_target = base + direction * head_height
+            tail_target = {i: base + direction * (0.20 + groups.chain_position.get(i, 0) * BOND) for i in tails}
+        else:
+            outward = shell_direction[heads[0]]
+            leaflet = leaflet_of[heads[0]]
+            head_target = center + outward * (shell_radius + leaflet * head_height)
+            tail_target = {i: center + outward * (shell_radius + leaflet * (0.20 + groups.chain_position.get(i, 0) * BOND))
+                           for i in tails}
+        for index in heads:
+            _push(velocities, particles, index, (head_target - xyz[index]) * gain, cap=MAX_TEMPLATE_DELTA_V)
+        for index in tails:
+            _push(velocities, particles, index, (tail_target[index] - xyz[index]) * gain, cap=MAX_TEMPLATE_DELTA_V)

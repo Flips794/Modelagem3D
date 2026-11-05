@@ -16,7 +16,11 @@ from app.modules.micelium.documented_examples import (
     documented_example_report,
     evaluate,
 )
-from app.modules.micelium.documented_example_forces import apply_documented_example_forces, build_example_groups
+from app.modules.micelium.documented_example_forces import (
+    apply_documented_example_forces,
+    build_example_groups,
+    is_membrane_demo,
+)
 from app.modules.micelium.mapping import build_particle_template, infer_surfactant_like, stable_id
 from app.modules.micelium.organization import (
     apply_local_encounter_forces,
@@ -2003,6 +2007,8 @@ def apply_cluster_self_organization_forces(
     request: MiceliumSimulationRequest,
 ) -> None:
     """Campo médio local com tamanho finito e orientação molecular."""
+    if is_membrane_demo(plan):
+        return   # exemplos DPPC: o molde visual de membrana (documented_example_forces) dá a forma
     apply_finite_cluster_forces(
         positions=positions, velocities=velocities, particles=particles,
         clusters=clusters, plan=plan,
