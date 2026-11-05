@@ -12,6 +12,7 @@ from app.modules.micelium.organization import (
     apply_local_encounter_forces,
     apply_chain_bending_forces,
     apply_finite_cluster_forces,
+    tail_chains,
     constrain_bond_lengths,
 )
 from app.modules.micelium.schemas import (
@@ -1460,8 +1461,11 @@ def apply_molecule_flexibility(
         else:
             head_center = positions[tails[-1]]
 
-        for order, index in enumerate(tails):
-            lever = (order + 1) / max(len(tails), 1)
+        # Alavanca pela posição dentro da cadeia (com duas caudas, cada cadeia tem a sua).
+        for order, index, chain_length in (
+            (order, index, len(chain)) for chain in tail_chains(tails, particles) for order, index in enumerate(chain)
+        ):
+            lever = (order + 1) / max(chain_length, 1)
             radial = normalize(sub(positions[index], head_center))
             twist = normalize([
                 radial[1] * bend_axis[2] - radial[2] * bend_axis[1],

@@ -71,18 +71,43 @@ def apply_local_encounter_forces(*, positions, velocities, groups, particles, pl
                 velocities[i][k] += float(force[k]) / len(indices)
 
 
+def tail_chains(indices, particles):
+    """Cadeias de cauda de uma molécula, agrupadas por chain_index e ordenadas da
+    ponta para a cabeça (bead_index crescente). Uma cadeia: [[caudas]]."""
+    chains = {}
+    for i in indices:
+        if particles[i].kind == "tail":
+            chains.setdefault(particles[i].chain_index, []).append(i)
+    return [sorted(chains[key], key=lambda i: particles[i].bead_index) for key in sorted(chains)]
+
+
+def _chain_positions(tails, particles):
+    """Posição de cada conta de cauda dentro da sua cadeia (0 = ponta) e o comprimento da cadeia."""
+    chains = tail_chains(tails, particles)
+    position = {i: j for chain in chains for j, i in enumerate(chain)}
+    return [position[i] for i in tails], max((len(chain) for chain in chains), default=0)
+
+
 def apply_chain_bending_forces(*, positions, velocities, groups, particles):
     """Rigidez angular suave: comprimentos corretos não impedem uma cauda de
-    dobrar sobre si mesma e virar um novelo de beads dentro do agregado."""
+    dobrar sobre si mesma e virar um novelo de beads dentro do agregado.
+    Com duas caudas, cada cadeia dobra com a cabeça separadamente."""
     for indices in groups.values():
-        chain = sorted((i for i in indices if particles[i].kind in {"tail", "head"}), key=lambda i: particles[i].bead_index)
-        for a, b, c in zip(chain, chain[1:], chain[2:]):
-            for k in range(3):
-                curvature = positions[a][k] - 2.0 * positions[b][k] + positions[c][k]
-                force = 0.12 * curvature
-                velocities[a][k] -= force / max(particles[a].mass, 0.1)
-                velocities[b][k] += 2.0 * force / max(particles[b].mass, 0.1)
-                velocities[c][k] -= force / max(particles[c].mass, 0.1)
+        heads = sorted((i for i in indices if particles[i].kind == "head"), key=lambda i: particles[i].bead_index)
+        chains = tail_chains(indices, particles) or [[]]
+        for tails in chains:
+            chain = tails + heads
+            _bend_chain(chain, positions, velocities, particles)
+
+
+def _bend_chain(chain, positions, velocities, particles):
+    for a, b, c in zip(chain, chain[1:], chain[2:]):
+        for k in range(3):
+            curvature = positions[a][k] - 2.0 * positions[b][k] + positions[c][k]
+            force = 0.12 * curvature
+            velocities[a][k] -= force / max(particles[a].mass, 0.1)
+            velocities[b][k] += 2.0 * force / max(particles[b].mass, 0.1)
+            velocities[c][k] -= force / max(particles[c].mass, 0.1)
 
 
 def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, plan):
@@ -111,16 +136,18 @@ def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, p
             tails = sorted((i for i in indices if particles[i].kind == "tail"), key=lambda i: particles[i].bead_index)
             heads = [i for i in indices if particles[i].kind == "head"]
             if tails and heads:
-                molecules.append((tails, heads))
+                # j: posição na cadeia (0 = ponta); n: contas por cadeia. Com uma cadeia, j = 0..len-1.
+                chain_pos, chain_len = _chain_positions(tails, particles)
+                molecules.append((tails, heads, chain_pos, chain_len))
         if len(molecules) < 3:
             continue
 
         xyz = np.asarray(positions, dtype=float)
-        anchors = [np.mean(xyz[heads if reverse else tails], axis=0) for tails, heads in molecules]
+        anchors = [np.mean(xyz[heads if reverse else tails], axis=0) for tails, heads, _pos, _n in molecules]
         if planar and not reverse:
             # A normal da membrana vem da interface entre as pontas das caudas.
             # Incluir cabeças nas duas folhas fazia o eixo girar em 90 graus.
-            anchors = [xyz[tails[0]] for tails, _heads in molecules]
+            anchors = [xyz[tails[0]] for tails, _heads, _pos, _n in molecules]
         center = np.mean(anchors, axis=0)
         _eigenvalues, axes = principal_axes(anchors)
         axis = axes[:, -1] if cylinder else axes[:, 0]
@@ -132,11 +159,11 @@ def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, p
             axis = -axis
         cluster["organization_axis"] = axis.tolist()
 
-        tail_indices = [i for tails, _heads in molecules for i in tails]
-        head_indices = [i for _tails, heads in molecules for i in heads]
+        tail_indices = [i for tails, _heads, _pos, _n in molecules for i in tails]
+        head_indices = [i for _tails, heads, _pos, _n in molecules for i in heads]
         tail_volume = sum(4.0 * math.pi * particles[i].radius ** 3 / 3.0 for i in tail_indices) / 0.64
         head_volume = sum(4.0 * math.pi * particles[i].radius ** 3 / 3.0 for i in head_indices) / 0.64
-        contour = float(np.mean([max(1, len(tails) - 1) * 0.46 for tails, _heads in molecules]))
+        contour = float(np.mean([max(1, n - 1) * 0.46 for _tails, _heads, _pos, n in molecules]))
         core_radius = max(0.65, (3.0 * (head_volume if reverse else tail_volume) / (4.0 * math.pi)) ** (1.0 / 3.0))
         cylinder_radius = max(0.65, contour * 0.85)
         half_length = max(0.25, (tail_volume - 4.0 * math.pi * cylinder_radius ** 3 / 3.0) / (2.0 * math.pi * cylinder_radius ** 2))
@@ -147,7 +174,7 @@ def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, p
         strength = (0.095 if planar else 0.065) * plan.final_alpha * min(1.0, len(molecules) / 8.0)
         contributions = []
 
-        for tails, heads in molecules:
+        for tails, heads, chain_pos, n in molecules:
             indices = tails + heads
             molecular_center = np.mean(xyz[indices], axis=0)
             offset = molecular_center - center
@@ -168,13 +195,13 @@ def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, p
                     lateral *= disk_radius / lateral_length
                 base = center + lateral
                 normal = axis * leaflet
-                radii = [0.20 + j * 0.46 for j in range(len(tails))] + [0.20 + (len(tails) - 1) * 0.46 + 0.48] * len(heads)
+                radii = [0.20 + j * 0.46 for j in chain_pos] + [0.20 + (n - 1) * 0.46 + 0.48] * len(heads)
                 if reverse:
-                    radii = [0.70 + (len(tails) - 1 - j) * 0.46 for j in range(len(tails))] + [0.22] * len(heads)
+                    radii = [0.70 + (n - 1 - j) * 0.46 for j in chain_pos] + [0.22] * len(heads)
             elif vesicle:
                 leaflet = 1.0 if float(np.dot(chain_axis, normal)) >= 0 else -1.0
-                radii = [max(0.25, membrane_radius + leaflet * j * 0.46) for j in range(len(tails))]
-                radii += [max(0.25, membrane_radius + leaflet * ((len(tails) - 1) * 0.46 + 0.48))] * len(heads)
+                radii = [max(0.25, membrane_radius + leaflet * j * 0.46) for j in chain_pos]
+                radii += [max(0.25, membrane_radius + leaflet * ((n - 1) * 0.46 + 0.48))] * len(heads)
             else:
                 radius = core_radius
                 if cylinder:
@@ -189,11 +216,11 @@ def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, p
                     normal = radial / length if length > 1e-9 else axes[:, 0]
                     radius = cylinder_radius
                 if reverse:
-                    radii = [radius + 0.48 + (len(tails) - 1 - j) * 0.46 for j in range(len(tails))] + [radius] * len(heads)
+                    radii = [radius + 0.48 + (n - 1 - j) * 0.46 for j in chain_pos] + [radius] * len(heads)
                 else:
                     # O núcleo não pode ultrapassar o contorno da molécula.
                     radius = min(radius, contour + 0.75)
-                    radii = [max(0.16, radius - (len(tails) - 1 - j) * 0.46) for j in range(len(tails))] + [radius + 0.48] * len(heads)
+                    radii = [max(0.16, radius - (n - 1 - j) * 0.46) for j in chain_pos] + [radius + 0.48] * len(heads)
 
             for i, radius in zip(indices, radii):
                 displacement = base + normal * radius - xyz[i]

@@ -176,6 +176,10 @@ def choose_representation(molecule: MiceliumMoleculeInput) -> str:
     return "solute-bead"
 
 
+# Meia distância lateral entre as duas cadeias de cauda (= raio da conta de cauda: sem sobreposição).
+TWO_CHAIN_HALF_GAP = 0.31
+
+
 @dataclass(slots=True)
 class MoleculeParticleTemplate:
     particles: list[MiceliumParticle]
@@ -198,6 +202,8 @@ def _particle(
     polarity: float,
     hydrophobicity: float,
     color: str,
+    y: float = 0.0,
+    chain_index: int = 0,
 ) -> MiceliumParticle:
     return MiceliumParticle(
         id=particle_id,
@@ -206,7 +212,8 @@ def _particle(
         role=role,  # type: ignore[arg-type]
         kind=kind,  # type: ignore[arg-type]
         bead_index=bead_index,
-        position=[x, 0.0, 0.0],
+        chain_index=chain_index,
+        position=[x, y, 0.0],
         velocity=[0.0, 0.0, 0.0],
         charge=charge,
         radius=radius,
@@ -261,6 +268,10 @@ def build_particle_template(molecule: MiceliumMoleculeInput) -> MoleculeParticle
 
         particles: list[MiceliumParticle] = []
         bonds: list[MiceliumBond] = []
+        two_chains = molecule.tail_chain_count == 2
+        # Duas cadeias paralelas, lado a lado no eixo local y (afastadas por 2 raios de conta,
+        # sem sobreposição); com uma cadeia o modelo continua em y = 0.
+        chain_y = TWO_CHAIN_HALF_GAP if two_chains else 0.0
 
         # Cauda: do núcleo para a cabeça.
         for i in range(tail_beads):
@@ -274,6 +285,7 @@ def build_particle_template(molecule: MiceliumMoleculeInput) -> MoleculeParticle
                     kind="tail",
                     bead_index=i,
                     x=i * 0.46,
+                    y=-chain_y if two_chains else 0.0,
                     charge=0.0,
                     radius=0.31,
                     mass=1.2,
@@ -312,15 +324,59 @@ def build_particle_template(molecule: MiceliumMoleculeInput) -> MoleculeParticle
                 color="#22d3ee" if charge == 0 else ("#38bdf8" if charge < 0 else "#f472b6"),
             )
         )
+        head_bond_length = math.hypot(0.46, chain_y) if two_chains else 0.48
         bonds.append(
             MiceliumBond(
                 id=f"{molecule_id}:headbond:{tail_beads-1}:head",
                 particle_a=f"{molecule_id}:tail:{tail_beads-1}",
                 particle_b=head_id,
-                length=0.48,
+                length=round(head_bond_length, 4),
                 stiffness=2.4,
             )
         )
+
+        if two_chains:
+            # Segunda cadeia: bead_index tail_beads+1 (ponta) .. 2*tail_beads (junto à cabeça),
+            # mesmo x da primeira cadeia, lado oposto em y, ligada à mesma cabeça.
+            for j in range(tail_beads):
+                particles.append(
+                    _particle(
+                        particle_id=f"{molecule_id}:tail2:{j}",
+                        molecule_id=molecule_id,
+                        molecule_name=molecule_name,
+                        role=molecule.role,
+                        kind="tail",
+                        bead_index=tail_beads + 1 + j,
+                        x=j * 0.46,
+                        y=chain_y,
+                        chain_index=1,
+                        charge=0.0,
+                        radius=0.31,
+                        mass=1.2,
+                        polarity=0.04,
+                        hydrophobicity=1.0,
+                        color="#f59e0b",
+                    )
+                )
+                if j > 0:
+                    bonds.append(
+                        MiceliumBond(
+                            id=f"{molecule_id}:tail2bond:{j-1}:{j}",
+                            particle_a=f"{molecule_id}:tail2:{j-1}",
+                            particle_b=f"{molecule_id}:tail2:{j}",
+                            length=0.46,
+                            stiffness=2.0,
+                        )
+                    )
+            bonds.append(
+                MiceliumBond(
+                    id=f"{molecule_id}:head2bond:{tail_beads-1}:head",
+                    particle_a=f"{molecule_id}:tail2:{tail_beads-1}",
+                    particle_b=head_id,
+                    length=round(head_bond_length, 4),
+                    stiffness=2.4,
+                )
+            )
 
         return MoleculeParticleTemplate(
             representation=representation,

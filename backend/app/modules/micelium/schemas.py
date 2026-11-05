@@ -78,6 +78,8 @@ class MiceliumMoleculeInput(BaseModel):
     hlb: float | None = None
     effective_hlb: float | None = None
     tail_carbon_count: int | None = None
+    # Número de cadeias de cauda do modelo CG (2 para DPPC e AOT nos exemplos documentados). None = 1 cadeia.
+    tail_chain_count: int | None = Field(default=None, ge=1, le=2)
     head_area_a2: float | None = None
     tail_volume_a3: float | None = None
     packing_parameter: float | None = Field(
@@ -115,6 +117,8 @@ class MiceliumParticle(BaseModel):
     role: MiceliumRole
     kind: ParticleKind
     bead_index: int
+    # Cadeia de cauda a que a conta pertence (0 = primeira); cabeça e solutos ficam em 0.
+    chain_index: int = 0
     position: list[float]
     velocity: list[float]
     charge: float = 0.0
