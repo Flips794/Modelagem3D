@@ -1,0 +1,3 @@
+81 s: micela esférica | 61.5% | medida: pré-agregado hidrofóbico
+111 s: micela esférica | 82.7% | medida: agregado orientado
+fim 232 s

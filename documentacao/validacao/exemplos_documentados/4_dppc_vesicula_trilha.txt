@@ -1,0 +1,3 @@
+120 s: vesícula/bicamada fechada | 66.7% | medida: casca fechada de duas folhas
+225 s: vesícula/bicamada fechada | 63.9% | medida: casca fechada de duas folhas
+fim 270 s
