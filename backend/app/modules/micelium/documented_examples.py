@@ -89,6 +89,8 @@ class DocumentedExample:
     references: tuple[Reference, ...]
     notes: tuple[str, ...]
     w0: float | None = None
+    # Texto da CMC quando o exemplo não a usa (None = CMC do cálculo, mostrada normalmente).
+    cmc_note: str | None = None
     example_version: str = EXAMPLE_VERSION
     last_reviewed_at: str = LAST_REVIEWED_AT
 
@@ -221,6 +223,7 @@ EXAMPLES: dict[str, DocumentedExample] = {
                "a forma é guiada por um molde visual de membrana (cabeças nas duas faces, caudas no meio).",
                "Quantidade ilustrativa (1 mmol em 100 mL): o protocolo não fixa uma concentração única.",
                "Duas caudas palmitoíla (16 C) por molécula."),
+        cmc_note="não usada neste exemplo (base: Tm e protocolo)",
     ),
     "dppc_vesicula_extrusao": DocumentedExample(
         id="dppc_vesicula_extrusao",
@@ -246,6 +249,7 @@ EXAMPLES: dict[str, DocumentedExample] = {
                "resultado de dinâmica molecular.",
                "Quantidade ilustrativa (1 mmol em 100 mL): o protocolo não fixa uma concentração única.",
                "Duas caudas palmitoíla (16 C) por molécula."),
+        cmc_note="não usada neste exemplo (base: Tm e protocolo)",
     ),
     "aot_inversa_isooctano": DocumentedExample(
         id="aot_inversa_isooctano",
@@ -285,6 +289,7 @@ EXAMPLES: dict[str, DocumentedExample] = {
                "explícitos e, com ε = 1,94, a repulsão entre cabeças carregadas impediria qualquer agregado. É uma escolha "
                "de representação, não uma medida."),
         w0=10.0,
+        cmc_note="não se aplica (meio apolar)",
     ),
 }
 
@@ -413,7 +418,7 @@ def catalog_payload() -> list[dict]:
             "conditions": [condition_payload(c) for c in example.conditions],
             "protocol": example.protocol,
             "references": [{"label": r.label, "url": r.url} for r in example.references],
-            "notes": list(example.notes), "w0": example.w0,
+            "notes": list(example.notes), "w0": example.w0, "cmc_note": example.cmc_note,
         })
     return out
 
@@ -465,5 +470,5 @@ def documented_example_report(example: DocumentedExample, verdict: ExampleVerdic
         conditions=[DocumentedExampleConditionOut(**condition_payload(c)) for c in example.conditions],
         protocol=example.protocol,
         references=[DocumentedExampleReferenceOut(label=r.label, url=r.url) for r in example.references],
-        notes=list(example.notes), w0=verdict.w0,
+        notes=list(example.notes), w0=verdict.w0, cmc_note=example.cmc_note,
     )

@@ -45,6 +45,7 @@ export type DocumentedExampleDto = {
   references: DocumentedExampleReferenceDto[];
   notes: string[];
   w0: number | null;
+  cmc_note?: string | null;
 };
 
 export type ExampleMixtureItem = {

@@ -139,3 +139,22 @@ def test_agua_do_nucleo_marcada_so_no_aot_dentro_das_condicoes():
     body = simulate(example_payload("aot_inversa_isooctano"))
     water = [p for p in body["particles"] if p.get("example_role") == "core_water"]
     assert water and all(p["kind"] == "solute" for p in water)
+
+
+@pytest.mark.parametrize("example_id", list(EXAMPLES))
+def test_validacao_nao_atribui_demonstracao_ao_calculo(example_id):
+    analysis = simulate(example_payload(example_id))["analysis"]
+    status = analysis["validation_status"]
+    if EXAMPLES[example_id].kind == "representative_demo":
+        assert status.startswith("demonstração representativa") and "CPP" not in status
+    else:
+        assert "concorda com a referência" in status and "não validado" not in status
+
+
+def test_nota_de_cmc_do_exemplo():
+    expected = {"dppc_bicamada_hidratacao": "não usada neste exemplo (base: Tm e protocolo)",
+                "dppc_vesicula_extrusao": "não usada neste exemplo (base: Tm e protocolo)",
+                "aot_inversa_isooctano": "não se aplica (meio apolar)"}
+    for example_id, note in expected.items():
+        assert simulate(example_payload(example_id))["analysis"]["documented_example"]["cmc_note"] == note
+    assert simulate(example_payload("sds_esferica"))["analysis"]["documented_example"]["cmc_note"] is None

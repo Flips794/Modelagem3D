@@ -241,6 +241,7 @@ export type DocumentedExampleReport3D = {
   references: { label: string; url: string | null }[];
   notes: string[];
   w0?: number | null;
+  cmc_note?: string | null;
 };
 
 export type MiceliumAnalysis3D = {

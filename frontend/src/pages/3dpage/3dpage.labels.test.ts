@@ -146,6 +146,10 @@ describe("exemplo documentado no card Previsto", () => {
       documented_example: report({ id: "aot_inversa_isooctano", w0: 10 }) }));
     expect(valueOf(rows, "w0")).toBe("10");
     expect(buildDocumentedExampleRows(analysis())).toEqual([]);
+    const dppc = buildDocumentedExampleRows(analysis({ morphology_source: "documented_example",
+      documented_example: report({ cmc_note: "não usada neste exemplo (base: Tm e protocolo)" }) }));
+    expect(valueOf(dppc, "CMC neste exemplo")).toBe("não usada neste exemplo (base: Tm e protocolo)");
+    expect(valueOf(rows, "CMC neste exemplo")).toBeUndefined();
     expect(buildDocumentedExampleRows(null)).toEqual([]);
   });
 });

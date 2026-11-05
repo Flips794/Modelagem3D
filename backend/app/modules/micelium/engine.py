@@ -531,6 +531,12 @@ def _morphology_adjustments(morphology: str, final_alpha: float, surfactant_coun
 
 
 DEMONSTRATION_REGIME = "demonstração representativa (protocolo documentado)"
+DEMONSTRATION_VALIDATION = ("demonstração representativa: a forma vem da referência experimental ou do protocolo "
+                            "citado, não de cálculo do motor; a cena é guiada por forças visuais e a forma observada "
+                            "é medida nas coordenadas")
+SDS_AGREEMENT_VALIDATION = ("a forma prevista pelo cálculo (CMC experimental NSRDS) concorda com a referência "
+                            "(SANS: micela levemente elipsoidal em água sem sal); a cena é representativa, não "
+                            "simulação física")
 
 
 def apply_documented_plan(plan: FormationPlan, example: DocumentedExample, verdict: ExampleVerdict,
@@ -2423,10 +2429,15 @@ class MiceliumEngine:
             elif example.kind == "validated_prediction" and plan.morphology != example.documented_morphology:
                 extra_warnings.append(f"cálculo diverge da referência: previsto '{plan.morphology}', "
                                       f"documentado '{example.documented_morphology}'.")
-            analysis = analysis.model_copy(update={
+            update = {
                 "documented_example": documented_example_report(example, verdict),
                 "warnings": [*analysis.warnings, *extra_warnings],
-            })
+            }
+            if plan.documented_example_id:
+                update["validation_status"] = DEMONSTRATION_VALIDATION
+            elif verdict.within_range and plan.morphology == example.documented_morphology:
+                update["validation_status"] = SDS_AGREEMENT_VALIDATION
+            analysis = analysis.model_copy(update=update)
 
         notes = [
             "Motor CG: campo médio local com raio finito, orientação cabeça/cauda e restrições de comprimento; chunks continuam do último estado.",

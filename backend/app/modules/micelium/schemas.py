@@ -198,6 +198,7 @@ class DocumentedExampleReport(BaseModel):
     references: list[DocumentedExampleReferenceOut] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
     w0: float | None = None
+    cmc_note: str | None = None
 
 
 class MiceliumAnalysis(BaseModel):
@@ -307,3 +308,4 @@ class DocumentedExampleOut(BaseModel):
     references: list[DocumentedExampleReferenceOut]
     notes: list[str]
     w0: float | None = None
+    cmc_note: str | None = None

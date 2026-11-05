@@ -926,6 +926,9 @@ export function buildDocumentedExampleRows(analysis: MiceliumAnalysis3D | null |
   for (const condition of example.conditions) {
     rows.push({ label: `Condição: ${condition.label}`, value: CONDITION_BASIS_LABEL[condition.basis] ?? condition.basis });
   }
+  if (example.cmc_note) {
+    rows.push({ label: "CMC neste exemplo", value: example.cmc_note });
+  }
   if (example.w0 !== undefined && example.w0 !== null) {
     rows.push({ label: "w0", value: String(Number(example.w0.toPrecision(4))) });
   }
