@@ -558,6 +558,10 @@ def apply_documented_plan(plan: FormationPlan, example: DocumentedExample, verdi
         # Um trecho representativo de micela vermiforme: com poucas moléculas visuais, dois núcleos dariam
         # dois glóbulos quase esféricos em vez de um cilindro.
         nucleation = 1
+    elif "inversa" in morphology:
+        # Uma micela inversa: com dois núcleos, as duas gotas se fundiam no 2º trecho e o haltere
+        # resultante aparecia como "agregado em reorganização" até o 3º trecho.
+        nucleation = 1
     micellized_fraction = 0.62
     first_reference = example.references[0].label if example.references else ""
     return replace(

@@ -23,6 +23,7 @@ CORE_FRACTION = 0.70       # água até 70 % do raio mediano das cabeças
 INTERFACE_OFFSET = 0.46    # anel/carboxilato a ± um comprimento de ligação da camada de cabeças
 TEMPLATE_K = 0.500         # molde de membrana (bicamada/vesícula) por conta, proporcional ao deslocamento
 MAX_TEMPLATE_DELTA_V = 0.120
+ROD_K = 0.120              # espaçamento axial do cilindro (CTAB), proporcional à distância ao alvo
 BOND = 0.46                # comprimento de ligação do modelo CG
 
 
@@ -145,8 +146,16 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
             for index in indices:
                 _push(velocities, particles, index, pull)
 
+    cylinder = "cilíndrica" in morphology or "wormlike" in morphology
+    # 4a) Cilindro (CTAB): as moléculas do agregado ficam espaçadas por igual ao longo do eixo, até o meio
+    #     comprimento que as forças de organização já usam. Sem isso, a atração isotrópica encurtava o trecho
+    #     para uma razão entre eixos de ~1,6, no limite do critério de forma, e o card oscilava entre trechos.
+    if cylinder:
+        apply_rod_spacing(xyz=xyz, velocities=velocities, particles=particles, groups=groups, clusters=big,
+                          alpha=alpha)
+
     # 4) Salicilato (CTAB): na interface do cilindro, 1:1 com as cabeças do agregado, anel para dentro.
-    if ("cilíndrica" in morphology or "wormlike" in morphology) and groups.salicylates:
+    if cylinder and groups.salicylates:
         assigned: set[int] = set()
         for cluster in big:
             members = xyz[cluster["particle_indices"]]
@@ -184,6 +193,30 @@ def apply_documented_example_forces(*, positions, velocities, particles, groups:
                     target = axial + outward * max(head_radius + offset, 0.2)
                     displacement = target - xyz[index]
                     _push(velocities, particles, index, displacement * (PLACEMENT_K * alpha))
+
+
+def apply_rod_spacing(*, xyz, velocities, particles, groups: ExampleGroups, clusters, alpha: float) -> None:
+    """Só translação ao longo do eixo do cilindro; a soma dos deslocamentos-alvo é nula (sem deriva)."""
+    for cluster in clusters:
+        axis = cluster.get("organization_axis")
+        half = cluster.get("organization_half_length")
+        if axis is None or half is None:
+            continue
+        axis = np.asarray(axis, dtype=float)
+        axis = axis / max(float(np.linalg.norm(axis)), 1e-9)
+        members = set(cluster["particle_indices"])
+        molecules = [(heads, tails) for heads, tails in groups.surfactants if heads[0] in members]
+        if len(molecules) < 6:
+            continue
+        anchors = np.array([xyz[tails].mean(axis=0) for _heads, tails in molecules])
+        projection = (anchors - anchors.mean(axis=0)) @ axis
+        count = len(molecules)
+        for rank, m in enumerate(np.argsort(projection)):
+            target = -half + (rank + 0.5) * 2.0 * half / count
+            push = axis * ((target - float(projection[m])) * ROD_K * alpha)
+            heads, tails = molecules[m]
+            for index in heads + tails:
+                _push(velocities, particles, index, push)
 
 
 def is_membrane_demo(plan) -> bool:

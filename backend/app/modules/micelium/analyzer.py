@@ -322,6 +322,56 @@ def classify_morphology(
     return "agregado orientado"
 
 
+MEASURED_LAMELLAR = "agregado lamelar (duas folhas)"
+MEASURED_SHELL = "casca fechada de duas folhas"
+
+
+def measured_membrane_shape(heads: np.ndarray, tails: np.ndarray) -> str | None:
+    """Membrana medida só nas coordenadas (cabeça e centro da cauda de cada molécula), sem a previsão.
+
+    - lamelar: cadeias alinhadas num diretor comum (S ≥ 0,75), cabeças nas duas faces (≥ 25 % em cada)
+      e ≥ 80 % das cabeças mais longe do plano médio que a própria cauda;
+    - casca fechada: caudas numa casca oca (mediana ≥ 1,5, desvio ≤ 35 % do raio), ≥ 20 % das cabeças
+      dentro e ≥ 20 % fora, com as caudas entre as duas populações, cadeias radiais (|cos| médio ≥ 0,75)
+      e caudas em todas as seis direções principais (uma taça aberta falha aqui).
+    Fora disso, None: o classificador geral decide.
+    """
+    heads = np.asarray(heads, dtype=float)
+    tails = np.asarray(tails, dtype=float)
+    if len(heads) < 6:
+        return None
+    chain = heads - tails
+    chain /= np.maximum(np.linalg.norm(chain, axis=1)[:, None], 1e-9)
+    order, directors = np.linalg.eigh(chain.T @ chain / len(chain))
+    director = directors[:, -1]
+    middle = tails.mean(axis=0)
+    head_height = (heads - middle) @ director
+    tail_height = (tails - middle) @ director
+    if (order[-1] >= 0.75 and min(np.mean(head_height > 0), np.mean(head_height < 0)) >= 0.25
+            and np.mean(np.abs(head_height) > np.abs(tail_height)) >= 0.80):
+        return MEASURED_LAMELLAR
+
+    tail_r = np.linalg.norm(tails - middle, axis=1)
+    head_r = np.linalg.norm(heads - middle, axis=1)
+    shell = float(np.median(tail_r))
+    if shell < 1.5 or float(np.std(tail_r)) > 0.35 * shell:
+        return None
+    inner, outer = head_r < tail_r - 0.3, head_r > tail_r + 0.3
+    if np.mean(inner) < 0.20 or np.mean(outer) < 0.20:
+        return None
+    if not float(np.median(head_r[inner])) < shell < float(np.median(head_r[outer])):
+        return None
+    directions = (tails - middle) / np.maximum(tail_r[:, None], 1e-9)
+    # Cadeias radiais (na casca, cada molécula aponta para dentro ou para fora); ao acaso a média é 0,5.
+    if float(np.mean(np.abs(np.sum(chain * directions, axis=1)))) < 0.75:
+        return None
+    _values, axes = principal_axes(tails)
+    for axis in np.hstack([axes, -axes]).T:
+        if float(np.max(directions @ axis)) < 0.6:
+            return None
+    return MEASURED_SHELL
+
+
 def geometry_evidence_for_cluster(molecule_ids, tail_centers, head_centers, morphology, tail_tips=None):
     """Mede as coordenadas; a tendência prevista não comprova uma geometria."""
     reverse = "inversa" in morphology.lower()
@@ -515,7 +565,11 @@ def analyze_micelium_state(
 
         stability = max(0.0, min(1.0, stability))
 
-        morphology = classify_morphology(
+        # Membranas (duas folhas) medidas só nas coordenadas; senão, o classificador geral.
+        morphology = measured_membrane_shape(
+            np.array([head_centers[mid] for mid in molecule_ids]),
+            np.array([tail_centers[mid] for mid in molecule_ids]),
+        ) or classify_morphology(
             aggregation_number=aggregation_number,
             orientation_score=orientation_score,
             core_score=core_score,
