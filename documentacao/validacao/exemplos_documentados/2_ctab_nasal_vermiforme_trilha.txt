@@ -1,2 +1,2 @@
-89 s: micela cilíndrica/wormlike | 100.0% | medida: agregado aproximadamente esférico
-fim 239 s
+95 s: agregado em reorganização | 0.0% | medida: agregado aproximadamente esférico
+fim 245 s
