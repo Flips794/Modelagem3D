@@ -424,6 +424,7 @@ def analyze_micelium_state(
     excess_amount_mmol: float | None = None,
     visual_scale_factor: float | None = None,
     morphology_hint: str | None = None,
+    cmc_not_applicable: bool = False,
 ) -> tuple[list[MicelleCluster], MiceliumAnalysis]:
     safe_positions = sanitize_positions(positions)
     groups = group_by_molecule(particles)
@@ -526,7 +527,8 @@ def analyze_micelium_state(
         organized = (
             aggregation_number >= 6 and orientation_score >= 0.62
             and core_score >= 0.70 and shape_ok
-            and c_over_cmc_proxy is not None and c_over_cmc_proxy >= 1.0
+            # Exemplo documentado sem CMC no domínio (DPPC, AOT): só a geometria decide.
+            and (cmc_not_applicable or (c_over_cmc_proxy is not None and c_over_cmc_proxy >= 1.0))
         )
         if morphology_hint:
             morphology = morphology_hint if organized else "agregado em reorganização"

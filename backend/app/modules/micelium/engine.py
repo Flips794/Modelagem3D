@@ -2407,6 +2407,9 @@ class MiceliumEngine:
             excess_amount_mmol=metrics.excess_amount_mmol,
             visual_scale_factor=metrics.visual_scale_factor,
             morphology_hint=plan.morphology if plan.geometry_template else None,
+            # Só dentro das condições de um exemplo cuja CMC não se aplica (o plano só leva o id nesse caso).
+            cmc_not_applicable=bool(plan.documented_example_id
+                                    and EXAMPLES[plan.documented_example_id].cmc_note),
         )
 
         prediction_note = None

@@ -244,7 +244,9 @@ EXAMPLES: dict[str, DocumentedExample] = {
         references=(REF_HOPE, REF_TM),
         notes=("Demonstração por protocolo: a forma não é previsão espontânea do motor; CMC não é usada.",
                "Vesículas unilamelares de 60–100 nm na referência (milhares de lipídios); a cena mostra uma vesícula mínima "
-               "com poucas dezenas de moléculas, em escala reduzida.",
+               "com poucas dezenas de moléculas, em escala reduzida. Com tão poucos lipídios a folha externa fica "
+               "esparsa (cadeias separadas, aspecto de estrela num corte); o que a cena demonstra é a ordem das "
+               "camadas: cabeças internas, caudas no meio e cabeças externas.",
                "A forma na cena é guiada por um molde visual de membrana (casca com folha interna e externa); não é "
                "resultado de dinâmica molecular.",
                "Quantidade ilustrativa (1 mmol em 100 mL): o protocolo não fixa uma concentração única.",

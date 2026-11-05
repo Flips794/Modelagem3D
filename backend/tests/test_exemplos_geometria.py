@@ -182,3 +182,12 @@ def test_tempo_por_trecho(example_id):
     assert response.status_code == 200
     print(f"\nTEMPO {example_id}: {elapsed:.2f} s, {len(response.json()['particles'])} partículas")
     assert elapsed <= 15.0
+
+
+@pytest.mark.parametrize("example_id", [k for k, e in EXAMPLES.items() if e.cmc_note])
+def test_exemplo_sem_cmc_organizado_pela_geometria(example_id):
+    """Nos exemplos em que a CMC não se aplica (DPPC, AOT), a organização é medida só pela geometria:
+    sem c/CMC, o agregado não pode ficar preso em 'agregado em reorganização' com fração 0 %."""
+    analysis = body_of(example_id)["analysis"]
+    assert analysis["micellized_fraction"] > 0.5
+    assert analysis["dominant_morphology"] == EXAMPLES[example_id].documented_morphology
