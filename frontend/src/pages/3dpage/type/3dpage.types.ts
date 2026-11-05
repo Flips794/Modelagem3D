@@ -248,6 +248,8 @@ export type MiceliumAnalysis3D = {
   predicted_morphology?: string | null;
   morphology_distribution?: Record<string, number>;
   formation_phase?: string | null;
+  predicted_regime?: string | null;
+  measured_morphology?: string | null;
   micellized_fraction?: number | null;
   free_monomer_fraction?: number | null;
   orientation_score?: number | null;

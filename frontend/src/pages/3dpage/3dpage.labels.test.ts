@@ -11,7 +11,8 @@ function analysis(updates: Partial<MiceliumAnalysis3D> = {}): MiceliumAnalysis3D
     stability_score: 0.6, warnings: [],
     c_over_cmc_proxy: 3.0, critical_amount_mmol: 0.775, real_amount_mmol: 2.325,
     predicted_morphology: "micela esférica", dominant_morphology: "micela esférica",
-    formation_phase: "micelização estabelecida", micellized_fraction: 0.62,
+    predicted_regime: "micelização estabelecida", formation_phase: "organização mesoscópica",
+    measured_morphology: "agregado orientado", micellized_fraction: 0.62,
     morphology_basis: "CPP médio = 0.292; c/CMC = 3",
     validation_status: "não validado experimentalmente: …",
     representation_label: REPRESENTATION_LABEL,
@@ -55,13 +56,17 @@ describe("Previsto pelos cálculos", () => {
 });
 
 describe("Observado na visualização", () => {
-  it("separa morfologia observada, agregados e forma medida independente", () => {
+  it("separa forma medida sem a previsão, rótulo da cena e agregados", () => {
     const rows = buildObservationRows(analysis());
-    expect(valueOf(rows, "Morfologia observada")).toBe("micela esférica");
+    expect(valueOf(rows, "Forma dominante medida (sem usar a previsão)")).toBe("agregado orientado");
+    expect(valueOf(rows, "Rótulo dos agregados na cena")).toBe("micela esférica");
+    expect(valueOf(rows, "Fase observada na cena")).toBe("organização mesoscópica");
+    // O rótulo do molde previsto não pode aparecer como observação independente.
+    expect(rows.some((row) => row.label === "Morfologia observada")).toBe(false);
     expect(valueOf(rows, "Clusters")).toBe("5");
     expect(valueOf(rows, "Maior agregado")).toBe("14 moléculas");
     expect(valueOf(rows, "Fração organizada na amostra 3D")).toBe("62.0%");
-    expect(valueOf(rows, "Forma medida (sem usar a previsão)")).toBe("agregado orientado ×2; agregado aproximadamente esférico ×1");
+    expect(valueOf(rows, "Distribuição das formas medidas")).toBe("agregado orientado ×2; agregado aproximadamente esférico ×1");
     expect(valueOf(rows, "Índice micelar (heurístico)")).toBe("0.64");
   });
 });
@@ -69,15 +74,15 @@ describe("Observado na visualização", () => {
 describe("preserva o funcionamento anterior", () => {
   it("sem morfologia na análise usa a do primeiro cluster e a contagem da topologia", () => {
     const rows = buildObservationRows(analysis({ dominant_morphology: null }), { clusterMorphology: "micela esférica", clusterCount: 7 });
-    expect(valueOf(rows, "Morfologia observada")).toBe("micela esférica");
+    expect(valueOf(rows, "Rótulo dos agregados na cena")).toBe("micela esférica");
     expect(valueOf(rows, "Clusters")).toBe("7");
     expect(valueOf(buildObservationRows(null, { clusterMorphology: null, clusterCount: 0 }), "Clusters")).toBe("0");
   });
 
-  it("regime de concentração fica no previsto", () => {
+  it("regime previsto vem do plano (c/CMC), não das coordenadas", () => {
     const { rows } = buildPredictionRows(analysis(), 100);
     expect(valueOf(rows, "Regime de concentração (c/CMC)")).toBe("micelização estabelecida");
-    expect(buildObservationRows(analysis()).some((row) => row.label === "Fase visual")).toBe(false);
+    expect(rows.some((row) => row.value === "organização mesoscópica")).toBe(false);
   });
 });
 

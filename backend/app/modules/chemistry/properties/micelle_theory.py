@@ -103,13 +103,22 @@ def compute(ctx: PropertyContext) -> PropertyBundle:
     fields["nagg_maximo_geometrico_esfera"] = value(
         round(nagg_upper_sphere(n), 4), SOURCE, confidence="estimated",
         note=f"Limite superior geométrico (4/3·π·l_max³/v) para esfera de cadeias estendidas; não é o número de agregação. {NOT_MD}{temp_note}")
-    if cpp < 1 / 3:
+    head_area = packing.get("head_area_a2")
+    head_note = (f" Escolha esfera/cilindro pelo CPP com área da cabeça fixa por classe ({head_area:g} Å², não medida "
+                 "para esta molécula): indicativa.") if head_area else ""
+    if p.chemical_class not in {"anionic", "cationic"}:
+        # Não iônicos e zwitteriônicos: a área da cabeça depende do grupo polar (ex.: nº de EO) e não é calculada.
+        reason = ("área da cabeça polar deste tipo de surfactante depende do tamanho do grupo polar e não é calculada; "
+                  "sem base para decidir entre micela esférica e cilíndrica")
+        fields["raio_nucleo_hidrofobico"] = unavailable(reason, SOURCE, "nm")
+        fields["raio_micela_cilindrica"] = unavailable(reason, SOURCE, "nm")
+    elif cpp < 1 / 3:
         fields["raio_nucleo_hidrofobico"] = value(round(length, 4), SOURCE, "nm", confidence="estimated",
-                                                  note=f"Limite superior do raio do núcleo (= l_max de Tanford, n = {n}). {NOT_MD}{temp_note}")
+                                                  note=f"Limite superior do raio do núcleo (= l_max de Tanford, n = {n}).{head_note} {NOT_MD}{temp_note}")
         fields["raio_micela_cilindrica"] = not_applicable("CPP não indica micela cilíndrica", SOURCE, "nm")
     elif cpp < 1 / 2:
         fields["raio_micela_cilindrica"] = value(round(length, 4), SOURCE, "nm", confidence="estimated",
-                                                 note=f"Limite superior do raio do núcleo cilíndrico (= l_max, n = {n}). {NOT_MD}{temp_note}")
+                                                 note=f"Limite superior do raio do núcleo cilíndrico (= l_max, n = {n}).{head_note} {NOT_MD}{temp_note}")
         fields["raio_nucleo_hidrofobico"] = not_applicable("CPP indica geometria não esférica", SOURCE, "nm")
     else:
         reason = "CPP indica bicamada/vesícula, não micela esférica ou cilíndrica"

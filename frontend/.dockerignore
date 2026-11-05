@@ -4,3 +4,5 @@ dist
 .env.local
 **/*.backup*
 codigo_frontend.txt
+# Arquivos de ambiente reais (ex.: .env.production) nunca entram na imagem.
+.env.*

@@ -35,6 +35,10 @@ services:
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-[]}
       UVICORN_WORKERS: ${UVICORN_WORKERS:-1}
       MAX_REQUEST_BYTES: ${MAX_REQUEST_BYTES:-2000000}
+      ENABLE_DB_WRITES: ${ENABLE_DB_WRITES:-false}
+      PUBLIC_MAX_PARTICLES: ${PUBLIC_MAX_PARTICLES:-2500}
+      PUBLIC_MAX_STEPS: ${PUBLIC_MAX_STEPS:-300}
+      PUBLIC_MAX_MOLECULES: ${PUBLIC_MAX_MOLECULES:-12}
       # Só o Caddy alcança o backend (rede interna): os cabeçalhos X-Forwarded-* vêm dele.
       FORWARDED_ALLOW_IPS: "*"
       HOME: /tmp

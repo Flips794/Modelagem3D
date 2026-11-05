@@ -7,3 +7,5 @@ __pycache__
 **/*.backup*
 **/trained_models
 codigo_backend.txt
+# Arquivos de ambiente reais (ex.: .env.production) nunca entram na imagem.
+.env.*

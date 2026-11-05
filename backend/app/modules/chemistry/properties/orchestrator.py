@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import threading
 from collections import OrderedDict
 from typing import Any
 
@@ -32,19 +33,26 @@ def build_context(mol: Chem.Mol, structure: Any, env: dict[str, Any]) -> Propert
 
 _CONFORMER_CACHE: "OrderedDict[str, PropertyBundle]" = OrderedDict()
 _CONFORMER_CACHE_SIZE = 256
+_CONFORMER_CACHE_LOCK = threading.Lock()
 
 
 def _conformer_bundle(ctx: PropertyContext) -> PropertyBundle:
     # Chave preserva a ordem dos átomos de entrada (SMILES canônico trocaria os índices).
     key = Chem.MolToSmiles(ctx.mol, canonical=False, isomericSmiles=True)
-    cached = _CONFORMER_CACHE.get(key)
+    # Rotas síncronas rodam em várias threads: leitura e escrita do cache sob trava; o cálculo, fora dela.
+    with _CONFORMER_CACHE_LOCK:
+        cached = _CONFORMER_CACHE.get(key)
+        if cached is not None:
+            try:
+                _CONFORMER_CACHE.move_to_end(key)
+            except KeyError:   # removida entre a leitura e a atualização: o valor lido continua válido
+                pass
     if cached is None:
         cached = conformer3d.compute(ctx)
-        _CONFORMER_CACHE[key] = cached
-        if len(_CONFORMER_CACHE) > _CONFORMER_CACHE_SIZE:
-            _CONFORMER_CACHE.popitem(last=False)
-    else:
-        _CONFORMER_CACHE.move_to_end(key)
+        with _CONFORMER_CACHE_LOCK:
+            _CONFORMER_CACHE[key] = cached
+            while len(_CONFORMER_CACHE) > _CONFORMER_CACHE_SIZE:
+                _CONFORMER_CACHE.popitem(last=False)
     return copy.deepcopy(cached)
 
 

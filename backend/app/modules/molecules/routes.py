@@ -7,12 +7,13 @@ from app.core.database import get_db
 from app.core.exceptions import NotFoundError
 from app.modules.molecules.schemas import MoleculeCreate, MoleculeResponse
 from app.modules.molecules.service import MoleculeService
+from app.core.guards import require_db_writes
 
 
 router = APIRouter(prefix="/molecules", tags=["Molecules"])
 
 
-@router.post("", response_model=MoleculeResponse)
+@router.post("", response_model=MoleculeResponse, dependencies=[Depends(require_db_writes)])
 def create_molecule(payload: MoleculeCreate, db: Session = Depends(get_db)):
     service = MoleculeService(db)
     return service.create_molecule(payload)

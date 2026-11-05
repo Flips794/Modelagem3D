@@ -20,6 +20,8 @@ def create_app(app_settings: Settings | None = None) -> FastAPI:
         openapi_url="/openapi.json" if docs_enabled else None,
     )
 
+    application.state.settings = config
+
     # add_middleware põe cada novo middleware por fora: CORS → limite de corpo → gzip → rotas.
     # /micelium/simulate devolve JSON grande (quadros da animação); respostas < 1 KB não são compactadas.
     application.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)

@@ -124,7 +124,8 @@ def test_experimental_cmc_is_a_separate_field():
     c12e5 = molecule_of(C12E5)
     assert c12e5["cmc_experimental"]["available"] is False
     assert c12e5["cmc_origem"]["value"].startswith("calculada")
-    assert molecule_of("CCCCCC")["cmc_origem"]["value"] == "indisponível"
+    hexane_origin = molecule_of("CCCCCC")["cmc_origem"]   # revisão final: indisponível de fato, não texto "verde"
+    assert hexane_origin["available"] is False and "nenhuma CMC" in hexane_origin["note"]
 
 
 def test_experimental_lookup_is_exact_compound_only():

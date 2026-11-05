@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import traceback
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
+
+from app.core.guards import check_simulation_size, public_error_detail, require_db_writes
 
 from app.modules.micelium.database_session import (
     MiceliumDatabaseUnavailable,
@@ -34,6 +36,7 @@ def format_exception_detail(exc: Exception) -> str:
 
 @router.post("/simulate", response_model=MiceliumSimulationResponse)
 def simulate_micelium(
+    request: Request,
     payload: MiceliumSimulationRequest,
     save_ai_predictions: bool = Query(
         default=False,
@@ -43,6 +46,10 @@ def simulate_micelium(
         ),
     ),
 ) -> MiceliumSimulationResponse:
+    check_simulation_size(request, molecules=len(payload.molecules),
+                          max_particles=payload.max_particles, steps=payload.steps)
+    if save_ai_predictions:
+        require_db_writes(request)
     try:
         if save_ai_predictions:
             with open_micelium_db_session() as db:
@@ -58,7 +65,7 @@ def simulate_micelium(
         traceback.print_exc()
         raise HTTPException(
             status_code=422,
-            detail=format_exception_detail(exc),
+            detail=public_error_detail(request, exc, format_exception_detail(exc), "Falha na simulação"),
         ) from exc
 
 

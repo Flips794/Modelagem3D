@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Restaura um backup do banco de produção. SUBSTITUI os dados atuais.
 # Uso: bash scripts/restaurar_producao.sh backups/producao/modelagem3d_AAAAMMDD_HHMMSS.dump
-# Antes de restaurar, faz um backup do estado atual (scripts/backup_producao.sh).
+# Antes de restaurar, faz um backup do estado atual em backups/producao/antes_restauracao/.
 # Confirmação: digitar RESTAURAR, ou CONFIRMAR=RESTAURAR em execução não interativa.
 # Variáveis: ENV_FILE, COMPOSE_PROJECT, BACKUP_DIR (as mesmas do backup).
 set -Eeuo pipefail
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${ENV_FILE:-$PROJECT_DIR/backend/.env.production}"
 COMPOSE_PROJECT="${COMPOSE_PROJECT:-modelagem3d_prod}"
+BACKUP_DIR="${BACKUP_DIR:-$PROJECT_DIR/backups/producao}"
 export ENV_FILE COMPOSE_PROJECT
 
 dump="${1:-}"
@@ -35,8 +36,9 @@ if [[ "$answer" != "RESTAURAR" ]]; then
   exit 1
 fi
 
-echo "1/4 Backup do estado atual..."
-bash "$PROJECT_DIR/scripts/backup_producao.sh"
+echo "1/4 Backup do estado atual (em antes_restauracao/, fora da rotação diária)..."
+# Numa pasta à parte: na pasta diária, a rotação de 7 apagaria o dump mais antigo — talvez o que está sendo restaurado.
+BACKUP_DIR="$BACKUP_DIR/antes_restauracao" bash "$PROJECT_DIR/scripts/backup_producao.sh"
 
 echo "2/4 Parando o backend (sem conexões abertas durante a restauração)..."
 compose stop backend

@@ -138,6 +138,14 @@ class ProductionFilesAndSecrets(unittest.TestCase):
             rc = subprocess.run(["git", "check-ignore", "-q", path], cwd=REPO_ROOT).returncode
             self.assertEqual(rc, 1, f"{path} deveria ser versionado")
 
+    def test_real_env_files_never_enter_docker_images(self):
+        # backend/.env.production fica dentro do contexto do build: COPY . . o levaria para a imagem.
+        for ignore in (REPO_ROOT / "backend" / ".dockerignore", REPO_ROOT / "frontend" / ".dockerignore"):
+            with self.subTest(file=str(ignore)):
+                patterns = ignore.read_text(encoding="utf-8").split()
+                self.assertIn(".env", patterns)
+                self.assertIn(".env.*", patterns)
+
     def test_caddy_has_internal_healthcheck_endpoint(self):
         text = CADDYFILE.read_text(encoding="utf-8")
         self.assertIn("/healthz", text)
@@ -250,7 +258,19 @@ class BackupAndRestoreScripts(unittest.TestCase):
         self.assertLess(first_dump, restore)            # cópia de segurança antes de sobrescrever
         self.assertTrue(any("stop backend" in c for c in calls[:restore]))
         self.assertTrue(any("start backend" in c for c in calls[restore:]))
-        self.assertEqual(len(self.dumps()), 1)
+        # A cópia de segurança da restauração fica à parte da rotação diária.
+        self.assertEqual(self.dumps(), [])
+        self.assertEqual(len(list((self.backups / "antes_restauracao").glob("modelagem3d_*.dump"))), 1)
+
+    def test_restoring_the_oldest_backup_does_not_delete_it(self):
+        self.backups.mkdir()
+        for day in range(1, 8):   # rotação cheia: 7 backups diários
+            (self.backups / f"modelagem3d_202601{day:02d}_000000.dump").write_bytes(b"PGDMP-falso")
+        oldest = self.backups / "modelagem3d_20260101_000000.dump"
+        result = self.run_script("restaurar_producao.sh", str(oldest), CONFIRMAR="RESTAURAR")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(oldest.exists())
+        self.assertEqual(len(self.dumps()), 7)
 
 
 if __name__ == "__main__":

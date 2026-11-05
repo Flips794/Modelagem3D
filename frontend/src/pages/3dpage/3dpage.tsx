@@ -878,7 +878,7 @@ export function buildPredictionRows(
   }
   rows.push(
     { label: "Morfologia prevista", value: analysis?.predicted_morphology ?? "—" },
-    { label: "Regime de concentração (c/CMC)", value: analysis?.formation_phase ?? "—" },
+    { label: "Regime de concentração (c/CMC)", value: analysis?.predicted_regime ?? "—" },
     { label: "Base da previsão", value: analysis?.morphology_basis ?? "—" },
   );
   if (analysis?.ignored_components?.length) {
@@ -897,13 +897,17 @@ export function buildObservationRows(
     .map(([name, count]) => `${name} ×${count}`).join("; ");
   const fraction = analysis?.micellized_fraction;
   return [
+    // Medida nas coordenadas sem usar a previsão (rótulos neutros).
+    { label: "Forma dominante medida (sem usar a previsão)", value: analysis?.measured_morphology ?? "—" },
+    // Com molde previsto, os agregados organizados recebem o rótulo da previsão (ver texto do card).
     // Mesmos recursos de antes: morfologia do 1º cluster e contagem de clusters da topologia.
-    { label: "Morfologia observada", value: analysis?.dominant_morphology ?? topologyFallback.clusterMorphology ?? "—" },
+    { label: "Rótulo dos agregados na cena", value: analysis?.dominant_morphology ?? topologyFallback.clusterMorphology ?? "—" },
+    { label: "Fase observada na cena", value: analysis?.formation_phase ?? "—" },
     { label: "Clusters", value: String(topologyFallback.clusterCount ?? analysis?.cluster_count ?? 0) },
     { label: "Maior agregado", value: analysis ? `${analysis.largest_cluster_size} moléculas` : "—" },
     { label: "Tamanho médio dos agregados", value: analysis ? `${fixed(analysis.average_cluster_size, 1)} moléculas` : "—" },
     { label: "Fração organizada na amostra 3D", value: fraction !== undefined && fraction !== null ? `${(fraction * 100).toFixed(1)}%` : "—" },
-    { label: "Forma medida (sem usar a previsão)", value: shapes || "—" },
+    { label: "Distribuição das formas medidas", value: shapes || "—" },
     { label: "Índice micelar (heurístico)", value: analysis ? analysis.micelle_probability.toFixed(2) : "—" },
   ];
 }
@@ -1644,6 +1648,7 @@ export function Page3D() {
               <strong>Observado na visualização</strong>
               <span className="empty-inspector">
                 Medido nas coordenadas da animação coarse-grained; não é simulação física nem medida experimental.
+                Quando há molde previsto, os agregados organizados recebem o rótulo da previsão; a forma medida não o usa.
               </span>
               <div className="inline-inspector-grid two-col">
                 {observationRows.map((row) => (

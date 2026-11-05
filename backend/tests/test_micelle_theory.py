@@ -48,9 +48,11 @@ def test_core_radius_only_for_sphere_with_linear_tail():
     core = sds["raio_nucleo_hidrofobico"]
     assert core["value"] == pytest.approx(1.672, abs=1e-3) and "limite superior" in core["note"].lower()
     assert sds["raio_micela_cilindrica"]["note"].startswith("não se aplica")
-    c12e5 = molecule_of(C12E5)                   # CPP ≈ 0,35 → cilindro
-    assert c12e5["raio_micela_cilindrica"]["value"] == pytest.approx(1.672, abs=1e-3)
-    assert c12e5["raio_nucleo_hidrofobico"]["note"].startswith("não se aplica")
+    # Revisão final: o CPP ≈ 0,35 do C12E5 vinha da área de cabeça fixa por classe (60 Å²), não da molécula;
+    # sem área calculada para cabeças não iônicas, esfera/cilindro fica indisponível.
+    c12e5 = molecule_of(C12E5)
+    for key in ("raio_micela_cilindrica", "raio_nucleo_hidrofobico"):
+        assert c12e5[key]["available"] is False and "área da cabeça" in c12e5[key]["note"]
     ddab = molecule_of("CCCCCCCCCCCC[N+](C)(C)CCCCCCCCCCCC.[Br-]")   # duas caudas
     assert ddab["raio_nucleo_hidrofobico"]["available"] is False
     assert ddab["nagg_maximo_geometrico_esfera"]["available"] is False

@@ -261,7 +261,7 @@ def compute(ctx: PropertyContext) -> PropertyBundle:
     if coupled:
         reason = (f"sítios ionizáveis acoplados (≤ {COUPLING_MAX_BONDS} ligações) sem pKa macroscópico validado; "
                   "presumir independência comprometeria o resultado")
-        for key in ("carga_liquida_ph", "estado_protonacao_ph", "especie_predominante_ph", "logd"):
+        for key in ("carga_liquida_ph", "estado_protonacao_ph", "especie_predominante_ph", "logd", "pka"):
             bundle.molecule[key] = unavailable(reason, SOURCE, "e" if key == "carga_liquida_ph" else None)
         return bundle
 
@@ -270,6 +270,7 @@ def compute(ctx: PropertyContext) -> PropertyBundle:
         reason = f"pH {ph:g} abaixo do limite em que a dissociação do ácido forte pode ser tratada como completa"
         for key in ("carga_liquida_ph", "estado_protonacao_ph", "especie_predominante_ph", "logd"):
             bundle.molecule[key] = unavailable(reason, SOURCE)
+        bundle.molecule["pka"] = _pka_field(sites, note)   # o pKa não depende do pH
         return bundle
 
     states: dict[int, bool] = {}

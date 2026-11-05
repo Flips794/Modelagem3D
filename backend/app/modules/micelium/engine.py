@@ -2318,6 +2318,9 @@ class MiceliumEngine:
                                + " no cálculo de c/CMC (Clint só com os componentes de CMC conhecida)")
         analysis = analysis.model_copy(update={
             "predicted_morphology": plan.morphology,
+            "predicted_regime": plan.formation_phase,
+            "measured_morphology": (max(analysis.independent_shape_distribution.items(), key=lambda item: item[1])[0]
+                                    if analysis.independent_shape_distribution else "monômeros dispersos"),
             "morphology_basis": plan.morphology_basis,
             "representation_label": REPRESENTATION_LABEL,
             "validation_status": VALIDATION_STATUS,

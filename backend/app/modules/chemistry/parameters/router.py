@@ -10,7 +10,9 @@ import urllib.request
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+
+from app.core.guards import public_error_detail
 
 from app.modules.chemistry.parameters import validated_calculations as validated
 from app.modules.chemistry.properties import orchestrator as properties_orchestrator
@@ -1374,7 +1376,7 @@ def parameters_status() -> dict[str, Any]:
     response_model=ChemistryParametersResponse,
     summary="Analisa molécula com descritores 2D, PubChem rápido e heurísticas anfifílicas",
 )
-def analyze_parameters(payload: ChemistryParametersRequest) -> ChemistryParametersResponse:
+def analyze_parameters(payload: ChemistryParametersRequest, request: Request) -> ChemistryParametersResponse:
     try:
         result = make_response(payload)
         return ChemistryParametersResponse.model_validate(result)
@@ -1385,5 +1387,6 @@ def analyze_parameters(payload: ChemistryParametersRequest) -> ChemistryParamete
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Erro interno ao calcular parâmetros químicos rápidos v43: {exc}",
+            detail=public_error_detail(request, exc, f"Erro interno ao calcular parâmetros químicos rápidos v43: {exc}",
+                                       "Erro interno ao calcular parâmetros químicos"),
         ) from exc

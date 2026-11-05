@@ -39,7 +39,9 @@ Internet ──80/443──► frontend (Caddy: HTTPS automático, interface, /a
   - Caddy sem capacidades extras (só abrir as portas 80 e 443) e também só leitura;
   - `no-new-privileges` em todos os serviços;
   - logs limitados a 3 × 10 MB por serviço;
-  - em produção a API desliga `/docs` e a rota de demonstração OpenMM, e recusa corpos acima de 2 MB (413).
+  - em produção a API desliga `/docs` e a rota de demonstração OpenMM, e recusa corpos acima de 2 MB (413);
+  - em produção a API não devolve mensagens nem tracebacks internos (o detalhe vai para o log), fecha as rotas que gravam no banco (`ENABLE_DB_WRITES=false`; a API não tem login) e limita cada simulação 3D a 2.500 partículas, 300 passos e 12 moléculas (`PUBLIC_MAX_*`);
+  - **ainda não há limite de requisições por IP**: veja "Pendências antes de publicar" no relatório `documentacao/validacao/WEB_LITE_V1.md`.
 - **Um processo do backend (`UVICORN_WORKERS=1`):** a animação 3D guarda o estado entre trechos na memória do processo. Com mais de um processo, trechos da mesma mistura podem cair em processos diferentes e a cena recomeça.
 
 ## Teste local antes de publicar (fumaça)
@@ -130,7 +132,7 @@ bash scripts/fumaca_producao.sh
 bash scripts/restaurar_producao.sh backups/producao/modelagem3d_AAAAMMDD_HHMMSS.dump
 ```
 
-- **Antes de restaurar:** pede que você digite `RESTAURAR` e faz um backup do estado atual.
+- **Antes de restaurar:** pede que você digite `RESTAURAR` e faz um backup do estado atual em `backups/producao/antes_restauracao/`, fora da rotação diária. Assim a rotação nunca apaga o dump que está sendo restaurado.
 - **Durante:** para o backend e restaura numa única transação; se falhar, nada muda.
 - **Depois:** religa o backend.
 - **Sem terminal interativo:** `CONFIRMAR=RESTAURAR bash scripts/restaurar_producao.sh <arquivo>`.
@@ -187,13 +189,23 @@ A senha do banco de desenvolvimento esteve em commits antigos. Ela já saiu dos 
 
 2. **Reescrever o histórico** com [`git filter-repo`](https://github.com/newren/git-filter-repo), num clone novo e com backup do repositório:
 
+   **Atenção:** a senha antiga é uma palavra comum de química e aparece legitimamente no código (descrição de atalho de molécula, relatórios). Uma substituição simples da palavra trocaria esse texto também. Substitua **só onde ela é credencial**:
+
    ```bash
-   printf '%s==>%s\n' '<senha-antiga>' 'REMOVIDO' > /fora/do/repo/substituicoes.txt
+   S='<senha-antiga>'
+   {
+     printf 'regex:(POSTGRES_PASSWORD\\s*[:=]\\s*["'"'"']?)%s==>\\1REMOVIDO\n' "$S"
+     printf 'regex:(postgresql(\\+psycopg)?://[^:/\\s]+:)%s@==>\\1REMOVIDO@\n' "$S"
+   } > /fora/do/repo/substituicoes.txt
    git filter-repo --replace-text /fora/do/repo/substituicoes.txt
-   git log -p --all | grep -c '<senha-antiga>'   # deve dar 0
+   # As duas contagens devem dar 0 (credencial removida do histórico inteiro):
+   git log -p --all | grep -cE "POSTGRES_PASSWORD.{0,4}$S"
+   git log -p --all | grep -cE "://[^:/ ]+:$S@"
    ```
 
-   Troque `<senha-antiga>` pela senha real só no arquivo de substituições, fora do repositório, e apague esse arquivo depois.
+   - Troque `<senha-antiga>` pela senha real só nesse terminal, sem salvá-la em arquivo do repositório. Apague `substituicoes.txt` depois.
+   - Confira também que o termo químico continua no código atual (`git grep -c` do termo deve dar o mesmo número de antes).
+   - Depois da reescrita, todos os hashes de commit mudam: faça backup do repositório antes (`git bundle create ../antes.bundle --all`).
 
 3. **Conferir** que nenhum segredo ficou: `python3 -m unittest backend/tests/test_no_secrets.py`.
 4. Só então crie o repositório remoto (privado, de preferência) e faça o push.

@@ -25,7 +25,7 @@ from pathlib import Path
 import numpy as np
 from rdkit import Chem
 
-from app.modules.chemistry.properties.base import PropertyBundle, PropertyContext, not_applicable, value
+from app.modules.chemistry.properties.base import PropertyBundle, PropertyContext, not_applicable, unavailable, value
 
 DATA_PATH = Path(__file__).parent / "data" / "cmc_homologs.json"
 SOURCE_LABEL = "NSRDS-NBS 36 (Mukerjee & Mysels 1971, NIST)"
@@ -203,9 +203,17 @@ def compute(ctx: PropertyContext) -> PropertyBundle:
     bundle = PropertyBundle()
     structure = ctx.structure
     estimate = validated.cmc_estimate(structure, ctx.env)
-    bundle.molecule["cmc_origem"] = value(estimate.get("origin", "indisponível"), "Web Lite v1", confidence="high",
-                                          note="experimental = medido (NSRDS); calculada = correlação ajustada a dados; "
-                                               "estimada = âncora + inclinação de homólogos com correção empírica.")
+    origin = estimate.get("origin", "indisponível")
+    origin_note = ("experimental = medido (NSRDS); calculada = correlação ajustada a dados; "
+                   "estimada = âncora + inclinação de homólogos com correção empírica.")
+    if origin == "indisponível":
+        bundle.molecule["cmc_origem"] = unavailable(
+            "nenhuma CMC experimental nem correlação aplicável a esta molécula e condição. " + origin_note, "Web Lite v1")
+    else:
+        # A cor do painel segue a origem do número, não a certeza do rótulo.
+        bundle.molecule["cmc_origem"] = value(origin, "Web Lite v1",
+                                              confidence="experimental" if origin.startswith("experimental") else "estimated",
+                                              note=origin_note)
     experimental = experimental_cmc(structure)
     if experimental is None:
         bundle.molecule["cmc_experimental"] = not_applicable(

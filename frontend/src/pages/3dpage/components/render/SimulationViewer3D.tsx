@@ -1421,7 +1421,7 @@ export default function SimulationViewer3D({
           <span>{showSolvent ? "solvente visível" : "solvente oculto"}</span>
           <span>Micelium</span>
           <span>{formationPhaseLabel}</span>
-          <span>observado: {morphologyLabel}</span>
+          <span>na cena: {morphologyLabel}</span>
           <span>clusters</span>
           <span>interações</span>
         </div>

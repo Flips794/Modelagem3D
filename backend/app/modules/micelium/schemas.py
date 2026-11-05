@@ -178,6 +178,10 @@ class MiceliumAnalysis(BaseModel):
     predicted_morphology: str | None = None
     morphology_distribution: dict[str, int] = Field(default_factory=dict)
     formation_phase: str | None = None
+    # Regime previsto pelo plano (c/CMC), separado da fase observada nas coordenadas (formation_phase).
+    predicted_regime: str | None = None
+    # Forma dominante medida nos agregados sem usar a previsão (rótulos neutros, sem 'micela').
+    measured_morphology: str | None = None
     micellized_fraction: float | None = None
     free_monomer_fraction: float | None = None
     orientation_score: float | None = None
