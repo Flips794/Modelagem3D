@@ -296,6 +296,7 @@ def hydrophobic_core_score_for_cluster(
     return max(0.0, min(1.0, 1.0 / (1.0 + max(0.0, mean_distance - 1.6) * 0.42)))
 
 
+# Rótulos só de forma medida nas coordenadas: não afirmam que o agregado é uma micela.
 def classify_morphology(
     aggregation_number: int,
     orientation_score: float,
@@ -304,21 +305,21 @@ def classify_morphology(
     irregularity: float,
 ) -> str:
     if aggregation_number < 6:
-        return "pré-cluster hidrofóbico"
+        return "pré-agregado hidrofóbico"
 
     if orientation_score < 0.42 or core_score < 0.42:
-        return "agregado irregular instável"
+        return "agregado irregular"
 
     if anisotropy > 0.68:
-        return "agregado alongado/cilíndrico provável"
+        return "agregado alongado"
 
     if irregularity > 0.42:
-        return "micela irregular em estabilização"
+        return "agregado irregular em estabilização"
 
     if aggregation_number >= 18:
-        return "micela esférica irregular provável"
+        return "agregado aproximadamente esférico"
 
-    return "pré-micela orientada"
+    return "agregado orientado"
 
 
 def geometry_evidence_for_cluster(molecule_ids, tail_centers, head_centers, morphology, tail_tips=None):
@@ -452,6 +453,7 @@ def analyze_micelium_state(
     )
 
     clusters: list[MicelleCluster] = []
+    independent_shapes: dict[str, int] = {}   # forma medida sem usar a morfologia prevista
     orientation_evidence = []
     core_evidence = []
     organized_molecules = 0
@@ -520,6 +522,7 @@ def analyze_micelium_state(
             irregularity=irregularity,
         )
 
+        independent_shapes[morphology] = independent_shapes.get(morphology, 0) + 1
         organized = (
             aggregation_number >= 6 and orientation_score >= 0.62
             and core_score >= 0.70 and shape_ok
@@ -625,6 +628,7 @@ def analyze_micelium_state(
         stability_score=stability_score,
         dominant_morphology=clusters[0].morphology if clusters else "monômeros dispersos",
         morphology_distribution={name: sum(c.morphology == name for c in clusters) for name in {c.morphology for c in clusters}},
+        independent_shape_distribution=independent_shapes,
         formation_phase=("organização mesoscópica" if organized_molecules else "autoagregação em curso" if clusters else "dispersão"),
         micellized_fraction=organized_molecules / max(len(surfactant_molecule_ids), 1),
         free_monomer_fraction=max(0.0, 1.0 - sum(c.surfactant_count for c in clusters) / max(len(surfactant_molecule_ids), 1)),

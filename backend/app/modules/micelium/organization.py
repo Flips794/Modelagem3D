@@ -92,8 +92,8 @@ def apply_finite_cluster_forces(*, positions, velocities, particles, clusters, p
     volume de seus beads e do contorno das caudas; não há slots angulares,
     núcleo fixo na origem ou imposição de uma esfera a toda composição.
     """
-    if plan.micellized_fraction <= 0.05:
-        return
+    if plan.micellized_fraction <= 0.05 or not getattr(plan, "geometry_template", True):
+        return   # sem CPP válido não há forma prevista para impor ao agregado
     morphology = plan.morphology.lower()
     reverse = "inversa" in morphology
     vesicle = "vesícula" in morphology

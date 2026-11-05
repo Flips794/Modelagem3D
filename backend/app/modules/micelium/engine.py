@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import random
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.modules.micelium.analyzer import analyze_micelium_state
 from app.modules.micelium.ai_bridge import enrich_molecules_with_ai
@@ -42,6 +42,9 @@ class MicellizationMetrics:
     missing_amount_mmol: float | None
     excess_amount_mmol: float | None
     visual_scale_factor: float | None
+    ignored_components: list[str] = field(default_factory=list)
+    # c/CMC só dos componentes com CMC conhecida; o total (c_over_cmc) fica None se algo foi ignorado.
+    partial_c_over_cmc: float | None = None
 
 
 @dataclass(slots=True)
@@ -55,6 +58,9 @@ class FormationPlan:
     orientation_score: float
     hydrophobic_core_score: float
     hydrophobic_exposure: float
+    # Web Lite v1: sem CPP válido não há molde geométrico; base declarada da previsão.
+    geometry_template: bool = True
+    morphology_basis: str = ""
 
 
 @dataclass(slots=True)
@@ -307,23 +313,24 @@ def calculate_micellization_metrics(
 ) -> MicellizationMetrics:
     volume_l = max(volume_ml / 1000.0, 1e-12)
     candidates: list[tuple[float, float, float, float]] = []
-    incomplete = False
+    ignored: list[str] = []
 
     for molecule in molecules:
         if molecule.role == "solvent":
             continue
         if not infer_surfactant_like(molecule):
             continue
+        label = molecule.name or molecule.id or molecule.smiles
         if not molecule.cmc_mmol_l or molecule.cmc_mmol_l <= 0:
             if molecule.real_amount_mmol == 0 or molecule.real_concentration_mmol_l == 0:
                 continue
-            incomplete = True
+            ignored.append(f"{label} (sem CMC no domínio de aplicação)")
             continue
 
         concentration = molecule_concentration_mmol_l(molecule, volume_l)
         amount = molecule_amount_mmol(molecule, volume_l)
         if concentration is None or amount is None:
-            incomplete = True
+            ignored.append(f"{label} (sem quantidade real informada)")
             continue
 
         cmc = float(molecule.cmc_mmol_l)
@@ -341,7 +348,7 @@ def calculate_micellization_metrics(
     ]
     visual_scale_factor = min(visual_scales) if visual_scales else None
 
-    if not candidates or incomplete:
+    if not candidates:
         return MicellizationMetrics(
             c_over_cmc=None,
             real_concentration_mmol_l=None,
@@ -350,6 +357,7 @@ def calculate_micellization_metrics(
             missing_amount_mmol=None,
             excess_amount_mmol=None,
             visual_scale_factor=visual_scale_factor,
+            ignored_components=ignored,
         )
 
     # Mistura ideal (Clint): soma das contribuições ci/CMCi. Não usa
@@ -359,6 +367,20 @@ def calculate_micellization_metrics(
     amount = sum(item[2] for item in candidates)
     critical_amount = amount / ratio if ratio > 0 else candidates[0][3] if len(candidates) == 1 else None
 
+    if ignored:
+        # Total da mistura desconhecido: não se apresenta o subconjunto como total.
+        return MicellizationMetrics(
+            c_over_cmc=None,
+            real_concentration_mmol_l=None,
+            real_amount_mmol=None,
+            critical_amount_mmol=None,
+            missing_amount_mmol=None,
+            excess_amount_mmol=None,
+            visual_scale_factor=visual_scale_factor,
+            ignored_components=ignored,
+            partial_c_over_cmc=ratio,
+        )
+
     return MicellizationMetrics(
         c_over_cmc=ratio,
         real_concentration_mmol_l=concentration,
@@ -367,6 +389,7 @@ def calculate_micellization_metrics(
         missing_amount_mmol=max(0.0, critical_amount - amount) if critical_amount is not None else None,
         excess_amount_mmol=max(0.0, amount - critical_amount) if critical_amount is not None else None,
         visual_scale_factor=visual_scale_factor,
+        ignored_components=ignored,
     )
 
 
@@ -484,14 +507,19 @@ def choose_formation_plan(
     polarity = clamp(float(solvent_profile.polarity), 0.0, 1.0)
     dielectric = max(1.0, float(solvent_profile.dielectric))
     ionic_strength = max(0.0, float(env.ionic_strength_mol_l))
-    ccmc = metrics.c_over_cmc
+    # Visualização: usa o c/CMC parcial quando há componente sem CMC (rotulado como aproximação).
+    ccmc = metrics.c_over_cmc if metrics.c_over_cmc is not None else metrics.partial_c_over_cmc
     real_conc = max(0.0, float(metrics.real_concentration_mmol_l or 0.0))
 
     surfactants = [m for m in request.molecules if m.role != "solvent" and infer_surfactant_like(m)]
-    cpp_values = [(estimate_cpp_from_molecule(m), molecule_concentration_mmol_l(m, env.volume_ml / 1000.0)) for m in surfactants]
+    # Só componentes que entram em c/CMC (com CMC válida) definem a geometria prevista.
+    with_cmc = [m for m in surfactants if m.cmc_mmol_l and m.cmc_mmol_l > 0]
+    cpp_values = [(estimate_cpp_from_molecule(m), molecule_concentration_mmol_l(m, env.volume_ml / 1000.0)) for m in with_cmc]
     weighted = [(value, weight if weight is not None else 1.0) for value, weight in cpp_values if value is not None]
     total_weight = sum(weight for _value, weight in weighted)
-    base_cpp = sum(value * weight for value, weight in weighted) / total_weight if total_weight > 0 else 0.34
+    cpp_known = total_weight > 0
+    # Sem CPP não se assume valor padrão (antes: 0,34, que impunha uma morfologia).
+    base_cpp = sum(value * weight for value, weight in weighted) / total_weight if cpp_known else 0.34
 
     # Ajuste do CPP efetivo pelo meio:
     # - sal reduz repulsão cabeça-cabeça => maior CPP efetivo
@@ -545,6 +573,8 @@ def choose_formation_plan(
 
     if ccmc is None or ccmc < 1.0:
         morphology = "monômeros/pré-agregados"
+    elif not cpp_known:
+        morphology = "agregados sem geometria prevista (CPP indisponível)"
     else:
         if inverse_favored and effective_cpp >= 0.72:
             if effective_cpp >= 1.02 or very_high_concentration:
@@ -606,6 +636,14 @@ def choose_formation_plan(
 
     hydrophobic_exposure = clamp(1.0 - hydrophobic_core_score, 0.0, 1.0)
 
+    if ccmc is None:
+        basis = "sem c/CMC (nenhum componente com CMC e quantidade real): sem previsão de agregação"
+    elif not cpp_known:
+        basis = f"c/CMC = {ccmc:.3g} (agregação esperada acima de 1); CPP indisponível: forma não prevista, sem molde geométrico"
+    else:
+        basis = (f"CPP médio = {base_cpp:.3f} (Tanford + área de cabeça CG não calibrada), CPP efetivo no meio = "
+                 f"{effective_cpp:.3f}; c/CMC = {ccmc:.3g}; limiares de Israelachvili–Mitchell–Ninham")
+
     return FormationPlan(
         morphology=morphology,
         formation_phase=formation_phase,
@@ -616,6 +654,8 @@ def choose_formation_plan(
         orientation_score=orientation_score,
         hydrophobic_core_score=hydrophobic_core_score,
         hydrophobic_exposure=hydrophobic_exposure,
+        geometry_template=bool(cpp_known and ccmc is not None and ccmc >= 1.0),
+        morphology_basis=basis,
     )
 
 def target_for_group(
@@ -1554,9 +1594,14 @@ def resolve_hard_overlaps(
 
     cell_size = 1.65
     cells = build_neighbor_cells(positions, particles, cell_size)
-    visited: set[tuple[int, int]] = set()
+    # Cada par (i<j) aparece uma única vez: célula única por partícula e 27 vizinhas distintas.
     pair_budget = max(10_000, min(55_000, len(particles) * 55))
     pair_counter = 0
+    # Propriedades por partícula calculadas uma vez (mesmas expressões de antes).
+    radius_eff = [max(0.16, _pvalue(p, "radius", 0.35)) for p in particles]
+    inv_mass = [1.0 / max(_pvalue(p, "mass", 1.0), 0.2) for p in particles]
+    kinds = [p.kind for p in particles]
+    molecule_ids = [p.molecule_id for p in particles]
 
     for key, members in cells.items():
         if pair_counter >= pair_budget:
@@ -1574,44 +1619,31 @@ def resolve_hard_overlaps(
             if pair_counter >= pair_budget:
                 break
 
-            pi = particles[i]
 
             for j in candidate_indices:
                 if j <= i:
                     continue
 
-                pair_key = (i, j)
-                if pair_key in visited:
-                    continue
-
-                visited.add(pair_key)
                 pair_counter += 1
 
-                pj = particles[j]
 
                 # Ligações e beads da mesma molécula já são controladas por molas.
-                if pi.molecule_id == pj.molecule_id:
+                if molecule_ids[i] == molecule_ids[j]:
                     continue
 
                 # Solvente-solvente pode sobrepor visualmente um pouco sem afetar a micela.
-                if pi.kind == "solvent" and pj.kind == "solvent":
+                if kinds[i] == "solvent" and kinds[j] == "solvent":
                     continue
 
-                delta = sub(positions[j], positions[i])
                 dist = max(vector_distance(positions[i], positions[j]), 1e-6)
-                direction = scale(delta, 1.0 / dist)
-
-                ri = max(0.16, _pvalue(pi, "radius", 0.35))
-                rj = max(0.16, _pvalue(pj, "radius", 0.35))
-
-                min_distance = max(0.42, (ri + rj) * 1.12)
-
+                min_distance = max(0.42, (radius_eff[i] + radius_eff[j]) * 1.12)
                 if dist >= min_distance:
                     continue
+                direction = scale(sub(positions[j], positions[i]), 1.0 / dist)
 
                 overlap = min_distance - dist
-                inv_mass_i = 1.0 / max(_pvalue(pi, "mass", 1.0), 0.2)
-                inv_mass_j = 1.0 / max(_pvalue(pj, "mass", 1.0), 0.2)
+                inv_mass_i = inv_mass[i]
+                inv_mass_j = inv_mass[j]
                 inv_total = max(inv_mass_i + inv_mass_j, 1e-9)
 
                 # Corrige a maior parte da penetração, mantendo suavidade.
@@ -1741,7 +1773,7 @@ def apply_autonomous_pairwise_forces(
     """
     cell_size = 2.45
     cells = build_neighbor_cells(positions, particles, cell_size)
-    visited: set[tuple[int, int]] = set()
+    # Cada par (i<j) aparece uma única vez: célula única por partícula e 27 vizinhas distintas.
 
     env = request.environment
     dielectric = max(1.0, float(env.dielectric_constant))
@@ -1761,6 +1793,18 @@ def apply_autonomous_pairwise_forces(
     pair_budget = max(8_000, min(42_000, len(particles) * 42))
     pair_counter = 0
 
+    # Propriedades por partícula calculadas uma vez por passo (mesmas expressões de
+    # antes, que eram reavaliadas a cada par: ~5,6 milhões de chamadas por trecho).
+    radius_eff = [max(0.12, _pvalue(p, "radius", 0.35)) for p in particles]
+    mass_eff = [max(_pvalue(p, "mass", 1.0), 0.1) for p in particles]
+    raw_mass = [max(p.mass, 0.1) for p in particles]
+    charge = [_pvalue(p, "charge", 0.0) for p in particles]
+    hydro = [clamp(_pvalue(p, "hydrophobicity", 0.0), 0.0, 1.0) for p in particles]
+    polar = [clamp(_pvalue(p, "polarity", 0.0), 0.0, 1.0) for p in particles]
+    kinds = [p.kind for p in particles]
+    molecule_ids = [p.molecule_id for p in particles]
+    inverse_morphology = "inversa" in plan.morphology
+
     for key, members in cells.items():
         if pair_counter >= pair_budget:
             break
@@ -1778,28 +1822,24 @@ def apply_autonomous_pairwise_forces(
         for i in members:
             if pair_counter >= pair_budget:
                 break
-            pi = particles[i]
+            kind_i = kinds[i]
             for j in candidate_indices:
                 if j <= i:
                     continue
 
-                pair_key = (i, j)
-                if pair_key in visited:
-                    continue
-                visited.add(pair_key)
                 pair_counter += 1
 
-                pj = particles[j]
+                kind_j = kinds[j]
 
                 # Solvente-solvente não altera a micelização visual; economiza custo.
-                if pi.kind == "solvent" and pj.kind == "solvent":
+                if kind_i == "solvent" and kind_j == "solvent":
                     continue
 
                 delta = sub(positions[j], positions[i])
                 dist = max(vector_distance(positions[i], positions[j]), 1e-6)
                 direction = scale(delta, 1.0 / dist)
 
-                same_molecule = pi.molecule_id == pj.molecule_id
+                same_molecule = molecule_ids[i] == molecule_ids[j]
 
                 # Beads covalentes adjacentes compartilham volume no modelo CG.
                 # Repulsão entre eles alongava a cadeia e competia com os bonds.
@@ -1807,75 +1847,74 @@ def apply_autonomous_pairwise_forces(
                     continue
 
                 # 1) Exclusão estérica intermolecular.
-                ri = max(0.12, _pvalue(pi, "radius", 0.35))
-                rj = max(0.12, _pvalue(pj, "radius", 0.35))
+                ri = radius_eff[i]
+                rj = radius_eff[j]
                 min_distance = max(0.34, (ri + rj) * 1.10)
                 if dist < min_distance:
                     repulsion = (min_distance - dist) * steric_k * 1.55
-                    velocities[i] = add(velocities[i], scale(direction, -repulsion / max(_pvalue(pi, "mass", 1.0), 0.1)))
-                    velocities[j] = add(velocities[j], scale(direction, repulsion / max(_pvalue(pj, "mass", 1.0), 0.1)))
+                    velocities[i] = add(velocities[i], scale(direction, -repulsion / mass_eff[i]))
+                    velocities[j] = add(velocities[j], scale(direction, repulsion / mass_eff[j]))
 
-                qi = _pvalue(pi, "charge", 0.0)
-                qj = _pvalue(pj, "charge", 0.0)
-                hi = clamp(_pvalue(pi, "hydrophobicity", 0.0), 0.0, 1.0)
-                hj = clamp(_pvalue(pj, "hydrophobicity", 0.0), 0.0, 1.0)
-                poli = clamp(_pvalue(pi, "polarity", 0.0), 0.0, 1.0)
-                polj = clamp(_pvalue(pj, "polarity", 0.0), 0.0, 1.0)
+                qi = charge[i]
+                qj = charge[j]
+                hi = hydro[i]
+                hj = hydro[j]
+                poli = polar[i]
+                polj = polar[j]
 
                 # 2) Eletrostática com blindagem de Debye-Hückel visual.
                 if abs(qi * qj) > 1e-9 and dist < 5.2:
                     screening = math.exp(-ionic * dist * 2.2)
                     # qi*qj positivo repele; negativo atrai.
                     electro = -(qi * qj) * electrostatic_k * screening / (dist * dist + 0.35)
-                    velocities[i] = add(velocities[i], scale(direction, electro / max(_pvalue(pi, "mass", 1.0), 0.1)))
-                    velocities[j] = add(velocities[j], scale(direction, -electro / max(_pvalue(pj, "mass", 1.0), 0.1)))
+                    velocities[i] = add(velocities[i], scale(direction, electro / mass_eff[i]))
+                    velocities[j] = add(velocities[j], scale(direction, -electro / mass_eff[j]))
 
                 # 3) Cauda-cauda: autoagregação hidrofóbica.
-                if pi.kind == "tail" and pj.kind == "tail" and min_distance < dist < 2.4:
+                if kind_i == "tail" and kind_j == "tail" and min_distance < dist < 2.4:
                     strength = (2.4 - dist) * hydrophobic_k * max(hi * hj, 0.15)
-                    velocities[i] = add(velocities[i], scale(direction, strength / max(_pvalue(pi, "mass", 1.0), 0.1)))
-                    velocities[j] = add(velocities[j], scale(direction, -strength / max(_pvalue(pj, "mass", 1.0), 0.1)))
+                    velocities[i] = add(velocities[i], scale(direction, strength / mass_eff[i]))
+                    velocities[j] = add(velocities[j], scale(direction, -strength / mass_eff[j]))
 
-                if pi.kind == "head" and pj.kind == "head" and min_distance < dist < 2.4:
+                if kind_i == "head" and kind_j == "head" and min_distance < dist < 2.4:
                     # Desolvatação das cabeças em meio apolar; em água há
                     # repulsão de hidratação, inclusive para cabeças neutras.
-                    if "inversa" in plan.morphology:
+                    if inverse_morphology:
                         strength = 0.035 * cmc_factor * (1.0 - polarity_medium) * (2.4 - dist)
                     else:
                         strength = -0.012 * polarity_medium * max(0.0, 1.4 - dist)
-                    velocities[i] = add(velocities[i], scale(direction, strength / max(pi.mass, 0.1)))
-                    velocities[j] = add(velocities[j], scale(direction, -strength / max(pj.mass, 0.1)))
+                    velocities[i] = add(velocities[i], scale(direction, strength / raw_mass[i]))
+                    velocities[j] = add(velocities[j], scale(direction, -strength / raw_mass[j]))
 
                 # 4) Cabeça-cauda: incompatibilidade polar/apolar em meio polar.
-                if {pi.kind, pj.kind} == {"head", "tail"} and dist < 1.75:
+                if ((kind_i == "head" and kind_j == "tail") or (kind_i == "tail" and kind_j == "head")) and dist < 1.75:
                     penalty = (1.75 - dist) * head_tail_penalty_k
-                    velocities[i] = add(velocities[i], scale(direction, -penalty / max(_pvalue(pi, "mass", 1.0), 0.1)))
-                    velocities[j] = add(velocities[j], scale(direction, penalty / max(_pvalue(pj, "mass", 1.0), 0.1)))
+                    velocities[i] = add(velocities[i], scale(direction, -penalty / mass_eff[i]))
+                    velocities[j] = add(velocities[j], scale(direction, penalty / mass_eff[j]))
 
                 # 5) Solvente implícito/traçador: polar estabiliza cabeça, expulsa cauda;
                 # meio apolar estabiliza cauda e favorece inversão.
-                if pi.kind == "solvent" or pj.kind == "solvent":
-                    solvent_index = i if pi.kind == "solvent" else j
+                if kind_i == "solvent" or kind_j == "solvent":
+                    solvent_index = i if kind_i == "solvent" else j
                     other_index = j if solvent_index == i else i
-                    other = particles[other_index]
+                    other_kind = kinds[other_index]
                     sign = -1.0 if solvent_index == i else 1.0
 
                     if dist < 2.25:
-                        if other.kind == "head":
+                        if other_kind == "head":
                             force = 0.006 * (2.0 * polarity_medium - 1.0) * (2.25 - dist)
-                        elif other.kind == "tail":
+                        elif other_kind == "tail":
                             force = -0.006 * (2.0 * polarity_medium - 1.0) * (2.25 - dist)
                         else:
                             force = 0.002 * (poli + polj - hi - hj) * (2.25 - dist)
 
                         velocities[other_index] = add(
                             velocities[other_index],
-                            scale(direction, sign * force / max(_pvalue(other, "mass", 1.0), 0.1)),
+                            scale(direction, sign * force / mass_eff[other_index]),
                         )
-                        solvent = particles[solvent_index]
                         velocities[solvent_index] = add(
                             velocities[solvent_index],
-                            scale(direction, -sign * force / max(solvent.mass, 0.1)),
+                            scale(direction, -sign * force / raw_mass[solvent_index]),
                         )
 
 
@@ -2175,6 +2214,11 @@ def build_formation_frames(
         initial_center_pulse=initial_center_pulse,
     )
 
+REPRESENTATION_LABEL = "Visualização representativa — não é simulação física"
+VALIDATION_STATUS = ("não validado experimentalmente: a morfologia prevista vem de CPP/c/CMC e a observada é "
+                     "medida nas coordenadas de uma visualização coarse-grained heurística")
+
+
 class MiceliumEngine:
     def run(self, request: MiceliumSimulationRequest) -> MiceliumSimulationResponse:
         solvent_profile = infer_solvent_profile(request)
@@ -2257,17 +2301,31 @@ class MiceliumEngine:
             positions=final_positions,
             environment=request.environment,
             molecule_count=sum(molecule.count for molecule in request.molecules),
-            c_over_cmc_proxy=metrics.c_over_cmc,
+            # Organização observada usa o c/CMC da visualização (parcial se houver componente ignorado).
+            c_over_cmc_proxy=metrics.c_over_cmc if metrics.c_over_cmc is not None else metrics.partial_c_over_cmc,
             real_concentration_mmol_l=metrics.real_concentration_mmol_l,
             real_amount_mmol=metrics.real_amount_mmol,
             critical_amount_mmol=metrics.critical_amount_mmol,
             missing_amount_mmol=metrics.missing_amount_mmol,
             excess_amount_mmol=metrics.excess_amount_mmol,
             visual_scale_factor=metrics.visual_scale_factor,
-            morphology_hint=plan.morphology,
+            morphology_hint=plan.morphology if plan.geometry_template else None,
         )
 
-        analysis = analysis.model_copy(update={"predicted_morphology": plan.morphology})
+        prediction_note = None
+        if metrics.ignored_components:
+            prediction_note = ("visualização aproximada: ignora " + "; ".join(metrics.ignored_components)
+                               + " no cálculo de c/CMC (Clint só com os componentes de CMC conhecida)")
+        analysis = analysis.model_copy(update={
+            "predicted_morphology": plan.morphology,
+            "morphology_basis": plan.morphology_basis,
+            "representation_label": REPRESENTATION_LABEL,
+            "validation_status": VALIDATION_STATUS,
+            "ignored_components": list(metrics.ignored_components),
+            "prediction_note": prediction_note,
+            "c_over_cmc_parcial": metrics.partial_c_over_cmc,
+            "c_over_cmc_proxy": metrics.c_over_cmc,   # total estrito (None se a mistura está incompleta)
+        })
 
         notes = [
             "Motor CG: campo médio local com raio finito, orientação cabeça/cauda e restrições de comprimento; chunks continuam do último estado.",
@@ -2286,7 +2344,9 @@ class MiceliumEngine:
         if len(particles) >= request.max_particles:
             notes.append("Sistema truncado por max_particles. Aumente com cuidado ou use streaming.")
 
-        if metrics.c_over_cmc is None:
+        if metrics.c_over_cmc is None and metrics.partial_c_over_cmc is not None:
+            notes.append("c/CMC total da mistura desconhecido; a visualização usa o c/CMC parcial dos componentes com CMC.")
+        elif metrics.c_over_cmc is None:
             notes.append("Sem CMC/concentração real suficiente; análise micelar quantitativa fica qualitativa.")
 
         if metrics.c_over_cmc is not None and metrics.c_over_cmc < 1.0:

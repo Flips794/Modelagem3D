@@ -184,6 +184,15 @@ class MiceliumAnalysis(BaseModel):
     hydrophobic_core_score: float | None = None
     hydrophobic_exposure: float | None = None
 
+    # Web Lite v1: previsto × observado × validado, e componentes fora de c/CMC.
+    morphology_basis: str | None = None
+    representation_label: str | None = None
+    validation_status: str | None = None
+    ignored_components: list[str] = Field(default_factory=list)
+    prediction_note: str | None = None
+    c_over_cmc_parcial: float | None = None
+    independent_shape_distribution: dict[str, int] = Field(default_factory=dict)
+
     warnings: list[str] = Field(default_factory=list)
 
 
