@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { analyzeChemistryParameters } from "./chemistryParametersApi";
 import type {
@@ -7,9 +7,27 @@ import type {
   BondParameterData,
   ChemistryParametersPanelProps,
   ChemistryParametersResponse,
+  IonizableSiteData,
   MoleculeParameterData,
   ParameterValue,
+  ResonanceRange,
+  SpeciesAtPh,
+  SurfactantClassificationData,
 } from "./chemistryParameters.types";
+
+type GeometryStatus = "idle" | "loading" | "done" | "error";
+
+const SPECIES_PT: Record<string, string> = {
+  anionic: "aniônica", cationic: "catiônica", nonionic: "não iônica", zwitterionic: "zwitteriônica",
+};
+const CLASS_PT: Record<string, string> = {
+  anionic: "aniônico", cationic: "catiônico", nonionic: "não iônico", zwitterionic: "zwitteriônico",
+  amphoteric: "anfotérico", unknown: "não surfactante",
+};
+const ROLE_PT: Record<string, string> = {
+  surfactant: "surfactante", surfactant_or_cosurfactant: "surfactante ou cossurfactante (cabeça fraca)", none: "não surfactante",
+};
+const CONFIDENCE_PT: Record<string, string> = { high: "alta", medium: "média", low: "baixa" };
 
 type StandardEnvironmentSpec = {
   temperatureK: number;
@@ -130,7 +148,22 @@ function formatPrimitive(value: unknown): string {
     return value ? "sim" : "não";
   }
 
+  if (Array.isArray(value) && value.every((item) => typeof item === "number")) {
+    return value.length ? value.map((item) => formatPrimitive(item)).join(", ") : "nenhum";
+  }
+
   if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if ("min" in record && "max" in record && "varia" in record) {
+      const range = record as unknown as ResonanceRange;
+      return range.min === range.max
+        ? `${formatPrimitive(range.min)} (não varia)`
+        : `${formatPrimitive(range.min)} a ${formatPrimitive(range.max)} (varia)`;
+    }
+    if (["x", "y", "z"].every((key) => typeof record[key] === "number")) {
+      const vector = `${formatPrimitive(record.x)}, ${formatPrimitive(record.y)}, ${formatPrimitive(record.z)}`;
+      return typeof record.magnitude === "number" ? `${formatPrimitive(record.magnitude)} (vetor ${vector})` : vector;
+    }
     try {
       return JSON.stringify(value);
     } catch {
@@ -147,45 +180,212 @@ function formatParameter(parameter: ParameterValue | undefined): string {
   if (parameter.available === false) return "—";
 
   const value = formatPrimitive(parameter.value);
+  if (!parameter.unit) return value;
 
-  return parameter.unit ? `${value} ${parameter.unit}` : value;
+  const vectorAt = value.indexOf(" (vetor ");
+  return vectorAt > 0
+    ? `${value.slice(0, vectorAt)} ${parameter.unit}${value.slice(vectorAt)}`
+    : `${value} ${parameter.unit}`;
 }
 
+function isNotApplicable(parameter: ParameterValue) {
+  return parameter.confidence === "not_applicable" || (parameter.note ?? "").startsWith("não se aplica");
+}
+
+/** experimental | available (calculado) | estimated | unavailable | not-applicable | missing */
 function getParameterClass(parameter: ParameterValue | undefined) {
   if (!parameter) return "missing";
 
-  if (!parameter.available) return "unavailable";
+  if (!parameter.available) return isNotApplicable(parameter) ? "not-applicable" : "unavailable";
 
-  if (parameter.confidence === "estimated" || parameter.confidence === "proxy") {
+  if (parameter.confidence === "experimental") return "experimental";
+
+  if (["estimated", "proxy", "medium", "low", "heuristic"].includes(String(parameter.confidence))) {
     return "estimated";
   }
 
   return "available";
 }
 
+function visibleNote(parameter: ParameterValue | undefined, showNote: boolean) {
+  if (!parameter?.note) return null;
+  const state = getParameterClass(parameter);
+  // O motivo/referência fica visível (o title não funciona no toque).
+  return showNote || state === "unavailable" || state === "not-applicable" || state === "experimental"
+    ? parameter.note
+    : null;
+}
+
 function ParameterRow({
   label,
   parameter,
   rawValue,
+  displayValue,
+  testId,
+  showNote = false,
 }: {
   label: string;
   parameter?: ParameterValue;
   rawValue?: unknown;
+  displayValue?: string;
+  testId?: string;
+  showNote?: boolean;
 }) {
-  const value = parameter ? formatParameter(parameter) : formatPrimitive(rawValue);
+  const value = displayValue ?? (parameter ? formatParameter(parameter) : formatPrimitive(rawValue));
   const source = parameter?.source;
   const note = parameter?.note;
   const confidence = parameter?.confidence;
+  const shownNote = visibleNote(parameter, showNote);
 
   return (
-    <>
+    <div className="leftpage-parameter-row" data-testid={testId}>
       <span>{label}</span>
       <strong
-        className={getParameterClass(parameter)}
+        className={parameter ? getParameterClass(parameter) : value === "—" ? "missing" : "available"}
         title={[source, confidence, note].filter(Boolean).join(" | ")}
       >
         {value}
+        {shownNote && <small className="leftpage-parameter-note">{shownNote}</small>}
       </strong>
+    </div>
+  );
+}
+
+function ParameterLegend() {
+  return (
+    <div className="leftpage-parameter-legend" data-testid="parameter-legend">
+      <span className="experimental">Experimental</span>
+      <span className="available">Calculado</span>
+      <span className="estimated">Estimado</span>
+      <span className="unavailable">Indisponível</span>
+      <span className="not-applicable">Não se aplica</span>
+    </div>
+  );
+}
+
+function ResonanceSection({ molecule }: { molecule: MoleculeParameterData }) {
+  return (
+    <>
+      <h4>Molécula individual — ressonância (estruturas de Lewis formais)</h4>
+      <div className="leftpage-data-grid compact">
+        <ParameterRow label="Estruturas de ressonância" parameter={molecule.ressonancia_numero_estruturas}
+          testId="row-ressonancia_numero_estruturas" showNote />
+        <ParameterRow label="Sistemas conjugados" parameter={molecule.sistemas_conjugados} />
+        <ParameterRow label="Átomos deslocalizados (índices)" parameter={molecule.ressonancia_atomos_deslocalizados} />
+        <ParameterRow label="Ligações deslocalizadas (índices)" parameter={molecule.ressonancia_ligacoes_deslocalizadas} />
+      </div>
+    </>
+  );
+}
+
+function speciesLabel(species: SpeciesAtPh | null | undefined) {
+  if (!species?.classe) return "—";
+  const name = SPECIES_PT[species.classe] ?? species.classe;
+  return species.smiles ? `${name} — ${species.smiles}` : name;
+}
+
+function IonizationSection({ molecule }: { molecule: MoleculeParameterData }) {
+  const sites: IonizableSiteData[] = molecule.sitios_ionizaveis?.value ?? [];
+  const species = molecule.especie_predominante_ph;
+  const ph = species?.value?.ph;
+
+  return (
+    <>
+      <h4>Molécula individual — ionização no pH do ambiente{ph !== undefined ? ` (pH ${formatPrimitive(ph)})` : ""}</h4>
+      <div className="leftpage-data-grid compact">
+        <ParameterRow label="Carga formal do desenho" rawValue={molecule.carga_formal_total} />
+        <ParameterRow label="Carga líquida estimada" parameter={molecule.carga_liquida_ph} testId="row-carga_liquida_ph" />
+        <ParameterRow label="Espécie predominante" parameter={species}
+          displayValue={species?.available ? speciesLabel(species.value) : undefined} testId="row-especie_predominante_ph" />
+      </div>
+      {sites.length > 0 && (
+        <div className="leftpage-interaction-list">
+          <h5>Sítios ionizáveis (pKa do composto-modelo)</h5>
+          {sites.map((site) => (
+            <article className="leftpage-interaction-row" key={`${site.atom_idx}-${site.grupo}`}>
+              <strong>
+                {site.grupo} — átomo {site.atom_idx}
+                {site.pka !== null ? ` · pKa ${formatPrimitive(site.pka)}` : ""}
+                {site.pka === null && site.pka_limite_superior != null ? ` · pKa < ${formatPrimitive(site.pka_limite_superior)}` : ""}
+                {site.acoplado ? " · acoplado" : ""}
+              </strong>
+              <span>{site.referencia}</span>
+              {site.qualidade_referencia && <span>Qualidade da referência: {site.qualidade_referencia}</span>}
+            </article>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function ClassificationSection({ molecule }: { molecule: MoleculeParameterData }) {
+  const field = molecule.classificacao_surfactante;
+  const data: SurfactantClassificationData | null | undefined = field?.value;
+  if (!field) return null;
+
+  const title = <h4>Molécula individual — classificação do surfactante (regras químicas, sem IA treinada)</h4>;
+  if (!field.available || !data) {
+    // Uma linha só: o motivo não se repete em cada campo derivado.
+    return (
+      <>
+        {title}
+        <div className="leftpage-data-grid compact">
+          <ParameterRow label="Classe estrutural" parameter={field} testId="row-classificacao_classe" />
+        </div>
+      </>
+    );
+  }
+
+  const species = data.especie_no_ph;
+  return (
+    <>
+      {title}
+      <div className="leftpage-data-grid compact">
+        <ParameterRow label="Classe estrutural" parameter={field}
+          displayValue={data.classe_pt} testId="row-classificacao_classe" />
+        <ParameterRow label="Classes compatíveis" parameter={field}
+          displayValue={data.classes_compativeis.map((item) => CLASS_PT[item] ?? item).join(", ") || "—"} />
+        <ParameterRow label="Papel anfifílico" parameter={field}
+          displayValue={ROLE_PT[data.papel] ?? data.papel} />
+        <ParameterRow label="Confiança (qualitativa)" parameter={field}
+          displayValue={CONFIDENCE_PT[data.confianca] ?? data.confianca} />
+        {species && (
+          <ParameterRow label={`Espécie no pH ${formatPrimitive(species.ph)}`} parameter={field}
+            displayValue={species.species ? `${SPECIES_PT[species.species] ?? species.species} (referência de pKa: ${species.reference_status})`
+              : species.note || "—"} />
+        )}
+        <ParameterRow label="Justificativa química" parameter={field}
+          displayValue={data.justificativa || "—"} />
+      </div>
+    </>
+  );
+}
+
+function GeometryAction({
+  status,
+  error,
+  onRequest,
+}: {
+  status: GeometryStatus;
+  error: string;
+  onRequest: () => void;
+}) {
+  const label = status === "loading" ? "Calculando geometria 3D..." : status === "done" ? "Geometria 3D calculada" : "Calcular geometria 3D";
+  return (
+    <>
+      <div className="leftpage-action-row single">
+        <button type="button" onClick={onRequest} disabled={status === "loading" || status === "done"}
+          aria-busy={status === "loading"}>
+          {label}
+        </button>
+      </div>
+      {status === "idle" && (
+        <small className="leftpage-parameter-note">
+          Sob demanda: ETKDGv3 + MMFF94, um confórmero em fase gasosa (não representa o conjunto em solução).
+        </small>
+      )}
+      {status === "error" && <div className="leftpage-error-box">Geometria 3D não calculada: {error}</div>}
     </>
   );
 }
@@ -267,13 +467,21 @@ function getHeavyBonds(molecule: MoleculeParameterData) {
 
 function MoleculeParameters({
   parameters,
+  geometryStatus,
+  geometryError,
+  onRequestGeometry,
 }: {
   parameters: ChemistryParametersResponse;
+  geometryStatus: GeometryStatus;
+  geometryError: string;
+  onRequestGeometry: () => void;
 }) {
   const molecule = parameters.molecule;
 
   return (
     <div className="leftpage-parameter-section">
+      <ParameterLegend />
+
       <h4>Molécula individual — identidade, topologia e estrutura eletrônica</h4>
 
       <div className="leftpage-data-grid compact">
@@ -322,7 +530,13 @@ function MoleculeParameters({
         <ParameterRow label="Hash estrutural" rawValue={molecule.hash_estrutural} />
       </div>
 
+      <ResonanceSection molecule={molecule} />
+
+      <IonizationSection molecule={molecule} />
+
       <h4>Molécula individual — propriedades físico-químicas ideais/estimadas</h4>
+
+      <GeometryAction status={geometryStatus} error={geometryError} onRequest={onRequestGeometry} />
 
       <div className="leftpage-data-grid compact">
         <ParameterRow label="LogP" parameter={molecule.logp} />
@@ -332,8 +546,9 @@ function MoleculeParameters({
         <ParameterRow label="TPSA" parameter={molecule.tpsa} />
         <ParameterRow label="QED" parameter={molecule.qed} />
 
-        <ParameterRow label="SASA total" parameter={molecule.sasa_total} />
-        <ParameterRow label="Raio de giração" parameter={molecule.raio_de_giracao} />
+        <ParameterRow label="SASA total (sonda 1,4 Å)" parameter={molecule.sasa_total} />
+        <ParameterRow label="Superfície de van der Waals" parameter={molecule.area_superficie_vdw} />
+        <ParameterRow label="Raio de giração" parameter={molecule.raio_de_giracao} testId="row-raio_de_giracao" />
         <ParameterRow label="NPR1" parameter={molecule.npr1} />
         <ParameterRow label="NPR2" parameter={molecule.npr2} />
         <ParameterRow label="Volume de Van der Waals" parameter={molecule.volume_vdw_total} />
@@ -349,6 +564,8 @@ function MoleculeParameters({
         <ParameterRow label="Tensão superficial" parameter={molecule.tensao_superficial} />
         <ParameterRow label="Viscosidade" parameter={molecule.viscosidade} />
       </div>
+
+      <ClassificationSection molecule={molecule} />
 
       <h4>Molécula individual — parâmetros micelares ideais</h4>
 
@@ -368,6 +585,9 @@ function MoleculeParameters({
         <ParameterRow label="HLB ideal/estimado" parameter={molecule.hlb_estimado ?? molecule.hlb} />
         <ParameterRow label="HLB bruto do motor" parameter={molecule.hlb_engine_bruto} />
 
+        <ParameterRow label="CMC experimental (NSRDS-NBS 36)" parameter={molecule.cmc_experimental} testId="row-cmc_experimental" />
+        <ParameterRow label="Origem da CMC usada" parameter={molecule.cmc_origem} testId="row-cmc_origem" />
+        <ParameterRow label="CMC calculada/estimada" parameter={molecule.cmc_estimada} showNote />
         <ParameterRow label="CMC por Klevens" parameter={molecule.cmc_klevens_mmol_l ?? molecule.cmc_estimada} />
         <ParameterRow label="CMC corrigida por ambiente" parameter={molecule.cmc_corrigida_mmol_l ?? molecule.cmc_ambiente_estimada} />
         <ParameterRow label="XCMC" parameter={molecule.x_cmc} />
@@ -382,6 +602,7 @@ function MoleculeParameters({
         <ParameterRow label="Comportamento micelar ideal" parameter={molecule.comportamento_micelar_previsto} />
 
         <ParameterRow label="Número de agregação estimado" parameter={molecule.numero_agregacao_estimado} />
+        <ParameterRow label="Limite geométrico de agregação (esfera, teórico)" parameter={molecule.nagg_maximo_geometrico_esfera} showNote />
         <ParameterRow label="Raio aparente da micela" parameter={molecule.raio_micela_esferica} />
         <ParameterRow label="Faixa de raio da micela" parameter={molecule.faixa_raio_micela} />
         <ParameterRow label="Raio do núcleo hidrofóbico" parameter={molecule.raio_nucleo_hidrofobico} />
@@ -513,6 +734,7 @@ function AtomParameters({ atom }: { atom: AtomParameterData | null }) {
         <ParameterRow label="Carga quântica/proxy" parameter={atom.carga_quantica_ou_proxy} />
         <ParameterRow label="Radicais" rawValue={atom.eletrons_radicais} />
         <ParameterRow label="Pares livres" parameter={atom.pares_livres} />
+        <ParameterRow label="Carga formal entre estruturas de ressonância" parameter={atom.carga_formal_ressonancia} />
 
         <ParameterRow label="Hibridização RDKit" rawValue={atom.hibridizacao_rdkit ?? atom.hibridizacao} />
         <ParameterRow label="Hibridização estimada" parameter={atom.hibridizacao_estimativa} />
@@ -566,6 +788,7 @@ function BondParameters({ bond }: { bond: BondParameterData | null }) {
         <ParameterRow label="Direção visual" rawValue={bond.direcao_visual} />
         <ParameterRow label="Comprimento ideal" parameter={bond.comprimento_ideal} />
         <ParameterRow label="Polaridade" parameter={bond.polaridade_ligacao} />
+        <ParameterRow label="Ordem formal entre estruturas de ressonância" parameter={bond.ordem_ressonancia} />
       </div>
     </div>
   );
@@ -580,8 +803,16 @@ export function ChemistryParametersPanel({
     useState<ChemistryParametersResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [geometryStatus, setGeometryStatus] = useState<GeometryStatus>("idle");
+  const [geometryError, setGeometryError] = useState("");
+  const geometryControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    // Nova molécula: volta ao 2D; o 3D nunca é pedido automaticamente.
+    geometryControllerRef.current?.abort();
+    setGeometryStatus("idle");
+    setGeometryError("");
+
     if (!molecule?.metadata?.canonical_smiles) {
       setParameters(null);
       setError("");
@@ -597,6 +828,8 @@ export function ChemistryParametersPanel({
     const timeout = window.setTimeout(() => {
       analyzeChemistryParameters(molecule, controller.signal)
         .then((result) => {
+          // Resposta de uma molécula anterior que chegou depois do cancelamento.
+          if (controller.signal.aborted) return;
           setParameters(result);
         })
         .catch((caughtError) => {
@@ -620,6 +853,27 @@ export function ChemistryParametersPanel({
       controller.abort();
     };
   }, [molecule]);
+
+  function requestGeometry() {
+    if (!molecule || geometryStatus === "loading" || geometryStatus === "done") return;
+    const controller = new AbortController();
+    geometryControllerRef.current = controller;
+    setGeometryStatus("loading");
+    setGeometryError("");
+    analyzeChemistryParameters(molecule, controller.signal, { generate3d: true })
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        setParameters(result);
+        setGeometryStatus("done");
+      })
+      .catch((caughtError) => {
+        if (controller.signal.aborted) return;
+        setGeometryError(caughtError instanceof Error ? caughtError.message : "erro desconhecido no backend.");
+        setGeometryStatus("error");
+      });
+  }
+
+  useEffect(() => () => geometryControllerRef.current?.abort(), []);
 
   const selectedAtom = useMemo(() => {
     if (!molecule || !parameters || selectedTarget?.kind !== "atom") return null;
@@ -677,7 +931,14 @@ export function ChemistryParametersPanel({
     return <BondParameters bond={selectedBond} />;
   }
 
-  return <MoleculeParameters parameters={parameters} />;
+  return (
+    <MoleculeParameters
+      parameters={parameters}
+      geometryStatus={geometryStatus}
+      geometryError={geometryError}
+      onRequestGeometry={requestGeometry}
+    />
+  );
 }
 
 export default ChemistryParametersPanel;

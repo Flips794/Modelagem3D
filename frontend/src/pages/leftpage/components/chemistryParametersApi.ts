@@ -126,9 +126,15 @@ function getCanonicalSmiles(molecule: InternalMoleculeModel) {
   ).toString();
 }
 
+export type AnalyzeOptions = {
+  /** Geometria 3D (ETKDG + MMFF94) só sob demanda, nunca automática. */
+  generate3d?: boolean;
+};
+
 export async function analyzeChemistryParameters(
   molecule: InternalMoleculeModel,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  options: AnalyzeOptions = {}
 ): Promise<ChemistryParametersResponse> {
   const canonicalSmiles = getCanonicalSmiles(molecule);
 
@@ -145,7 +151,7 @@ export async function analyzeChemistryParameters(
     body: JSON.stringify({
       smiles: canonicalSmiles,
       internal_molecule: molecule,
-      generate_3d: shouldGenerate3D(molecule),
+      generate_3d: options.generate3d ?? shouldGenerate3D(molecule),
       deep_analysis: false,
       environment: STABLE_ISOLATED_ENVIRONMENT,
     }),

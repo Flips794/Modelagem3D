@@ -233,7 +233,7 @@
   cursor: pointer;
 }
 
-.leftpage-action-row button:hover,
+.leftpage-action-row button:hover:not(:disabled),
 .leftpage-detail-card button:hover,
 .leftpage-field select:hover {
   border-color: rgba(34, 211, 238, 0.46);
@@ -543,3 +543,64 @@
 }
 
 
+
+
+/* Web Lite v1 — estados dos valores e motivo visível (também no toque). */
+.leftpage-parameter-row {
+  display: contents;
+}
+
+.leftpage-data-grid strong.experimental,
+.leftpage-parameter-legend .experimental {
+  color: #86efac;
+}
+
+.leftpage-data-grid strong.not-applicable,
+.leftpage-parameter-legend .not-applicable {
+  color: #94a3b8;
+}
+
+.leftpage-parameter-legend .available {
+  color: #dbeafe;
+}
+
+.leftpage-parameter-legend .estimated {
+  color: #fde68a;
+}
+
+.leftpage-parameter-legend .unavailable {
+  color: #fca5a5;
+}
+
+.leftpage-parameter-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.leftpage-parameter-note {
+  display: block;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  font-weight: 400;
+  line-height: 1.38;
+}
+
+/* Linha de ação com um único botão ocupa a largura toda (2 colunas é para pares). */
+.leftpage-action-row.single {
+  grid-template-columns: 1fr;
+}
+
+/* Mesmos valores de botão desabilitado já usados em 3Leftpage.css. */
+.leftpage-action-row button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* A legenda vem antes do primeiro título da seção: o título continua sem margem superior. */
+.leftpage-parameter-legend + h4 {
+  margin-top: 0;
+}

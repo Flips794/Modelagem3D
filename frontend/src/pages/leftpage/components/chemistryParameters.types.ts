@@ -77,6 +77,34 @@ export type AtomParameterData = {
   fukui_aproximado?: ParameterValue<unknown>;
   interacoes_atomicas: ParameterValue<AtomInteraction[]>;
   reatividade_local?: ParameterValue<unknown>;
+  carga_formal_ressonancia?: ParameterValue<ResonanceRange>;
+};
+
+/** Faixa inteira entre estruturas de ressonância formais (não é carga parcial). */
+export type ResonanceRange = { min: number; max: number; varia: boolean };
+
+export type IonizableSiteData = {
+  atom_idx: number;
+  grupo: string;
+  tipo: "acid" | "base" | "permanent_cation" | "permanent_anion" | string;
+  pka: number | null;
+  pka_limite_superior?: number | null;
+  acoplado: boolean;
+  referencia: string;
+  qualidade_referencia?: string;
+};
+
+export type SpeciesAtPh = { ph: number; classe: string | null; smiles: string | null };
+
+export type SurfactantClassificationData = {
+  classe: string;
+  classe_pt: string;
+  classes_compativeis: string[];
+  papel: string;
+  confianca: string;
+  justificativa: string;
+  regras: string[];
+  especie_no_ph?: { ph: number; species: string | null; net_charge: number | null; reference_status: string; note: string };
 };
 
 export type BondParameterData = {
@@ -93,6 +121,7 @@ export type BondParameterData = {
   direcao_visual: string;
   comprimento_ideal: ParameterValue<number>;
   polaridade_ligacao?: ParameterValue<unknown>;
+  ordem_ressonancia?: ParameterValue<ResonanceRange>;
 };
 
 export type MoleculeParameterData = {
@@ -240,6 +269,24 @@ export type MoleculeParameterData = {
   afinidade_eletronica?: ParameterValue<number>;
 
   ambiente_fisico_quimico?: ParameterValue<unknown>;
+
+  // Web Lite v1
+  area_superficie_vdw?: ParameterValue<number>;
+  geometria_3d_info?: ParameterValue<Record<string, unknown>>;
+  ressonancia_numero_estruturas?: ParameterValue<number>;
+  ressonancia_atomos_conjugados?: ParameterValue<number[]>;
+  ressonancia_atomos_deslocalizados?: ParameterValue<number[]>;
+  ressonancia_ligacoes_deslocalizadas?: ParameterValue<number[]>;
+  sistemas_conjugados?: ParameterValue<number>;
+  sitios_ionizaveis?: ParameterValue<IonizableSiteData[]>;
+  estado_protonacao_ph?: ParameterValue<Array<Record<string, unknown>>>;
+  carga_liquida_ph?: ParameterValue<number>;
+  especie_predominante_ph?: ParameterValue<SpeciesAtPh>;
+  classificacao_surfactante?: ParameterValue<SurfactantClassificationData>;
+  cmc_experimental?: ParameterValue<number>;
+  cmc_origem?: ParameterValue<string>;
+  nagg_maximo_geometrico_esfera?: ParameterValue<number>;
+  teoria_micelar_info?: ParameterValue<Record<string, unknown>>;
 
   biblioteca_status?: Record<
     string,
