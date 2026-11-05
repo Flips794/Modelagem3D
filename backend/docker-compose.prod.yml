@@ -1,0 +1,93 @@
+# Produção: sobreposto ao docker-compose.yml de desenvolvimento, que continua igual.
+#   docker compose -f backend/docker-compose.yml -f backend/docker-compose.prod.yml \
+#     --env-file backend/.env.production up -d --build --wait
+# Valores reais só no arquivo de ambiente (modelo: backend/.env.production.example), nunca no git.
+#
+#   Internet ──80/443──► frontend (Caddy: TLS, arquivos estáticos, /api/* → backend:8000)
+#                                     backend ──► postgres   (rede interna, sem porta publicada)
+name: modelagem3d_prod
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    # Sem nome fixo: o container de desenvolvimento (modelagem3d_postgres) não colide com este.
+    container_name: !reset null
+    ports: !reset []
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          cpus: "${POSTGRES_CPUS:-0.50}"
+          memory: ${POSTGRES_MEM_LIMIT:-384m}
+
+  backend:
+    ports: !reset []
+    environment:
+      APP_ENV: production
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-[]}
+      UVICORN_WORKERS: ${UVICORN_WORKERS:-1}
+      MAX_REQUEST_BYTES: ${MAX_REQUEST_BYTES:-2000000}
+      # Só o Caddy alcança o backend (rede interna): os cabeçalhos X-Forwarded-* vêm dele.
+      FORWARDED_ALLOW_IPS: "*"
+      HOME: /tmp
+    # Usuário sem privilégios e sistema de arquivos só leitura; /tmp em memória.
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          cpus: "${BACKEND_CPUS:-1.50}"
+          memory: ${BACKEND_MEM_LIMIT:-1g}
+
+  frontend:
+    build:
+      target: prod
+      args:
+        VITE_API_URL: /api/v1
+    ports: !override
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?defina SITE_ADDRESS (domínio, ou :80 em teste local)}
+      API_UPSTREAM: backend:8000
+    volumes:
+      # Certificados e chaves do Let's Encrypt sobrevivem a recriações do container.
+      - caddy_data:/data
+      - caddy_config:/config
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    healthcheck:
+      test: !override ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8081/healthz"]
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          cpus: "${FRONTEND_CPUS:-0.50}"
+          memory: ${FRONTEND_MEM_LIMIT:-128m}
+
+volumes:
+  caddy_data:
+  caddy_config:

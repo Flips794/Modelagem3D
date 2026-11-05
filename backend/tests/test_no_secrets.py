@@ -57,7 +57,8 @@ class NoSecretsInTrackedFiles(unittest.TestCase):
             for line_no, line in enumerate(text.splitlines(), 1):
                 for match in PASSWORD_ASSIGNMENT.finditer(line):
                     value = re.split(r"\\n|[\"'`)]", match.group(1))[0]
-                    if value in ALLOWED_URL_PASSWORDS or value.startswith("${"):
+                    # ${VAR} vem do ambiente; $(comando) é gerado na execução (ex.: openssl rand).
+                    if value in ALLOWED_URL_PASSWORDS or value.startswith(("${", "$(")):
                         continue
                     offenders.append(f"{path}:{line_no}")
         self.assertEqual(offenders, [])

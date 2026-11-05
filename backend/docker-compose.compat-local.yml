@@ -1,0 +1,11 @@
+# SÓ PARA TESTE LOCAL — nunca em produção.
+# Em alguns hosts (ex.: Docker instalado via snap, com AppArmor) a opção no-new-privileges
+# impede qualquer exec dentro do container ("operation not permitted"). O scripts/fumaca_producao.sh
+# detecta isso e acrescenta este arquivo; o resto do endurecimento continua valendo.
+services:
+  postgres:
+    security_opt: !reset []
+  backend:
+    security_opt: !reset []
+  frontend:
+    security_opt: !reset []

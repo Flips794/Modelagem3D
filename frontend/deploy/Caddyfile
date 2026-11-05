@@ -6,6 +6,12 @@
 	admin off
 }
 
+# Verificação de saúde do container (healthcheck do compose de produção); só dentro do container.
+http://:8081 {
+	bind 127.0.0.1
+	respond /healthz "ok" 200
+}
+
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 
