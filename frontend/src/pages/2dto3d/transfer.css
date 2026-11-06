@@ -593,6 +593,17 @@
   padding: 4px;
 }
 
+/* Solvente: valor e legenda empilhados; a grade de 3 colunas acima é dos botões −/+ do reagente. */
+.solution-item-count > .solution-solvent-excess-box {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+
+.solution-solvent-excess-box strong {
+  color: #bae6fd;
+  font-size: 0.72rem;
+}
+
 .solution-item-fraction {
   display: grid;
   gap: 2px;
