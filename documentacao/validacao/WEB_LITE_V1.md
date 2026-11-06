@@ -245,16 +245,16 @@ Natureza de cada condição: **experimental** (medida no estudo), **protocolo** 
 
 | Suíte | Resultado |
 |---|---|
-| Backend completo (`bash scripts/testar_backend.sh`, rodado em 4 partes para caber no tempo do terminal) | **2033 aprovados**, 28 pulados, 1 falha esperada (xfail) — ver nota |
-| Só os exemplos (`tests/test_exemplos_*.py`) | 107 aprovados (66 + 22 de geometria + 19 de estabilidade e forma medida) |
-| Frontend (`bash scripts/testar_frontend.sh`) | **82 aprovados**, build sem erro |
+| Backend completo (`bash scripts/testar_backend.sh`, rodado em 4 partes para caber no tempo do terminal) | **2040 aprovados**, 28 pulados, 1 falha esperada (xfail) |
+| Só os exemplos (`tests/test_exemplos_*.py`) | 114 aprovados (66 + 22 de geometria + 26 de estabilidade e forma medida) |
+| Frontend (`bash scripts/testar_frontend.sh`) | **87 aprovados**, build sem erro |
 | Host (segredos, `.env`, produção) | **28 aprovados** |
 
-**Nota sobre o tempo:** numa das execuções, `test_tempo_por_trecho[dppc_bicamada_hidratacao]` falhou com 16,16 s (limite 15 s). A carga média da máquina era 5,8, com um Chrome aberto pedindo trechos ao mesmo backend. Todos os exemplos ficaram mais lentos ao mesmo tempo. Repetido logo depois, passou com 12,50 s, e o código desse caminho não mudou entre as execuções. Em máquina carregada, a bicamada pode passar do limite.
+**Nota sobre o tempo (rodada anterior):** numa das execuções, `test_tempo_por_trecho[dppc_bicamada_hidratacao]` falhou com 16,16 s (limite 15 s). A carga média da máquina era 5,8, com um Chrome aberto pedindo trechos ao mesmo backend. Todos os exemplos ficaram mais lentos ao mesmo tempo. Repetido logo depois, passou com 12,50 s, e o código desse caminho não mudou entre as execuções. Em máquina carregada, a bicamada pode passar do limite.
 
 Os testes de geometria medem as coordenadas do backend depois de 3 trechos, sem usar a previsão:
 - **SDS:** cabeças para fora.
-- **CTAB:** cabeças longe do maior eixo, salicilato na interface, agregado mais alongado que a esfera do SDS. Ser mais alongado que o SDS não basta para confirmar um cilindro (ver 13.4).
+- **CTAB:** cabeças longe do maior eixo, salicilato na interface, agregado mais alongado que a esfera do SDS.
 - **Bicamada DPPC:** ≥ 70 % das cabeças nas duas faces, com caudas no meio. Medido: 100 % em 1, 3 e 5 trechos.
 - **Vesícula DPPC:** cabeças internas < caudas < cabeças externas.
 - **AOT:** cabeças para dentro, água no centro.
@@ -262,8 +262,12 @@ Os testes de geometria medem as coordenadas do backend depois de 3 trechos, sem 
 
 Testes de estabilidade e de forma medida (`tests/test_exemplos_estabilidade.py`):
 - **AOT, 6 trechos seguidos:** em cada trecho, fração organizada > 50 % e rótulo "micela inversa". A tela mostra o card de cada trecho, não só o do 3º.
-- **CTAB, 6 trechos seguidos:** nenhum trecho mostra "micela cilíndrica/wormlike" sem que a forma medida sem a previsão seja "agregado alongado". Quando não há confirmação, a fração organizada é 0.
-- **Bicamada e vesícula:** o rótulo da cena só aparece quando a forma medida concorda (lamelar ou casca).
+- **CTAB, 6 trechos seguidos:** em cada trecho, "micela cilíndrica/wormlike" confirmada pela forma medida "agregado alongado", com fração > 50 %. Outro teste garante que o rótulo nunca aparece sem essa confirmação.
+- **Bicamada e vesícula, do 2º ao 5º trecho:** rótulo documentado, forma medida lamelar ou casca, fração > 50 %.
+- **Vesícula com cavidade:** nenhuma conta de DPPC a menos de 1,0 do centro; cabeças internas a ≥ 1,4.
+- **Agrupamento:** o raio entre moléculas cresce com √(nº de caudas). Lipídios de duas caudas a 2,8 de distância se agrupam; moléculas de uma cauda, não.
+- **Notas do catálogo:** o CTAB declara o molde visual, e a vesícula declara a cavidade e a escala.
+- **Pedidos comuns** (`test_organization_geometry.py`): cilindro e bicamada só são rotulados quando a forma medida confirma.
 - **Forma medida sem a previsão:** bicamada → "agregado lamelar (duas folhas)"; vesícula → "casca fechada de duas folhas"; SDS, CTAB e AOT nunca recebem rótulo de membrana.
 - **Coordenadas sintéticas:** bicamada e vesícula fechada são reconhecidas. Não são reconhecidas: taça aberta (incluindo taça de 80 % da esfera), estrela de seis direções, feixe estreito de 8 moléculas, micela, micela inversa, monocamada, orientação ao acaso e coordenada inválida (NaN).
 
@@ -271,21 +275,21 @@ Testes de estabilidade e de forma medida (`tests/test_exemplos_estabilidade.py`)
 
 | Exemplo | Partículas | Tempo por trecho |
 |---|---|---|
-| SDS | 236 | 5,71 s |
-| CTAB + salicilato | 273 | 9,55 s |
-| DPPC bicamada | 352 | 13,10 s |
-| DPPC vesícula | 352 | 11,55 s |
-| AOT | 235 | 8,78 s |
+| SDS | 236 | 4,29 s |
+| CTAB + salicilato | 273 | 6,67 s |
+| DPPC bicamada | 352 | 9,89 s |
+| DPPC vesícula | 352 | 8,23 s |
+| AOT | 235 | 6,59 s |
 
-Medido com a pilha de desenvolvimento ativa na mesma máquina. O SDS, sem mudança de código, também subiu (5,01 → 5,71 s). O limite do teste é 15 s; a bicamada é a mais próxima dele.
+Última execução, com a pilha de desenvolvimento ativa. O número de partículas não mudou com os moldes. Os tempos variam com a carga da máquina: na rodada anterior, a bicamada chegou a 13,1 s e, numa vez, a 16,2 s. O limite do teste é 15 s.
 
 ### 13.4 Conferência visual (navegador e cortes)
 
 Arquivos em `documentacao/validacao/exemplos_documentados/`, quatro por exemplo:
-- `*_cena.png`: captura da cena 3D no Chrome, cerca de 60 s depois de o card mostrar a mistura (2º trecho);
+- `*_cena.png`: captura da cena 3D no Chrome, cerca de 60 s depois de o card mostrar a mistura (2º trecho), com o enquadramento automático e sem zoom manual; `2_ctab_nasal_vermiforme_cena_zoom.png` é a mesma cena com zoom;
 - `*_cards.png`: cards Previsto e Observado no mesmo momento;
 - `*_trilha.txt`: o card Observado lido a cada 5 s por mais 150 s (3º a 5º trecho); só as mudanças são gravadas;
-- `*_corte.png`: corte 2D das coordenadas do backend após 3 trechos. Pedido no formato da tela; CTAB e AOT foram refeitos com o código final.
+- `*_corte.png`: corte 2D das coordenadas do backend após 3 trechos. Pedido no formato da tela; CTAB, vesícula e AOT foram refeitos com o código final.
 
 Um agente separado avaliou a primeira rodada de capturas. Correções feitas a partir dessa avaliação e da segunda rodada, cada uma com teste que falhou antes e passou depois:
 
@@ -299,44 +303,50 @@ Um agente separado avaliou a primeira rodada de capturas. Correções feitas a p
    - **Lamelar:** cadeias alinhadas (S ≥ 0,75); cabeças nas duas faces e mais longe do plano médio que a própria cauda; caudas espalhadas no plano (variância lateral > 2 × a normal).
    - **Casca fechada:** caudas numa casca oca; cabeças dentro e fora; cadeias radiais; nenhuma abertura sem caudas maior que 45°.
    - **Medido nas cenas:** bicamada com S = 0,94–0,98 e variância lateral 7,4 × a normal; vesícula com abertura máxima de 41°; SDS, CTAB e AOT com S ≤ 0,54.
-6. **Revisão independente do branch (crítico): o CTAB aparecia como "micela cilíndrica/wormlike" 100 % organizado, com a forma medida "aproximadamente esférico".**
+6. **Revisão independente do branch (crítico): o CTAB aparecia como "micela cilíndrica/wormlike" 100 % organizado, com a forma medida "aproximadamente esférico".** (Estado intermediário; o item 7 substitui o resultado do CTAB e o escopo da regra.)
    - **Regra nova:** nos exemplos documentados, cilindro, bicamada e vesícula só recebem o rótulo da cena quando a forma medida sem a previsão concorda (alongado, lamelar ou casca). Sem isso, o agregado fica "agregado em reorganização" e não conta na fração organizada.
    - **Efeito no CTAB:** passa a 0 % em todos os trechos.
    - **Reversão:** um espaçamento axial tentado antes foi revertido. Ele só espalhava os centros de cauda, a mesma grandeza que o critério mede.
    - **Detector endurecido** a partir de achados importantes da mesma revisão: um feixe estreito virava lamelar, e uma taça de 80 % ou uma estrela viravam casca.
    - **Pedidos sem exemplo** mantêm o comportamento anterior (ver 13.5).
 
-Card Observado nas capturas finais (rótulo · fração · forma medida), com a trilha até ~250 s:
+7. **Rodada final (autorizada pelo autor).**
+   - **CTAB, molde visual cilíndrico exclusivo do exemplo:** cabeças numa hélice de ângulo áureo na superfície, caudas apontando para o eixo, 0,33 de comprimento por molécula. O salicilato continua na interface. O molde está declarado na nota do card como recurso ilustrativo, com a densidade não real.
+   - **Vesícula com cavidade:** as cabeças internas ficam a 1,6 do centro. O agrupamento do analisador usava o raio de uma cauda (2,15) e partia a casca em fragmentos de 4–5 moléculas. O raio entre moléculas agora cresce com √(nº de caudas): 3,04 entre lipídios de duas caudas, e moléculas de uma cauda não mudam. A vesícula inteira (36) vira um agregado.
+   - **Todo pedido:** cilindro, bicamada e vesícula só recebem o rótulo da previsão quando a forma medida sem a previsão confirma. Sem confirmação, com orientação e núcleo bons, o rótulo é "agregado orientado (forma prevista não confirmada)". CMC, CPP e a previsão não mudam. O teste geral que exigia o rótulo sem confirmação foi corrigido.
+   - **Tela 3D:** a câmera enquadra o maior agregado quando chega uma mistura nova e orbita em volta dele. Uma verificação de UI por agente separado, com calibração plantada detectada, achou a órbita presa à origem; corrigido com teste. O chip "na cena" e a linha "Rótulo dos agregados na cena" acrescentam "(recurso visual ilustrativo)" quando a forma confirmada vem do molde de um exemplo documentado.
+
+**Validação em vários trechos** (sonda de 8 trechos no backend e trilha do card no navegador até ~265 s):
 
 | Exemplo | Rótulo na cena | Fração organizada | Forma medida sem a previsão |
 |---|---|---|---|
-| SDS | micela esférica | 61,5 % → 82,7 % (aos 121 s) | pré-agregado hidrofóbico → agregado orientado |
-| CTAB + salicilato | agregado em reorganização (cilindro não confirmado) | 0,0 % em toda a trilha | agregado aproximadamente esférico |
-| DPPC bicamada | bicamada plana/lamelar | 100,0 % em toda a trilha | agregado lamelar (duas folhas) |
-| DPPC vesícula | vesícula/bicamada fechada | 66,7 % → 63,9 % (aos 200 s) | casca fechada de duas folhas |
-| AOT | micela inversa | 100,0 % em toda a trilha | agregado aproximadamente esférico |
+| SDS | micela esférica (calculada) | 0 % no 1º trecho; 62–90 % do 2º ao 8º | pré-agregado → agregado orientado |
+| CTAB + salicilato | micela cilíndrica/wormlike (recurso visual ilustrativo) | 100 % nos 8 trechos | agregado alongado (λ3/λ2 ≈ 14 em variância, ≈ 3,7 em eixos) |
+| DPPC bicamada | bicamada plana/lamelar (recurso visual ilustrativo) | 100 % nos 8 trechos | agregado lamelar (duas folhas) |
+| DPPC vesícula | vesícula/bicamada fechada (recurso visual ilustrativo) | 100 % nos 8 trechos (36 moléculas) | casca fechada de duas folhas |
+| AOT | micela inversa (recurso visual ilustrativo) | 100 % nos 8 trechos | agregado aproximadamente esférico |
 
 **O que a cena confirma, exemplo por exemplo:**
 
-| Exemplo | Funciona visualmente? | Evidência e ressalva |
+| Exemplo | Validação visual | Evidência e ressalva |
 |---|---|---|
-| SDS | sim, como várias micelas pequenas | Cabeças para fora. A forma é calculada (previsão validada). Vários agregados de 6–19 moléculas, nem todos organizados. |
-| CTAB + salicilato | **não** (cilindro não confirmado) | Salicilato na interface e cabeças longe do maior eixo, mas o agregado é um bloco só levemente alongado, no navegador e no corte. A forma medida diz "aproximadamente esférico", e o card mostra "agregado em reorganização" com 0 %, sem afirmar o cilindro. |
-| DPPC bicamada | sim, com forma imposta | Duas folhas, caudas no meio, medida como lamelar. A forma vem do molde visual, não de auto-organização. |
-| DPPC vesícula | com limitações sérias | Corte e forma medida mostram casca de duas folhas, mas:<br>• não há lúmen: as cabeças internas ficam a 0,9 do centro, e o corte parece uma bola de cabeças com coroa radial;<br>• a folha externa é esparsa, e só 24 das 36 moléculas formam o agregado medido (≈ 64–67 %, 0 % no 1º trecho);<br>• na captura do navegador, o agregado ficou fora do enquadramento;<br>• a forma vem do molde. |
-| AOT | sim | Uma micela inversa: cabeças e água no centro, caudas para fora, estável em todos os trechos. |
+| SDS | passa | Várias micelas pequenas, com cabeças para fora. É a única forma calculada pelo motor. |
+| CTAB + salicilato | passa, com ressalva | O corte mostra um bastão com cabeças nas duas superfícies, caudas para o eixo e salicilato na interface. No navegador, o agregado é uma faixa alongada, mas o salicilato e os íons cobrem boa parte dela; com zoom se lê melhor. A forma é imposta pelo molde. |
+| DPPC bicamada | passa | Placa de duas folhas com as caudas no meio, enquadrada. A forma é imposta pelo molde. |
+| DPPC vesícula | passa, com ressalva | Agora enquadrada. Casca radial em volta de uma cavidade pequena, com a folha externa esparsa (aspecto de estrela no corte). A forma é imposta pelo molde. |
+| AOT | passa | Gota compacta: água e cabeças no centro, caudas para fora. |
 
 ### 13.5 Limitações e pendências
 
 - **Pendência científica do SDS com sal (não corrigida).** O ajuste de sal do motor faz o SDS virar "micela cilíndrica" a partir de 0,08 mol/L de força iônica. A literatura situa a transição esfera→bastão acima de cerca de 0,2–0,3 mol/L de NaCl. Por isso o exemplo fica limitado a ≤ 0,07 mol/L, como limite técnico (spec §10).
-- **CTAB: o exemplo não forma um cilindro visível (não corrigido).** O critério das caudas usa razão de variâncias 1,6 (~1,26 em eixos), e a forma medida sem a previsão não confirma alongamento. Com 27 CTAB visuais, um bastão longo ficaria oco. O card agora mostra "agregado em reorganização" com 0 %. O rótulo é honesto quanto a não haver cilindro, mas impreciso: o agregado está estável, não se reorganizando. Para o exemplo funcionar, opções para o autor: mais moléculas visuais no exemplo (cena mais pesada, hoje 27 de um teto de 240) ou um molde visual de cilindro, como o das membranas (forma imposta, declarada).
-- **Confirmação da forma medida só nos exemplos (decisão do autor).** Em pedidos comuns com previsão de cilindro ou bicamada, o rótulo continua vindo só do critério geométrico da previsão. Aplicar lá a mesma exigência quebra dois testes de `test_organization_geometry.py`: agregados de 20, 10 e 9 moléculas deixam de aparecer como "micela cilíndrica", e o mesmo ocorre na bicamada. O motor geral provavelmente também mostra essas formas sem confirmação.
-- **Vesícula mínima e sem lúmen.** Com 36 lipídios visuais, a folha externa fica esparsa: no corte, as cadeias aparecem separadas, com aspecto de estrela, e só 24 moléculas entram no agregado medido. As cabeças internas ficam a 0,9 do centro, sem a cavidade aquosa que define uma vesícula. Uma vesícula real de 60–100 nm tem milhares de lipídios. A cena demonstra a ordem das camadas, não a densidade da casca (decisão do autor: documentar, sem aumentar o número de moléculas).
-- **Membranas impostas.** Bicamada e vesícula vêm do molde visual. O detector de membrana confirma a geometria da cena, não que ela se formaria sozinha.
+- **Formas impostas por molde.** Cilindro do CTAB, bicamada e vesícula vêm de moldes visuais exclusivos dos exemplos, declarados nas notas e marcados "(recurso visual ilustrativo)" na cena. O detector confirma a geometria mostrada, não que ela se formaria sozinha. A micela inversa do AOT é guiada por forças visuais (núcleo único, água no centro), também declaradas.
+- **Escala molecular simplificada.** O CTAB tem 27 moléculas visuais esticadas num trecho de ~9 unidades; uma micela vermiforme real tem centenas de nanômetros, e a densidade na cena não é a real. A vesícula tem 36 lipídios, com a folha externa esparsa e uma cavidade pequena; uma vesícula real de 60–100 nm tem milhares de lipídios. Nenhum dos dois ganhou partículas.
+- **CTAB no navegador.** O salicilato (5 por CTAB na mistura; 1:1 na interface, o resto livre) e os íons cobrem boa parte do bastão na vista padrão. O alongamento é claro no corte 2D e com zoom.
+- **Agrupamento por número de caudas.** O raio que liga moléculas num agregado agora depende do número de caudas: 2,15 com uma cauda, como antes, e 3,04 com duas. Isso vale para qualquer pedido com moléculas de duas caudas.
+- **Rótulo novo nos pedidos comuns.** Um agregado orientado e compacto cuja forma medida não confirma cilindro, bicamada ou vesícula aparece como "agregado orientado (forma prevista não confirmada)" e não conta na fração organizada. Em pedidos que antes mostravam essas formas, a fração organizada pode cair.
 - **Forma medida, classificação geral (menor, não corrigido).** Fora das membranas, o classificador geral ainda recebe orientação e núcleo calculados com o molde previsto. Só o detector de membrana é totalmente independente da previsão.
-- **Outros menores da revisão (não corrigidos):**
-  - o chip "na cena: …" não diz que a forma é de demonstração; isso aparece só no card Previsto;
+- **Outros menores (não corrigidos):**
   - a forma medida dominante é escolhida pelo número de agregados, não de moléculas: no SDS, três pré-agregados vencem a micela de 19;
-  - os números da sonda de 8 trechos vêm de scripts fora do repositório (`.runtime/sonda/`).
-- **Enquadramento da câmera.** Na captura da vesícula, o agregado fica fora do quadro, e na do CTAB a câmera está colada no agregado. Os cortes 2D são a evidência geométrica confiável.
+  - os números da sonda de 8 trechos vêm de scripts fora do repositório (`.runtime/sonda/`);
+  - o enquadramento automático acontece uma vez por mistura; trechos seguintes mantêm a câmera do usuário.
 - **Ainda aberto da tarefa 8 (menor):** o w0 no cartão do catálogo aparece sem formato pt-BR (10.5 em vez de 10,5).

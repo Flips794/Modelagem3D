@@ -1,2 +1,2 @@
-116 s: bicamada plana/lamelar | 100.0% | medida: agregado lamelar (duas folhas)
-fim 266 s
+96 s: bicamada plana/lamelar (recurso visual ilustrativo) | 100.0% | medida: agregado lamelar (duas folhas)
+fim 246 s

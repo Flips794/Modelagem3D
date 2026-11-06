@@ -1,2 +1,2 @@
-104 s: micela inversa | 100.0% | medida: agregado aproximadamente esférico
-fim 254 s
+88 s: micela inversa (recurso visual ilustrativo) | 100.0% | medida: agregado aproximadamente esférico
+fim 239 s
