@@ -271,7 +271,7 @@ Auditoria de 04/11/2026: nenhum `.env` real nem dump entrou nos commits; `backup
 
 ## 8. Testes
 
-Todos os testes novos são automatizados. Os existentes (1.262 casos, segundo `relatorio_validacao_calculos.md`) continuam passando.
+Todos os testes novos são automatizados. Os existentes (1.262 casos, segundo `documentacao/validacao/relatorio_validacao_calculos.md`) continuam passando.
 
 ### 8.1 Estabilidade HTTP (regressão permanente)
 

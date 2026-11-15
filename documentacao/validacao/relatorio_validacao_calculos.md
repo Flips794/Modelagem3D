@@ -1,5 +1,7 @@
 # Correção e validação dos cálculos moleculares 2D/3D
 
+> **Registro histórico (04/11/2026).** A correção descrita aqui já está aplicada no código; o aplicador e o pacote de evidências foram removidos do repositório (continuam no histórico do Git). Parte do texto foi superada depois, como a CMC automática, que hoje é calculada por família (ver `WEB_LITE_V1.md`, seção 4). O resumo atual dos métodos está em `documentacao/CALCULOS.md`.
+
 Data: 04/11/2026. Base: projeto completo enviado, com as correções anteriores dos atalhos e da geometria CG. Foram preparados **27 arquivos atualizados/criados**, sem migração de banco nem substituição da aplicação.
 
 **Resultado: 1.262 testes funcionais aprovados, sem falhas ou testes ignorados.** Mais 14 testes do aplicador foram aprovados. O frontend compilou com sucesso. Os testes comprovam as propriedades verificadas do código e sua consistência; não certificam a precisão experimental de toda predição.
@@ -79,28 +81,6 @@ A comparação usa tolerância numérica compatível com o arredondamento de cin
 - **Escopo executado:** rotas ativas do painel químico, desenho 2D, IA e ambiente CG. Não houve validação de força de campo do runner OpenMM opcional, comparação com DFT/xTB, ensaio experimental, banco PostgreSQL real ou disponibilidade da consulta externa ao PubChem. A consulta externa passou a ser opcional e não troca silenciosamente o método dos descritores locais.
 - As faixas de SDS/CTAB usadas nos testes são **âncoras de referência**, não um conjunto independente de validação preditiva. Nenhuma métrica de RMSE, MAE ou precisão experimental global foi inventada.
 
-## Como aplicar no seu projeto
-
-1. Coloque `corrigir_calculos_moleculares.py` na pasta principal do projeto, junto às pastas `backend` e `frontend`.
-2. Confira a compatibilidade sem modificar arquivos:
-
-```bash
-python3 corrigir_calculos_moleculares.py --verificar
-```
-
-3. Aplique e reinicie:
-
-```bash
-python3 corrigir_calculos_moleculares.py
-bash iniciar_linux.sh
-```
-
-4. Atualize a página com Ctrl+F5 e clique em **Misturar** para recalcular o sistema atual. Resultados antigos já armazenados não são medições novas.
-
-O aplicador usa apenas a biblioteca padrão do Python. Confere os arquivos esperados antes de alterar qualquer um, cria cópias em `backups/correcao_calculos_moleculares/`, preserva permissões e restaura as substituições em caso de falha de escrita. Se detectar alterações locais incompatíveis, informa os caminhos e encerra sem sobrescrevê-los. Diferenças apenas de LF/CRLF e linhas vazias externas introduzidas na exportação são toleradas. Bancos, dados pessoais e atalhos moleculares não são substituídos.
-
-Para executar em outro local, use `--projeto "/caminho/do/Modelagem3D"`.
-
 ## Como repetir os testes
 
 Com o ambiente Python do backend ativado e as dependências do projeto instaladas:
@@ -118,7 +98,7 @@ npx vitest run --environment jsdom
 npm run build
 ```
 
-Os relatórios JUnit e Vitest, versões usadas e hashes dos arquivos estão no pacote de código e evidências. A duração observada das regressões geométricas foi de alguns minutos; pode variar conforme o computador.
+A duração observada das regressões geométricas foi de alguns minutos; pode variar conforme o computador.
 
 Ambiente testado: Python 3.12.14, RDKit 2026.9.1, NumPy 2.5.4, Pydantic 2.14.2, FastAPI 0.162.0, pytest 9.2.0. O build apresentou somente o aviso de tamanho de bundle; os testes HTTP apresentaram um aviso de depreciação do TestClient/httpx. Não houve falha de teste ou compilação nas rodadas finais.
 
