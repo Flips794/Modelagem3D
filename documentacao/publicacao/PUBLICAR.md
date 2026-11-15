@@ -3,7 +3,7 @@
 Guia para colocar a versão web no ar: num VPS com Docker (caminho testado localmente) ou num serviço gerenciado compatível.
 
 > **Antes de qualquer publicação:**
-> 1. **Não faça `git push` para um repositório público nem deploy público** enquanto o histórico do git tiver a senha antiga do banco de desenvolvimento. Siga primeiro a seção [Credenciais comprometidas e histórico do git](#credenciais-comprometidas-e-histórico-do-git).
+> 1. A senha antiga do banco de desenvolvimento **já foi trocada e removida do histórico do git** (14/11/2026). Veja [Credenciais comprometidas e histórico do git](#credenciais-comprometidas-e-histórico-do-git) se precisar repetir o procedimento.
 > 2. Produção usa **uma senha nova**, nunca a de desenvolvimento.
 
 ## Como a pilha funciona
@@ -173,7 +173,9 @@ Este caminho não foi testado em provedor real; ele usa as mesmas imagens.
 
 ## Credenciais comprometidas e histórico do git
 
-A senha do banco de desenvolvimento esteve em commits antigos. Ela já saiu dos arquivos atuais, mas continua no histórico. Faça isto **antes do primeiro push público**:
+> **Executado em 14/11/2026:** a senha do banco local foi trocada e o histórico reescrito com as substituições abaixo (nenhuma credencial restante; árvores dos commits finais idênticas). A seção fica como referência caso uma credencial volte a ser commitada.
+
+A senha do banco de desenvolvimento esteve em commits antigos. O procedimento para removê-la foi:
 
 1. **Trocar a senha do banco de desenvolvimento.** O volume é preservado; só a senha muda.
 
