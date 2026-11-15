@@ -95,3 +95,9 @@ Consulte `documentacao/recuperacao/CORRECOES_EXISTENTES.patch` para revisar alte
 ## Organização após a unificação
 
 A versão ativa está em `backend` e `frontend`. Backups ficam em `backups`; documentos em `documentacao`; configurações antigas em `configuracoes/recuperadas`; dados e modelos antigos em `dados/recuperados`. Versões diferentes de código e ambientes antigos ficam em `arquivo`. Consulte `documentacao/unificacao/RELATORIO.md`. Modelos e configurações recuperados não foram ativados automaticamente.
+
+## Autoria e licença
+
+Autor: **Felipe Silva Miranda** — GitHub [@Flips794](https://github.com/Flips794) · Currículo Lattes: <https://lattes.cnpq.br/9167949811810354>
+
+Distribuído sob a licença MIT; veja [LICENSE](LICENSE). Os dados experimentais de CMC vêm do NSRDS-NBS 36 (NIST) e os valores de pKa do CRC Handbook, com a referência indicada em cada campo; as fontes estão em [documentacao/CALCULOS.md](documentacao/CALCULOS.md).
